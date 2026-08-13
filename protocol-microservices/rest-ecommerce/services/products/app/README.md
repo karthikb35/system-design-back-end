@@ -74,7 +74,7 @@ classDiagram
 Same four methods as Users (`add`, `get`, `get_by_sku`, `list`) **plus one**:
 
 ```python
-async def save(self, product):     # commit changes to an already-tracked row
+async def save(self, product):  # commit changes to an already-tracked row
     await self._session.commit()
     await self._session.refresh(product)
     return product

@@ -118,8 +118,12 @@ Three domain exceptions are defined here: `DownstreamError` (502-ish),
 ## 5. `dependencies.py` — why the clients are injectable
 
 ```python
-def get_users_client() -> UsersClient:      return UsersClient()
-def get_products_client() -> ProductsClient: return ProductsClient()
+def get_users_client() -> UsersClient:
+    return UsersClient()
+
+
+def get_products_client() -> ProductsClient:
+    return ProductsClient()
 ```
 
 Declaring the clients as FastAPI dependencies is what lets the test suite call

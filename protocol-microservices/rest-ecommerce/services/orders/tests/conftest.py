@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-
 from app.database import init_models
 from app.dependencies import get_products_client, get_users_client
 from app.main import app
+from httpx import ASGITransport, AsyncClient
 
 
 class FakeUsersClient:

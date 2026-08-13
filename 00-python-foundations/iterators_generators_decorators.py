@@ -29,7 +29,7 @@ class Countdown:
     def __init__(self, start: int) -> None:
         self.current = start
 
-    def __iter__(self) -> "Countdown":
+    def __iter__(self) -> Countdown:
         return self
 
     def __next__(self) -> int:

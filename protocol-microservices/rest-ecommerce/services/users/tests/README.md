@@ -36,8 +36,8 @@ sequenceDiagram
 ```python
 @pytest_asyncio.fixture
 async def client() -> AsyncClient:
-    await init_models()                       # create schema
-    transport = ASGITransport(app=app)        # talk to the app with no socket
+    await init_models()  # create schema
+    transport = ASGITransport(app=app)  # talk to the app with no socket
     async with AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
 ```

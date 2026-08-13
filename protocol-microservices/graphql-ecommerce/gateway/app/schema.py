@@ -41,7 +41,7 @@ class User:
     is_active: bool
 
     @classmethod
-    def from_dict(cls, d: dict) -> "User":
+    def from_dict(cls, d: dict) -> User:
         return cls(id=strawberry.ID(d["id"]), email=d["email"], full_name=d["fullName"], is_active=d["isActive"])
 
 
@@ -61,7 +61,7 @@ class Product:
     stock: int
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Product":
+    def from_dict(cls, d: dict) -> Product:
         return cls(
             id=strawberry.ID(d["id"]),
             sku=d["sku"],
@@ -102,7 +102,7 @@ class Order:
         return User.from_dict(d) if d else None
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Order":
+    def from_dict(cls, d: dict) -> Order:
         return cls(
             id=strawberry.ID(d["id"]),
             user_id=strawberry.ID(d["userId"]),

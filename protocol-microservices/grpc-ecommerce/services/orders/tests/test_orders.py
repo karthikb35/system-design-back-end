@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import grpc
 import pytest
-
 from app.pb import orders_pb2
 
 

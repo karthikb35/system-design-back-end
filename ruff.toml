@@ -1,0 +1,30 @@
+# Ruff configuration for the whole repository.
+# Linting only — import sorting is delegated to isort, and docs code-block
+# formatting to blacken-docs, each wired as its own CI check.
+
+line-length = 120
+target-version = "py312"
+
+# Generated / vendored code is not ours to lint.
+extend-exclude = [
+    "**/pb",          # generated gRPC protobuf stubs
+    "**/migrations",  # Alembic revision scripts
+]
+
+[lint]
+# Core correctness (pyflakes/pycodestyle) plus pyupgrade modernization.
+# Import sorting (I) is intentionally left to isort so the two tools do not
+# fight over the same files.
+select = ["E", "F", "W", "UP"]
+# Line length is enforced softly via the formatter, not as a hard lint error;
+# several didactic files use long, deliberately illustrative lines.
+# The remaining ignores are deliberate teaching/style choices we keep:
+#   E702  compact `a; b` one-liners used in a few worked examples
+#   E741  a lone `l` used intentionally in a typing demo
+#   UP042 `(str, Enum)` mixin used by the circuit breaker's small state enum
+#   UP046 classic `Generic[T]` subclassing shown on purpose (pre-PEP 695)
+ignore = ["E501", "E702", "E741", "UP042", "UP046"]
+
+[lint.per-file-ignores]
+# `__init__.py` files may re-export names without using them locally.
+"**/__init__.py" = ["F401"]

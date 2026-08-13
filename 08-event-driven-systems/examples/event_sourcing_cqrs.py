@@ -94,7 +94,7 @@ class TransactionCountView:
 
     counts: dict[str, int] = field(default_factory=dict)
 
-    def rebuild(self, store: EventStore) -> "TransactionCountView":
+    def rebuild(self, store: EventStore) -> TransactionCountView:
         self.counts.clear()
         for e in store.stream():
             if isinstance(e, (Deposited, Withdrawn)):

@@ -83,6 +83,7 @@ correlation_id: contextvars.ContextVar[str] = contextvars.ContextVar(
 
 class CorrelationIdFilter(logging.Filter):
     """Injects the current correlation/trace id onto every LogRecord."""
+
     def filter(self, record: logging.LogRecord) -> bool:
         record.correlation_id = correlation_id.get()
         return True
@@ -90,8 +91,11 @@ class CorrelationIdFilter(logging.Filter):
 
 class JsonFormatter(logging.Formatter):
     """One JSON object per line — the unit Filebeat/Logstash ingest."""
+
     _RESERVED = set(logging.LogRecord("", 0, "", 0, "", (), None).__dict__) | {
-        "message", "asctime", "correlation_id"
+        "message",
+        "asctime",
+        "correlation_id",
     }
 
     def format(self, record: logging.LogRecord) -> str:
@@ -101,7 +105,7 @@ class JsonFormatter(logging.Formatter):
             ).isoformat(),
             "level": record.levelname,
             "logger": record.name,
-            "service": "svc-a",            # set per service (env var in prod)
+            "service": "svc-a",  # set per service (env var in prod)
             "message": record.getMessage(),
             "correlation_id": getattr(record, "correlation_id", "-"),
         }
@@ -115,28 +119,38 @@ class JsonFormatter(logging.Formatter):
 
 
 def configure_logging(level: str = "INFO") -> None:
-    dictConfig({
-        "version": 1,
-        "disable_existing_loggers": False,
-        "filters": {"correlation": {"()": CorrelationIdFilter}},
-        "formatters": {"json": {"()": JsonFormatter}},
-        "handlers": {
-            "stdout": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",   # 12-factor: stdout only
-                "formatter": "json",
-                "filters": ["correlation"],
-            }
-        },
-        # Route uvicorn/gunicorn access + error logs through the SAME JSON handler
-        # so the whole process speaks one log format.
-        "loggers": {
-            "uvicorn": {"handlers": ["stdout"], "level": level, "propagate": False},
-            "uvicorn.error": {"handlers": ["stdout"], "level": level, "propagate": False},
-            "uvicorn.access": {"handlers": ["stdout"], "level": level, "propagate": False},
-        },
-        "root": {"handlers": ["stdout"], "level": level},
-    })
+    dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "filters": {"correlation": {"()": CorrelationIdFilter}},
+            "formatters": {"json": {"()": JsonFormatter}},
+            "handlers": {
+                "stdout": {
+                    "class": "logging.StreamHandler",
+                    "stream": "ext://sys.stdout",  # 12-factor: stdout only
+                    "formatter": "json",
+                    "filters": ["correlation"],
+                }
+            },
+            # Route uvicorn/gunicorn access + error logs through the SAME JSON handler
+            # so the whole process speaks one log format.
+            "loggers": {
+                "uvicorn": {"handlers": ["stdout"], "level": level, "propagate": False},
+                "uvicorn.error": {
+                    "handlers": ["stdout"],
+                    "level": level,
+                    "propagate": False,
+                },
+                "uvicorn.access": {
+                    "handlers": ["stdout"],
+                    "level": level,
+                    "propagate": False,
+                },
+            },
+            "root": {"handlers": ["stdout"], "level": level},
+        }
+    )
 ```
 
 A minimal runnable version of this (with a FastAPI middleware) lives in

@@ -16,7 +16,7 @@ Run:  python recursion_dp_greedy_backtracking.py
 
 from __future__ import annotations
 
-from functools import lru_cache
+from functools import cache
 
 
 # ===========================================================================
@@ -41,7 +41,7 @@ def hanoi(n: int, src: str, aux: str, dst: str) -> list[tuple[str, str]]:
 # ===========================================================================
 # DYNAMIC PROGRAMMING
 # ===========================================================================
-@lru_cache(maxsize=None)  # top-down memoization in one line
+@cache  # top-down memoization in one line
 def fib_memo(n: int) -> int:
     if n < 2:
         return n

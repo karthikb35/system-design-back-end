@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import grpc
 import pytest_asyncio
-
 from app.database import Base, engine
 from app.pb import users_pb2_grpc
 from app.server import build_server
@@ -27,4 +26,8 @@ async def stub():
     await server.start()
     async with grpc.aio.insecure_channel(f"127.0.0.1:{port}") as channel:
         yield users_pb2_grpc.UserServiceStub(channel)
-    await server.stop(grace=None)
+    await server.stop(grace=0.5)
+    # Dispose the (module-level) engine so its single StaticPool sqlite
+    # connection is closed inside this test's event loop, rather than being
+    # finalized later by the GC in a dead loop (which raises GeneratorExit).
+    await engine.dispose()

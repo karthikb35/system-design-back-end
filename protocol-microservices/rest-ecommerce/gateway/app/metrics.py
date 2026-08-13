@@ -18,7 +18,7 @@ CARDINALITY WARNING
 -------------------
 Every distinct combination of label values creates a separate time-series that
 Prometheus must store and scan. We therefore label by the route TEMPLATE
-("/api/users/{path}") and never by the raw path ("/api/users/9f3c-..."). 
+("/api/users/{path}") and never by the raw path ("/api/users/9f3c-...").
 Labelling by raw path — or by user id, request id, etc. — would mint a brand-new
 series per value, exhausting memory and slowing every query. Keep label sets
 small and BOUNDED (method, template, status class).

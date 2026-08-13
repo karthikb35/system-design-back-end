@@ -11,12 +11,11 @@ from __future__ import annotations
 import httpx
 import pytest_asyncio
 import strawberry
+from app.clients import BackendClients
+from app.main import create_app
 from fastapi import FastAPI
 from graphql import GraphQLError
 from strawberry.fastapi import GraphQLRouter
-
-from app.clients import BackendClients
-from app.main import create_app
 
 # --- In-memory backend data --------------------------------------------------
 USERS = {"user-1": {"email": "buyer@example.com", "fullName": "Buyer One", "isActive": True}}

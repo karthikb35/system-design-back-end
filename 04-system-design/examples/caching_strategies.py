@@ -20,14 +20,15 @@ cache-aside read path, asserting hits, misses, and eviction order.
 """
 
 from __future__ import annotations
-from collections import OrderedDict, Counter, defaultdict
+
+from collections import Counter, OrderedDict
 
 
 class LRUCache:
     """O(1) get/put via an ordered dict; most-recent at the end."""
     def __init__(self, capacity: int):
         self._cap = capacity
-        self._data: "OrderedDict[str, object]" = OrderedDict()
+        self._data: OrderedDict[str, object] = OrderedDict()
         self.hits = 0
         self.misses = 0
 

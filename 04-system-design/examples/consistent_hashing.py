@@ -19,6 +19,7 @@ keys, versus ~all of them for modulo hashing.
 """
 
 from __future__ import annotations
+
 import bisect
 import hashlib
 

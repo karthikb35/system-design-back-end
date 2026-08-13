@@ -99,7 +99,7 @@ async def timeout_demo() -> None:
     try:
         await asyncio.wait_for(slow(), timeout=0.05)
         raise AssertionError("should have timed out")
-    except asyncio.TimeoutError:
+    except TimeoutError:
         print("   TIMEOUT: a slow await was cancelled after 0.05s (wait_for)")
 
 

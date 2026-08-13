@@ -86,9 +86,9 @@ class CircuitBreaker:
         except Exception:
             self._failures += 1
             if self._failures >= self._threshold:
-                self._opened_at = now          # trip the breaker
+                self._opened_at = now  # trip the breaker
             raise
-        self._failures, self._opened_at = 0, None   # success closes it
+        self._failures, self._opened_at = 0, None  # success closes it
         return result
 ```
 
@@ -130,12 +130,13 @@ class Saga:
 
     async def step(self, do, undo):
         result = await do()
-        self._undo.append(undo)   # remember how to roll this back
+        self._undo.append(undo)  # remember how to roll this back
         return result
 
     async def compensate(self) -> None:
-        for undo in reversed(self._undo):   # LIFO: unwind newest first
+        for undo in reversed(self._undo):  # LIFO: unwind newest first
             await undo()
+
 
 # usage inside place_order:
 #   saga = Saga()
@@ -167,7 +168,7 @@ once per intent). The server stores `key → response`; a repeat key returns the
 # ILLUSTRATIVE — a dependency/guard around the create handler. Reference only.
 async def place_order(payload, idempotency_key: str, store, svc):
     if (cached := await store.get(idempotency_key)) is not None:
-        return cached                      # replay the first result, no re-charge
+        return cached  # replay the first result, no re-charge
     result = await svc.place_order(payload)
     await store.put(idempotency_key, result, ttl=86_400)
     return result
@@ -200,7 +201,7 @@ flowchart LR
 async def get_product(product_id: str, cache, repo):
     if (hit := await cache.get(product_id)) is not None:
         return hit
-    product = await repo.get(product_id)          # miss → source of truth
+    product = await repo.get(product_id)  # miss → source of truth
     if product is not None:
         await cache.set(product_id, product, ttl=60)
     return product
@@ -278,7 +279,9 @@ class RoutingRepository:
         self._primary, self._replica = primary, replica
 
     def _engine(self, *, write: bool):
-        return self._primary if write else self._replica   # lag-aware callers pass write=True
+        return (
+            self._primary if write else self._replica
+        )  # lag-aware callers pass write=True
 ```
 
 Runnable replica router + sharding key + outbox:

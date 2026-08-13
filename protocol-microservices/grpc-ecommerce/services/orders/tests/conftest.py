@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import grpc
 import pytest_asyncio
-
 from app.clients import ProductsGrpcClient, UsersGrpcClient
 from app.database import Base, engine
 from app.pb import (
@@ -95,12 +94,12 @@ async def _reset_schema():
 
 
 @pytest_asyncio.fixture
-def fake_users() -> "_FakeUserService":
+def fake_users() -> _FakeUserService:
     return _FakeUserService()
 
 
 @pytest_asyncio.fixture
-def fake_products() -> "_FakeProductService":
+def fake_products() -> _FakeProductService:
     # Exposed as a fixture so tests can inspect the catalog's stock (e.g. to
     # assert the Orders saga released a reservation after a partial failure).
     return _FakeProductService()
@@ -131,6 +130,8 @@ async def stub(_reset_schema, fake_users, fake_products):
         await orders_channel.close()
         await users_channel.close()
         await products_channel.close()
-        await orders_srv.stop(None)
-        await users_srv.stop(None)
-        await products_srv.stop(None)
+        await orders_srv.stop(grace=0.5)
+        await users_srv.stop(grace=0.5)
+        await products_srv.stop(grace=0.5)
+        # Close the sqlite connection in-loop (see users/tests/conftest note).
+        await engine.dispose()

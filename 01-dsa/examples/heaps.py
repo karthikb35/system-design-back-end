@@ -73,7 +73,7 @@ class MinHeap:
             i = smallest
 
     @classmethod
-    def heapify(cls, items) -> "MinHeap":
+    def heapify(cls, items) -> MinHeap:
         """Build a heap from an arbitrary list in O(n) — bottom-up, NOT n pushes."""
         h = cls()
         h._a = list(items)

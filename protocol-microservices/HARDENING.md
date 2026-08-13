@@ -83,10 +83,10 @@ try:
         await self._products.reserve(line.product_id, line.quantity)
         reserved.append((line.product_id, line.quantity))
         ...
-    return await self._repo.add(order)          # persist
+    return await self._repo.add(order)  # persist
 except Exception:
-    await self._compensate(reserved)            # release everything reserved
-    raise                                       # original error still propagates
+    await self._compensate(reserved)  # release everything reserved
+    raise  # original error still propagates
 ```
 
 ---

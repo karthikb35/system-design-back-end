@@ -10,7 +10,6 @@ from __future__ import annotations
 import grpc
 import httpx
 import pytest_asyncio
-
 from app.config import get_settings
 from app.pb import (
     orders_pb2,
@@ -136,7 +135,7 @@ async def client():
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as ac:
             yield ac
 
-    await us.stop(None)
-    await ps.stop(None)
-    await os_.stop(None)
+    await us.stop(grace=0.5)
+    await ps.stop(grace=0.5)
+    await os_.stop(grace=0.5)
     get_settings.cache_clear()

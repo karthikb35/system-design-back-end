@@ -11,7 +11,6 @@ import asyncio
 
 import grpc
 import pytest
-
 from app import metrics
 from app.pb import users_pb2
 

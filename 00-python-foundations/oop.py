@@ -76,7 +76,7 @@ class Point:
     x: int
     y: int
 
-    def __add__(self, other: "Point") -> "Point":  # enables Point + Point
+    def __add__(self, other: Point) -> Point:  # enables Point + Point
         return Point(self.x + other.x, self.y + other.y)
 
     def __len__(self) -> int:  # enables len(point) -> manhattan distance
@@ -108,7 +108,7 @@ class Temperature:
         self.celsius = celsius
 
     @classmethod
-    def from_fahrenheit(cls, f: float) -> "Temperature":  # alternative constructor
+    def from_fahrenheit(cls, f: float) -> Temperature:  # alternative constructor
         return cls((f - 32) * 5 / 9)
 
     @staticmethod

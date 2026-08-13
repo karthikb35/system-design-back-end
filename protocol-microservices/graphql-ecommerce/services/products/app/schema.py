@@ -26,7 +26,7 @@ class Product:
     stock: int
 
     @classmethod
-    def from_model(cls, m: ProductModel) -> "Product":
+    def from_model(cls, m: ProductModel) -> Product:
         return cls(
             id=strawberry.ID(m.id),
             sku=m.sku,

@@ -1,8 +1,6 @@
 """End-to-end HTTP tests for the Users service (in-process, in-memory DB)."""
 from __future__ import annotations
 
-import pytest
-
 
 async def test_health_live(client):
     resp = await client.get("/health/live")

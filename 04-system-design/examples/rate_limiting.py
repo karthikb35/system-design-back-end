@@ -16,6 +16,7 @@ A deterministic fake clock makes the behavior testable without real sleeping.
 """
 
 from __future__ import annotations
+
 from collections import deque
 
 

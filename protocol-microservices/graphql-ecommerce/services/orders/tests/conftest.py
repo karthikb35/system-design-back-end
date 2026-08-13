@@ -10,14 +10,12 @@ from __future__ import annotations
 import httpx
 import pytest_asyncio
 import strawberry
-from fastapi import FastAPI
-from graphql import GraphQLError
-from strawberry.fastapi import GraphQLRouter
-
 from app.clients import ProductsGraphQLClient, UsersGraphQLClient
 from app.database import Base, engine, init_models
 from app.main import create_app
-
+from fastapi import FastAPI
+from graphql import GraphQLError
+from strawberry.fastapi import GraphQLRouter
 
 # --- Fake Users GraphQL app --------------------------------------------------
 _USERS = {"user-1"}

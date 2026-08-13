@@ -17,8 +17,8 @@ Run:  python saga.py
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
 
 @dataclass
@@ -32,7 +32,7 @@ class Saga:
     def __init__(self) -> None:
         self._steps: list[Step] = []
 
-    def add(self, step: Step) -> "Saga":
+    def add(self, step: Step) -> Saga:
         self._steps.append(step)
         return self
 

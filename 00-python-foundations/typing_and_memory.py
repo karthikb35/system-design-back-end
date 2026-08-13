@@ -24,7 +24,6 @@ from contextlib import contextmanager, suppress
 from dataclasses import dataclass
 from typing import Generic, Protocol, TypeVar
 
-
 # --------------------------------------------------------------------------
 # TYPING: a generic stack + a Protocol (structural typing). These are checked
 # by static tools; at runtime we just assert the behavior is correct.

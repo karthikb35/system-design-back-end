@@ -20,6 +20,7 @@ The four rotation cases:
 """
 
 from __future__ import annotations
+
 import math
 
 

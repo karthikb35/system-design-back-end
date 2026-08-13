@@ -85,15 +85,15 @@ class QueryBuilder:
         self._table = ""
         self._where: list[str] = []
 
-    def select(self, *cols: str) -> "QueryBuilder":
+    def select(self, *cols: str) -> QueryBuilder:
         self._select = ", ".join(cols)
         return self  # returning self enables chaining
 
-    def table(self, name: str) -> "QueryBuilder":
+    def table(self, name: str) -> QueryBuilder:
         self._table = name
         return self
 
-    def where(self, clause: str) -> "QueryBuilder":
+    def where(self, clause: str) -> QueryBuilder:
         self._where.append(clause)
         return self
 
@@ -112,7 +112,7 @@ class ServerConfig:
     region: str = "us-east-1"
     tags: dict[str, str] = field(default_factory=dict)
 
-    def clone(self) -> "ServerConfig":
+    def clone(self) -> ServerConfig:
         return copy.deepcopy(self)  # Python's deepcopy IS Prototype
 
 
@@ -120,9 +120,9 @@ class ServerConfig:
 # SINGLETON — one instance (prefer dependency injection in real code)
 # ===========================================================================
 class AppConfig:
-    _instance: "AppConfig | None" = None
+    _instance: AppConfig | None = None
 
-    def __new__(cls) -> "AppConfig":
+    def __new__(cls) -> AppConfig:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance.settings = {}  # type: ignore[attr-defined]

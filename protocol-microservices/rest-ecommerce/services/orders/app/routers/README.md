@@ -31,9 +31,9 @@ flowchart LR
 
 ```python
 def _service(
-    session = Depends(get_session),
-    users   = Depends(get_users_client),
-    products= Depends(get_products_client),
+    session=Depends(get_session),
+    users=Depends(get_users_client),
+    products=Depends(get_products_client),
 ) -> OrderService:
     return OrderService(OrderRepository(session), users, products)
 ```

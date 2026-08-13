@@ -18,8 +18,8 @@ the classic hazards, each with a self-check:
                       fix = a GLOBAL LOCK ORDERING (always acquire in same order)
 """
 
-import threading
 import queue
+import threading
 import time
 
 
@@ -136,7 +136,7 @@ def event_demo() -> None:
 # queue is internally synchronized. Classic producer/consumer with a sentinel.
 # --------------------------------------------------------------------------
 def producer_consumer_demo() -> None:
-    q: "queue.Queue[int | None]" = queue.Queue(maxsize=8)
+    q: queue.Queue[int | None] = queue.Queue(maxsize=8)
     produced = list(range(50))
     consumed: list[int] = []
     guard = threading.Lock()

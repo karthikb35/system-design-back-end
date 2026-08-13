@@ -29,7 +29,7 @@ flowchart LR
 `protoc` emits a **flat** import inside `users_pb2_grpc.py`:
 
 ```python
-import users_pb2 as users__pb2      # not "from . import users_pb2"
+import users_pb2 as users__pb2  # not "from . import users_pb2"
 ```
 
 That only resolves if the stubs' own directory is on `sys.path`. Since the stubs
@@ -37,6 +37,7 @@ live inside a package (`app/pb/`), the generated `__init__.py` fixes it:
 
 ```python
 import os, sys
+
 sys.path.insert(0, os.path.dirname(__file__))
 ```
 

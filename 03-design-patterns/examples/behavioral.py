@@ -22,8 +22,8 @@ Run:  python behavioral.py
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterator
-from typing import Callable, Protocol
+from collections.abc import Callable, Iterator
+from typing import Protocol
 
 
 # ===========================================================================
@@ -31,7 +31,7 @@ from typing import Callable, Protocol
 # ===========================================================================
 class Handler:
     def __init__(self, name: str, can_handle: Callable[[str], bool],
-                 nxt: "Handler | None" = None) -> None:
+                 nxt: Handler | None = None) -> None:
         self.name, self.can_handle, self.nxt = name, can_handle, nxt
 
     def handle(self, req: str) -> str:
@@ -141,7 +141,7 @@ class Subject:
 # ===========================================================================
 class OrderState(ABC):
     @abstractmethod
-    def next(self) -> "OrderState": ...
+    def next(self) -> OrderState: ...
     @property
     @abstractmethod
     def name(self) -> str: ...
@@ -226,7 +226,7 @@ class Num:
     def __init__(self, value: int) -> None:
         self.value = value
 
-    def accept(self, visitor: "Visitor") -> int:
+    def accept(self, visitor: Visitor) -> int:
         return visitor.visit_num(self)
 
 
@@ -234,7 +234,7 @@ class Add:
     def __init__(self, left: object, right: object) -> None:
         self.left, self.right = left, right
 
-    def accept(self, visitor: "Visitor") -> int:
+    def accept(self, visitor: Visitor) -> int:
         return visitor.visit_add(self)
 
 

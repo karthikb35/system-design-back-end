@@ -19,9 +19,9 @@ Demonstrated with measurable, self-checking demos:
   * concurrent.futures — the modern, uniform API for both
 """
 
-import time
 import math
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+import time
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 
 # --------------------------------------------------------------------------

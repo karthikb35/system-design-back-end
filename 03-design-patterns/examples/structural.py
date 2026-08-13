@@ -80,9 +80,9 @@ class File:
 
 class Folder:
     def __init__(self) -> None:
-        self.children: list[File | "Folder"] = []
+        self.children: list[File | Folder] = []
 
-    def add(self, node: File | "Folder") -> "Folder":
+    def add(self, node: File | Folder) -> Folder:
         self.children.append(node)
         return self
 
@@ -144,9 +144,9 @@ class OrderFacade:
 # ===========================================================================
 class GlyphFactory:
     def __init__(self) -> None:
-        self._pool: dict[str, "Glyph"] = {}
+        self._pool: dict[str, Glyph] = {}
 
-    def get(self, char: str) -> "Glyph":
+    def get(self, char: str) -> Glyph:
         if char not in self._pool:
             self._pool[char] = Glyph(char)  # created once, shared everywhere
         return self._pool[char]

@@ -70,7 +70,15 @@ class CorrelationInterceptor(grpc.aio.ServerInterceptor):
             finally:
                 elapsed_ms = (time.perf_counter() - start) * 1000
                 log.info("%s -> %s in %.1fms", method, context.code() or "OK", elapsed_ms)
-                request_id_ctx.reset(token)
+                # Under grpc.aio the RPC coroutine can be finalized in a different
+                # context than the one that set the token (e.g. when a call is
+                # cancelled during server shutdown), which makes reset() raise a
+                # ValueError. Guard it so teardown never surfaces a spurious
+                # error that pytest would escalate to a failed test.
+                try:
+                    request_id_ctx.reset(token)
+                except ValueError:
+                    request_id_ctx.set("-")
 
         # NOTE: this helper lives on `grpc`, NOT `grpc.aio`.
         return grpc.unary_unary_rpc_method_handler(

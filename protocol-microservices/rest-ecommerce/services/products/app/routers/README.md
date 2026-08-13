@@ -23,7 +23,7 @@ flowchart LR
 Same per-request DI helper as Users:
 
 ```python
-def _service(session = Depends(get_session)) -> ProductService:
+def _service(session=Depends(get_session)) -> ProductService:
     return ProductService(ProductRepository(session))
 ```
 
@@ -48,7 +48,7 @@ flowchart TD
 
 ```python
 @router.post("/{product_id}/reserve", response_model=ProductOut)
-async def reserve_stock(product_id, payload: StockReservation, svc = Depends(_service)):
+async def reserve_stock(product_id, payload: StockReservation, svc=Depends(_service)):
     try:
         product = await svc.reserve_stock(product_id, payload.quantity)
     except ProductNotFound:

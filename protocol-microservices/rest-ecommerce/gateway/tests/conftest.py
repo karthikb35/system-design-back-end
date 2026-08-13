@@ -12,9 +12,8 @@ import json
 import httpx
 import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-
 from app.main import app
+from httpx import ASGITransport, AsyncClient
 
 # In-memory downstream data.
 USERS = {"user-1": {"id": "user-1", "full_name": "Ada Lovelace"}}

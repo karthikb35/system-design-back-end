@@ -6,12 +6,10 @@ straight to the app in-process (fast, no network).
 """
 from __future__ import annotations
 
-import pytest
 import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
-
 from app.database import init_models
 from app.main import app
+from httpx import ASGITransport, AsyncClient
 
 
 @pytest_asyncio.fixture

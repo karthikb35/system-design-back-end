@@ -19,10 +19,10 @@ Run:  python production_code.py
 from __future__ import annotations
 
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 
 app = FastAPI(title="Event-Driven: anti-pattern vs refactor")

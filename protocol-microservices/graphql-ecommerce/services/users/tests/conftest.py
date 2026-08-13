@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import httpx
 import pytest_asyncio
-
 from app.database import Base, engine, init_models
 from app.main import create_app
 

@@ -31,9 +31,9 @@ import asyncio
 import queue
 import threading
 import time
+from collections.abc import Iterator
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import contextmanager
-from typing import Iterator
 
 
 # ===========================================================================
@@ -214,7 +214,7 @@ async def demo_async() -> None:
     timed_out = False
     try:
         await asyncio.wait_for(_slow_call(), timeout=0.05)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         timed_out = True
     assert timed_out, "wait_for must cancel a call that overruns its deadline"
     print("   ASYNC DEADLINE: a 1.0s call was cancelled after 0.05s (asyncio.wait_for)")

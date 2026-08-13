@@ -19,8 +19,7 @@ from __future__ import annotations
 
 import heapq
 from collections import deque
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 
 # ===========================================================================
@@ -29,17 +28,17 @@ from typing import Optional
 @dataclass
 class Node:
     val: int
-    next: Optional["Node"] = None
+    next: Node | None = None
 
 
-def build_list(values: list[int]) -> Optional[Node]:
-    head: Optional[Node] = None
+def build_list(values: list[int]) -> Node | None:
+    head: Node | None = None
     for v in reversed(values):
         head = Node(v, head)
     return head
 
 
-def to_list(head: Optional[Node]) -> list[int]:
+def to_list(head: Node | None) -> list[int]:
     out: list[int] = []
     while head:
         out.append(head.val)
@@ -47,15 +46,15 @@ def to_list(head: Optional[Node]) -> list[int]:
     return out
 
 
-def reverse(head: Optional[Node]) -> Optional[Node]:
+def reverse(head: Node | None) -> Node | None:
     """Reverse a singly linked list — O(n) time, O(1) space."""
-    prev: Optional[Node] = None
+    prev: Node | None = None
     while head:
         head.next, prev, head = prev, head, head.next
     return prev
 
 
-def has_cycle(head: Optional[Node]) -> bool:
+def has_cycle(head: Node | None) -> bool:
     """Floyd's tortoise & hare — O(n) time, O(1) space."""
     slow = fast = head
     while fast and fast.next:
@@ -74,8 +73,8 @@ class LRUCache:
     class DNode:
         key: int = 0
         val: int = 0
-        prev: Optional["LRUCache.DNode"] = None
-        next: Optional["LRUCache.DNode"] = None
+        prev: LRUCache.DNode | None = None
+        next: LRUCache.DNode | None = None
 
     def __init__(self, capacity: int) -> None:
         self.cap = capacity
@@ -84,10 +83,10 @@ class LRUCache:
         self.tail = self.DNode()  # sentinel: least-recently-used side
         self.head.next, self.tail.prev = self.tail, self.head
 
-    def _remove(self, node: "LRUCache.DNode") -> None:
+    def _remove(self, node: LRUCache.DNode) -> None:
         node.prev.next, node.next.prev = node.next, node.prev  # type: ignore[union-attr]
 
-    def _push_front(self, node: "LRUCache.DNode") -> None:
+    def _push_front(self, node: LRUCache.DNode) -> None:
         node.prev, node.next = self.head, self.head.next
         self.head.next.prev = node  # type: ignore[union-attr]
         self.head.next = node
@@ -148,7 +147,7 @@ class CircularQueue:
     """Fixed-size ring buffer — O(1) enqueue/dequeue, bounded memory."""
 
     def __init__(self, capacity: int) -> None:
-        self.buf: list[Optional[int]] = [None] * capacity
+        self.buf: list[int | None] = [None] * capacity
         self.cap = capacity
         self.head = self.size = 0
 
@@ -159,7 +158,7 @@ class CircularQueue:
         self.size += 1
         return True
 
-    def dequeue(self) -> Optional[int]:
+    def dequeue(self) -> int | None:
         if self.size == 0:
             return None
         v = self.buf[self.head]
@@ -174,18 +173,18 @@ class CircularQueue:
 @dataclass
 class TreeNode:
     val: int
-    left: Optional["TreeNode"] = None
-    right: Optional["TreeNode"] = None
+    left: TreeNode | None = None
+    right: TreeNode | None = None
 
 
 class BST:
     def __init__(self) -> None:
-        self.root: Optional[TreeNode] = None
+        self.root: TreeNode | None = None
 
     def insert(self, val: int) -> None:
         self.root = self._insert(self.root, val)
 
-    def _insert(self, node: Optional[TreeNode], val: int) -> TreeNode:
+    def _insert(self, node: TreeNode | None, val: int) -> TreeNode:
         if node is None:
             return TreeNode(val)
         if val < node.val:
@@ -205,7 +204,7 @@ class BST:
     def inorder(self) -> list[int]:
         out: list[int] = []
 
-        def walk(n: Optional[TreeNode]) -> None:
+        def walk(n: TreeNode | None) -> None:
             if n:
                 walk(n.left)
                 out.append(n.val)  # left, node, right -> sorted for a BST
@@ -240,7 +239,7 @@ def k_largest(nums: list[int], k: int) -> list[int]:
     return sorted(heap, reverse=True)
 
 
-def two_sum(nums: list[int], target: int) -> Optional[tuple[int, int]]:
+def two_sum(nums: list[int], target: int) -> tuple[int, int] | None:
     """Hash map turns O(n^2) into O(n)."""
     seen: dict[int, int] = {}
     for i, n in enumerate(nums):

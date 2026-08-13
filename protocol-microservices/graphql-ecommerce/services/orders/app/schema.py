@@ -39,7 +39,7 @@ class Order:
     items: list[OrderItem]
 
     @classmethod
-    def from_model(cls, m: OrderModel) -> "Order":
+    def from_model(cls, m: OrderModel) -> Order:
         return cls(
             id=strawberry.ID(m.id),
             user_id=strawberry.ID(m.user_id),

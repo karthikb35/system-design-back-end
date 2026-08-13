@@ -34,7 +34,7 @@ flowchart LR
 ```
 
 ```python
-def _service(session = Depends(get_session)) -> UserService:
+def _service(session=Depends(get_session)) -> UserService:
     return UserService(UserRepository(session))
 ```
 
@@ -62,12 +62,12 @@ Line-by-line of the core handler:
 
 ```python
 @router.post("", response_model=UserOut, status_code=201)
-async def create_user(payload: UserCreate, svc = Depends(_service)):
+async def create_user(payload: UserCreate, svc=Depends(_service)):
     try:
-        user = await svc.register(payload)   # business rule lives in service
+        user = await svc.register(payload)  # business rule lives in service
     except EmailAlreadyExists:
         raise HTTPException(409, detail="email already registered")
-    return UserOut.model_validate(user)      # ORM → response DTO (no password)
+    return UserOut.model_validate(user)  # ORM → response DTO (no password)
 ```
 
 - `payload: UserCreate` — FastAPI validates the JSON body **before** the function

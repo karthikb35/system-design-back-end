@@ -32,7 +32,7 @@ class User:
     is_active: bool
 
     @classmethod
-    def from_model(cls, m: UserModel) -> "User":
+    def from_model(cls, m: UserModel) -> User:
         return cls(id=strawberry.ID(m.id), email=m.email, full_name=m.full_name, is_active=m.is_active)
 
 
