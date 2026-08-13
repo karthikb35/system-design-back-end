@@ -258,6 +258,39 @@ elasticsearch>=8.13
 pytest>=8.0
 ```
 
+### Running the applied system in containers
+
+Each edition under [`protocol-microservices/`](./protocol-microservices/) ships a
+`docker compose` file that stands up Postgres plus the three services and the
+gateway:
+
+```bash
+cd protocol-microservices/rest-ecommerce   # or grpc-ecommerce / graphql-ecommerce
+docker compose up --build -d
+```
+
+### Pre-built images (GitHub Container Registry)
+
+CI ([`.github/workflows/docker.yml`](./.github/workflows/docker.yml)) builds all
+**twelve** service/gateway images and publishes them to GHCR on every push to
+`main`. Each image carries a `latest` tag and an immutable `sha-<commit>` tag.
+
+| Edition | Images (prefix `ghcr.io/karthikb35/`) |
+| --- | --- |
+| REST | `rest-ecommerce-users` · `rest-ecommerce-products` · `rest-ecommerce-orders` · `rest-ecommerce-gateway` |
+| gRPC | `grpc-ecommerce-users` · `grpc-ecommerce-products` · `grpc-ecommerce-orders` · `grpc-ecommerce-gateway` |
+| GraphQL | `graphql-ecommerce-users` · `graphql-ecommerce-products` · `graphql-ecommerce-orders` · `graphql-ecommerce-gateway` |
+
+```bash
+# Pull a published image (latest from main)
+docker pull ghcr.io/karthikb35/rest-ecommerce-gateway:latest
+```
+
+> Images are published using the workflow's automatic `GITHUB_TOKEN` — no secret
+> to configure. On first publish each package is **private**; make it public (or
+> grant pull access) from the repository's **Packages** tab if you want to pull
+> it anonymously.
+
 ---
 
 ## 7. The Mental Models to Internalize
