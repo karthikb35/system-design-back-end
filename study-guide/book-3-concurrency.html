@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Concurrency &amp; Parallelism — The Architect's Path, Book III</title>
+<link rel="stylesheet" href="architects-path.css">
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <div>
+    <div class="kicker">The Architect's Path · Book III · Edition 2026</div>
+    <h1>Concurrency<br>&amp; Parallelism</h1>
+    <div class="sub">Threads, processes, and <code style="color:#8ff4ee">asyncio</code> — explained from zero with the <strong style="color:#8ff4ee">What</strong>, the <strong style="color:#8ff4ee">Why</strong>, the <strong style="color:#8ff4ee">How</strong>, and the <strong style="color:#8ff4ee">When</strong>. The one topic that separates engineers who <em>say</em> "it's concurrent" from those who can make it correct under load.</div>
+    <div class="stackrow">🧵 Threads · ⚙️ Processes · 🔒 Locks · 🌀 Asyncio</div>
+    <div class="badges">
+      <span class="badge">🧠 The GIL, finally clear</span>
+      <span class="badge">🏁 Race conditions &amp; fixes</span>
+      <span class="badge">💀 Deadlock &amp; how to avoid it</span>
+      <span class="badge">📦 Thread-safe queues</span>
+      <span class="badge">⏱️ Timeouts &amp; cancellation</span>
+      <span class="badge">🧪 Runnable, self-testing code</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div><strong style="color:#eaf2fb">Every idea is a script you can run.</strong><br>Companion code in <code style="color:#cfe0d6">09-concurrency/examples/</code>.</div>
+    <div style="text-align:right">What → Why → How → When<br>Diagrams · Gotchas · Interview Q&amp;A</div>
+  </div>
+</section>
+
+<!-- ============================ TOC ============================ -->
+<section class="toc">
+  <h2>Table of Contents</h2>
+  <div class="rule"></div>
+  <p class="small">Book III of the series. Read it after <strong>Python Mastery</strong> and <strong>DSA</strong>. Every section follows <strong>What → Why → How → When</strong>, then worked code, gotchas, and interview questions.</p>
+  <ol>
+    <li><span class="n">1</span><div><div class="tt"><a href="#s1">Concurrency vs Parallelism</a></div><div class="dd">The words everyone confuses · I/O-bound vs CPU-bound · latency vs throughput</div></div><span class="ic">🧭</span></li>
+    <li><span class="n">2</span><div><div class="tt"><a href="#s2">The GIL — Python's Global Interpreter Lock</a></div><div class="dd">Why threads don't speed up math · what actually releases it</div></div><span class="ic">🔐</span></li>
+    <li><span class="n">3</span><div><div class="tt"><a href="#s3">Threads</a></div><div class="dd"><code>threading</code> · <code>ThreadPoolExecutor</code> · when threads win</div></div><span class="ic">🧵</span></li>
+    <li><span class="n">4</span><div><div class="tt"><a href="#s4">Processes</a></div><div class="dd"><code>multiprocessing</code> · <code>ProcessPoolExecutor</code> · true parallelism</div></div><span class="ic">⚙️</span></li>
+    <li><span class="n">5</span><div><div class="tt"><a href="#s5">Race Conditions &amp; Synchronization</a></div><div class="dd">Lock · RLock · Semaphore · Event · the thread-safe Queue</div></div><span class="ic">🏁</span></li>
+    <li><span class="n">6</span><div><div class="tt"><a href="#s6">Deadlock, Livelock &amp; Starvation</a></div><div class="dd">The four Coffman conditions · lock ordering · the fixes</div></div><span class="ic">💀</span></li>
+    <li><span class="n">7</span><div><div class="tt"><a href="#s7">Asyncio — Single-Threaded Concurrency</a></div><div class="dd">The event loop · coroutines · <code>gather</code> · <code>async</code> locks &amp; queues</div></div><span class="ic">🌀</span></li>
+    <li><span class="n">8</span><div><div class="tt"><a href="#s8">Choosing the Right Model</a></div><div class="dd">A decision table you can quote in an interview</div></div><span class="ic">🎯</span></li>
+  </ol>
+  <div class="subitems">Runnable code: <code>threads_processes.py</code> · <code>synchronization.py</code> · <code>async_io.py</code> — each self-tests with <code>assert</code>s and prints a pass line.</div>
+</section>
+
+<!-- ============================ INTRO ============================ -->
+<section class="chapter" id="s0">
+  <div class="ch-head">
+    <div class="num">9</div>
+    <div><div class="t">Concurrency &amp; Parallelism</div>
+    <div class="s">Doing many things at once — correctly — when one request is never enough</div></div>
+    <div class="ico">🧵</div>
+  </div>
+
+  <p class="lead">A single request is easy. Real systems handle <strong>thousands at once</strong>: web servers, crawlers, data pipelines, trading engines. The moment two pieces of work overlap in time, a new class of bug appears — one that passes every test on your laptop and corrupts data in production. This book makes concurrency <em>boring</em>: you'll know exactly which tool to reach for, why it works, and where it bites.</p>
+
+  <div class="coderef"><div class="h">📂 Runnable code in the repo</div><p style="margin:0 0 3px">Every idea below is a working, self-testing script — run each with <span class="path">python &lt;file&gt;</span>:</p>
+  <ul>
+    <li><span class="path">09-concurrency/examples/threads_processes.py</span> — threads for I/O, processes for CPU, the GIL, <code class="inl">concurrent.futures</code></li>
+    <li><span class="path">09-concurrency/examples/synchronization.py</span> — race conditions, Lock/RLock/Semaphore/Event, thread-safe Queue, deadlock &amp; its fix</li>
+    <li><span class="path">09-concurrency/examples/async_io.py</span> — the event loop, <code class="inl">gather</code>, <code class="inl">asyncio.Lock</code>, <code class="inl">asyncio.Queue</code>, timeouts</li>
+  </ul></div>
+
+  <!-- ===================== SECTION 1 ===================== -->
+  <h2 class="sec" id="s1">1 · Concurrency vs Parallelism</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Concurrency</em> is <strong>dealing with</strong> many things at once — structuring a program so multiple tasks make progress during overlapping time windows. <em class="term">Parallelism</em> is <strong>doing</strong> many things at the literal same instant, on multiple CPU cores. Concurrency is about <em>structure</em>; parallelism is about <em>execution</em>. You can have concurrency on a single core (tasks take turns) and you need multiple cores for true parallelism.</p></div>
+
+  <div class="def why"><span class="lab">Why</span><p>Because the bottleneck decides the tool. If your task spends its life <em>waiting</em> (network calls, disk, database) — <em class="term">I/O-bound</em> — you want <strong>concurrency</strong>: overlap the waiting so one core serves thousands. If your task spends its life <em>computing</em> (parsing, hashing, image processing) — <em class="term">CPU-bound</em> — no amount of waiting-overlap helps; you need <strong>parallelism</strong> across cores. Pick wrong and you add complexity for zero speedup.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 250" role="img" aria-label="Concurrency versus parallelism">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="225" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="#0f2743">CONCURRENCY (1 core, take turns)</text>
+        <text x="675" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="#0f2743">PARALLELISM (2 cores, same instant)</text>
+        <!-- concurrency: one lane, interleaved blocks -->
+        <line x1="40" y1="150" x2="410" y2="150" stroke="#9fb6d0" stroke-width="2"/>
+        <text x="30" y="155" text-anchor="end" font-size="10" fill="#5b6b7b">core</text>
+        <rect x="45"  y="120" width="55" height="30" rx="5" fill="#0ea5a4"/><text x="72" y="140" text-anchor="middle" font-size="10" fill="#fff">A</text>
+        <rect x="105" y="120" width="55" height="30" rx="5" fill="#7c3aed"/><text x="132" y="140" text-anchor="middle" font-size="10" fill="#fff">B</text>
+        <rect x="165" y="120" width="55" height="30" rx="5" fill="#0ea5a4"/><text x="192" y="140" text-anchor="middle" font-size="10" fill="#fff">A</text>
+        <rect x="225" y="120" width="55" height="30" rx="5" fill="#7c3aed"/><text x="252" y="140" text-anchor="middle" font-size="10" fill="#fff">B</text>
+        <rect x="285" y="120" width="55" height="30" rx="5" fill="#0ea5a4"/><text x="312" y="140" text-anchor="middle" font-size="10" fill="#fff">A</text>
+        <rect x="345" y="120" width="55" height="30" rx="5" fill="#7c3aed"/><text x="372" y="140" text-anchor="middle" font-size="10" fill="#fff">B</text>
+        <text x="225" y="185" text-anchor="middle" font-size="9.5" fill="#5b6b7b">A and B interleave — both progress, never truly simultaneous</text>
+        <!-- parallelism: two lanes -->
+        <line x1="470" y1="128" x2="860" y2="128" stroke="#9fb6d0" stroke-width="2"/>
+        <line x1="470" y1="172" x2="860" y2="172" stroke="#9fb6d0" stroke-width="2"/>
+        <text x="462" y="132" text-anchor="end" font-size="10" fill="#5b6b7b">core 1</text>
+        <text x="462" y="176" text-anchor="end" font-size="10" fill="#5b6b7b">core 2</text>
+        <rect x="475" y="113" width="360" height="30" rx="5" fill="#0ea5a4"/><text x="655" y="133" text-anchor="middle" font-size="10" fill="#fff">A runs the whole time</text>
+        <rect x="475" y="157" width="360" height="30" rx="5" fill="#7c3aed"/><text x="655" y="177" text-anchor="middle" font-size="10" fill="#fff">B runs the whole time</text>
+        <text x="655" y="210" text-anchor="middle" font-size="9.5" fill="#5b6b7b">A and B run at the exact same instant on separate cores</text>
+      </g>
+    </svg>
+    <figcaption>Figure 9.1 — Concurrency interleaves tasks on one core; parallelism runs them literally at once on many cores. Threads &amp; asyncio give concurrency; processes give parallelism.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How</span><p>Python gives you three tools. <strong>Threads</strong> (<code class="inl">threading</code>) — concurrency with shared memory, best for I/O. <strong>Processes</strong> (<code class="inl">multiprocessing</code>) — parallelism with separate memory, best for CPU. <strong>Asyncio</strong> (<code class="inl">async/await</code>) — concurrency on a <em>single</em> thread via an event loop, best for <em>massive</em> I/O fan-out. All three are covered here.</p></div>
+
+  <div class="def when"><span class="lab">When</span><p>Ask one question first: <em>"Is my task waiting or computing?"</em> Waiting → threads or asyncio. Computing → processes. If you can't answer, measure before you parallelize — most "slow" code is I/O-bound and doesn't need cores at all.</p></div>
+
+  <div class="box analogy"><span class="ic">🍳</span><div class="h">The kitchen analogy</div>
+  <p>One cook (one core) can make <em>concurrent</em> progress on many dishes by stirring one while another simmers — that's overlapping the <strong>waiting</strong> (I/O). But chopping ten kilos of onions is pure work: one cook can't chop faster by "interleaving." You need <strong>more cooks</strong> (more cores / processes). Threads and asyncio add stirring skill; processes add cooks.</p></div>
+
+  <div class="qa"><div class="q">Q · Concurrency vs parallelism in one sentence?</div>
+  <p>Concurrency is <em>structuring</em> a program so tasks make progress in overlapping windows (can be one core); parallelism is <em>executing</em> tasks at the same instant on multiple cores. Concurrency is about dealing with many things; parallelism is about doing many things.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you decide between threads, processes, and asyncio?</div>
+  <p>By the bottleneck. I/O-bound with modest fan-out → threads. I/O-bound with huge fan-out (thousands of sockets) → asyncio. CPU-bound → processes (to bypass the GIL). When in doubt, profile: if the CPU is near idle while the program is slow, it's I/O-bound.</p></div>
+
+  <!-- ===================== SECTION 2 : GIL ===================== -->
+  <h2 class="sec" id="s2">2 · The GIL — Python's Global Interpreter Lock</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The <em class="term">GIL</em> is a single lock inside CPython (the standard interpreter) that allows <strong>only one thread to execute Python bytecode at a time</strong>. It exists to make memory management (reference counting) simple and fast for the common single-threaded case.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because it means <strong>threads do not give you CPU parallelism in CPython</strong>. Ten threads doing pure Python math run no faster than one — they take turns holding the GIL. But threads <em>do</em> help I/O, because blocking calls (<code class="inl">time.sleep</code>, socket reads, DB queries) <strong>release the GIL</strong> while they wait, letting other threads run. So the GIL punishes CPU work and is harmless for I/O work.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 220" role="img" aria-label="The GIL lets one thread run at a time">
+      <g font-family="Segoe UI,sans-serif">
+        <rect x="380" y="12" width="140" height="34" rx="8" fill="#dc2626"/><text x="450" y="34" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">🔒 The GIL</text>
+        <text x="450" y="60" text-anchor="middle" font-size="9" fill="#5b6b7b">only ONE thread holds it and runs bytecode</text>
+        <!-- three threads -->
+        <text x="60" y="100" font-size="11" font-weight="700" fill="#0f2743">Thread 1</text>
+        <text x="60" y="140" font-size="11" font-weight="700" fill="#0f2743">Thread 2</text>
+        <text x="60" y="180" font-size="11" font-weight="700" fill="#0f2743">Thread 3</text>
+        <!-- timeline: who holds the GIL -->
+        <rect x="150" y="86"  width="120" height="20" rx="4" fill="#16a34a"/><text x="210" y="101" text-anchor="middle" font-size="9" fill="#fff">running</text>
+        <rect x="150" y="126" width="120" height="20" rx="4" fill="#e5e7eb"/><text x="210" y="141" text-anchor="middle" font-size="9" fill="#5b6b7b">blocked (GIL)</text>
+        <rect x="150" y="166" width="120" height="20" rx="4" fill="#e5e7eb"/>
+        <rect x="280" y="86"  width="120" height="20" rx="4" fill="#e5e7eb"/>
+        <rect x="280" y="126" width="120" height="20" rx="4" fill="#16a34a"/><text x="340" y="141" text-anchor="middle" font-size="9" fill="#fff">running</text>
+        <rect x="280" y="166" width="120" height="20" rx="4" fill="#e5e7eb"/>
+        <rect x="410" y="86"  width="120" height="20" rx="4" fill="#e5e7eb"/>
+        <rect x="410" y="126" width="120" height="20" rx="4" fill="#e5e7eb"/>
+        <rect x="410" y="166" width="120" height="20" rx="4" fill="#16a34a"/><text x="470" y="181" text-anchor="middle" font-size="9" fill="#fff">running</text>
+        <rect x="540" y="86"  width="120" height="20" rx="4" fill="#16a34a"/><text x="600" y="101" text-anchor="middle" font-size="9" fill="#fff">running</text>
+        <rect x="540" y="126" width="120" height="20" rx="4" fill="#e5e7eb"/>
+        <rect x="540" y="166" width="120" height="20" rx="4" fill="#e5e7eb"/>
+        <line x1="150" y1="200" x2="700" y2="200" stroke="#9fb6d0" stroke-width="1.5"/>
+        <text x="700" y="214" text-anchor="end" font-size="9" fill="#5b6b7b">time →</text>
+      </g>
+    </svg>
+    <figcaption>Figure 9.2 — Threads take turns holding the GIL. On CPU work this is just context-switching overhead; on I/O work each thread releases the GIL while it waits, so the turns overlap the waiting productively.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How to beat it</span><p>Three escapes: (1) <strong>Processes</strong> — each has its own interpreter and its own GIL, so they run truly parallel. (2) <strong>C extensions</strong> — libraries like NumPy release the GIL during heavy math. (3) <strong>Free-threaded Python</strong> — an experimental build (PEP 703, Python 3.13+) that removes the GIL; not yet the default. For interviews, know escapes 1 and 2 cold.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — "just add threads" for a slow loop</div>
+  <p>A common junior fix for a slow number-crunching loop is to spread it across threads. In CPython this gives <strong>zero speedup</strong> (often a slight slowdown from context-switching) because the GIL serializes the bytecode. The senior move: recognize it's CPU-bound and use a <code class="inl">ProcessPoolExecutor</code>, or push the math into NumPy/C.</p></div>
+
+  <div class="qa"><div class="q">Q · What is the GIL and why does it exist?</div>
+  <p>It's a mutex in CPython that lets only one thread run Python bytecode at a time. It exists because CPython's memory management (reference counting) isn't thread-safe without it; the GIL makes the single-threaded case fast and the interpreter simple. The cost is that threads can't parallelize CPU-bound Python.</p></div>
+
+  <div class="qa"><div class="q">Q · If the GIL blocks parallelism, why are Python threads useful at all?</div>
+  <p>Because I/O releases the GIL. When a thread makes a blocking call — a socket read, a DB query, <code class="inl">time.sleep</code> — it lets go of the GIL so other threads run. For I/O-bound workloads (most web/backend work) threads overlap the waiting and give big real-world speedups.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you achieve true CPU parallelism in Python?</div>
+  <p>Use processes (<code class="inl">multiprocessing</code> / <code class="inl">ProcessPoolExecutor</code>) so each worker has its own interpreter and GIL; or use libraries that drop to C and release the GIL (NumPy, Cython, native extensions); or, experimentally, a free-threaded (no-GIL) Python build.</p></div>
+
+  <!-- ===================== SECTION 3 : THREADS ===================== -->
+  <h2 class="sec" id="s3">3 · Threads</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">thread</em> is an independent path of execution <em>within one process</em>, sharing that process's memory. Python exposes them via the <code class="inl">threading</code> module and, more conveniently, via <code class="inl">concurrent.futures.ThreadPoolExecutor</code>.</p></div>
+
+  <div class="def why"><span class="lab">Why</span><p>Because shared memory makes coordination cheap and threads are lightweight to start. For I/O-bound work — call five APIs, read many files — threads let the waits overlap so total time collapses toward the <em>slowest</em> call instead of the <em>sum</em>.</p></div>
+
+  <div class="def how"><span class="lab">How</span><p>Prefer a pool over hand-managing threads. <code class="inl">pool.map</code> runs a function over an iterable concurrently and returns results in order.</p></div>
+
+<pre><span class="k">from</span> concurrent.futures <span class="k">import</span> ThreadPoolExecutor
+<span class="k">import</span> time
+
+<span class="k">def</span> <span class="f">fake_io</span>(seconds):
+    time.sleep(seconds)          <span class="c"># releases the GIL -&gt; other threads run</span>
+    <span class="k">return</span> seconds
+
+tasks = [<span class="n">0.2</span>] * <span class="n">5</span>            <span class="c"># 5 × 0.2s = 1.0s if done one-by-one</span>
+start = time.perf_counter()
+<span class="k">with</span> ThreadPoolExecutor(max_workers=<span class="n">5</span>) <span class="k">as</span> pool:
+    results = <span class="f">list</span>(pool.map(fake_io, tasks))
+<span class="k">print</span>(time.perf_counter() - start)   <span class="c"># ≈ 0.2s — the waits overlapped</span></pre>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 210" role="img" aria-label="Thread pool overlapping I/O waits">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="230" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#7f1d1d">SERIAL — waits add up (1.0s)</text>
+        <text x="675" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">THREADS — waits overlap (~0.2s)</text>
+        <!-- serial -->
+        <g>
+          <rect x="45"  y="50" width="70" height="20" rx="4" fill="#94a3b8"/>
+          <rect x="120" y="50" width="70" height="20" rx="4" fill="#94a3b8"/>
+          <rect x="195" y="50" width="70" height="20" rx="4" fill="#94a3b8"/>
+          <rect x="270" y="50" width="70" height="20" rx="4" fill="#94a3b8"/>
+          <rect x="345" y="50" width="70" height="20" rx="4" fill="#94a3b8"/>
+          <line x1="45" y1="82" x2="415" y2="82" stroke="#9fb6d0"/><text x="415" y="96" text-anchor="end" font-size="9" fill="#5b6b7b">1.0s</text>
+        </g>
+        <!-- threaded -->
+        <g>
+          <rect x="490" y="44" width="70" height="18" rx="4" fill="#0ea5a4"/>
+          <rect x="490" y="66" width="70" height="18" rx="4" fill="#0ea5a4"/>
+          <rect x="490" y="88" width="70" height="18" rx="4" fill="#0ea5a4"/>
+          <rect x="490" y="110" width="70" height="18" rx="4" fill="#0ea5a4"/>
+          <rect x="490" y="132" width="70" height="18" rx="4" fill="#0ea5a4"/>
+          <line x1="490" y1="162" x2="860" y2="162" stroke="#9fb6d0"/><text x="565" y="176" text-anchor="middle" font-size="9" fill="#5b6b7b">~0.2s</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Figure 9.3 — Five I/O tasks run in a thread pool. Because each <code>sleep</code>/socket wait releases the GIL, the waits overlap and wall-clock time drops from 1.0s to ~0.2s. This is the whole point of threads.</figcaption>
+  </figure>
+
+  <div class="def when"><span class="lab">When</span><p>Reach for threads when work is <strong>I/O-bound</strong> and the fan-out is modest (tens to low hundreds). For thousands of concurrent connections, asyncio scales better (a thread costs ~MBs of stack). For CPU-bound work, don't — use processes.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — threads share memory, so bugs are shared too</div>
+  <p>Because threads share the same variables, two threads touching the same mutable object without a lock is a <strong>race condition</strong> (Section 5). The convenience of shared memory is exactly what makes threads dangerous. Rule: share as little mutable state as possible; hand data between threads with a <code class="inl">queue.Queue</code>.</p></div>
+
+  <div class="qa"><div class="q">Q · What's the difference between <code class="inl">pool.map</code> and submitting <code class="inl">Future</code>s?</div>
+  <p><code class="inl">map</code> is for a uniform function over an iterable and returns results in input order. <code class="inl">submit</code> returns a <code class="inl">Future</code> per call so you can attach callbacks, gather as they complete (<code class="inl">as_completed</code>), or cancel. Use <code class="inl">map</code> for simple fan-out, <code class="inl">submit</code> for heterogeneous tasks or streaming results.</p></div>
+
+  <div class="qa"><div class="q">Q · How many threads should a pool have?</div>
+  <p>For I/O-bound work, more than cores — sized to how many calls can be "in flight" without overwhelming the downstream (e.g. 20–100). For CPU-bound work threads don't help, so the answer is "use processes, sized to cores." Always bound the pool; unbounded threads exhaust memory and thrash.</p></div>
+
+  <!-- ===================== SECTION 4 : PROCESSES ===================== -->
+  <h2 class="sec" id="s4">4 · Processes</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">process</em> is an independent program with its own memory space and its own Python interpreter (and therefore its own GIL). Python exposes them via <code class="inl">multiprocessing</code> and <code class="inl">concurrent.futures.ProcessPoolExecutor</code> — the same API as thread pools, so switching is a one-line change.</p></div>
+
+  <div class="def why"><span class="lab">Why</span><p>Because separate interpreters mean <strong>real parallelism</strong>: four processes crunch numbers on four cores at once, bypassing the GIL entirely. This is the only way to make CPU-bound pure-Python code faster.</p></div>
+
+  <div class="def how"><span class="lab">How</span><p>Note the <em>identical</em> API — only the executor class changed:</p></div>
+
+<pre><span class="k">from</span> concurrent.futures <span class="k">import</span> ProcessPoolExecutor
+
+<span class="k">def</span> <span class="f">count_primes</span>(limit):
+    <span class="k">return</span> <span class="f">sum</span>(<span class="n">1</span> <span class="k">for</span> n <span class="k">in</span> <span class="f">range</span>(limit) <span class="k">if</span> <span class="f">is_prime</span>(n))
+
+<span class="k">with</span> ProcessPoolExecutor(max_workers=<span class="n">4</span>) <span class="k">as</span> pool:
+    total = <span class="f">sum</span>(pool.map(count_primes, [<span class="n">30_000</span>] * <span class="n">4</span>))   <span class="c"># 4 cores, ~4× faster</span></pre>
+
+  <div class="def when"><span class="lab">When</span><p>Use processes for <strong>CPU-bound</strong> work: parsing, compression, image/video, cryptography, ML preprocessing. Avoid them for tiny tasks — the cost of starting a process and <em>pickling</em> data across the boundary can exceed the work itself.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — everything crossing a process boundary is pickled</div>
+  <p>Processes don't share memory, so arguments and return values are <strong>serialized (pickled)</strong> and copied. Passing a 2&nbsp;GB DataFrame to each worker copies 2&nbsp;GB per worker. Unpicklable objects (open sockets, lambdas, local functions) raise errors. Design for <em>coarse</em> tasks that take chunks of data and return small results.</p></div>
+
+  <div class="box pitfall"><span class="ic">🚫</span><div class="h">Pitfall — missing the <code class="inl">__main__</code> guard on Windows</div>
+  <p>On Windows (and macOS <em>spawn</em>), child processes <strong>re-import your module</strong>. Without an <code class="inl">if __name__ == "__main__":</code> guard around the code that starts the pool, each child re-runs it, spawning children recursively until the machine falls over. Always launch process pools from inside the guard.</p></div>
+
+  <div class="vs"><table>
+    <tr><th class="j">Threads</th><th class="s">Processes</th></tr>
+    <tr><td>Share memory (cheap coordination, risky)</td><td>Isolated memory (safe, must copy/pickle)</td></tr>
+    <tr><td>One GIL — no CPU parallelism</td><td>One GIL each — true CPU parallelism</td></tr>
+    <tr><td>~KBs to start, thousands feasible</td><td>~MBs to start, sized to cores</td></tr>
+    <tr><td>Best for <strong>I/O-bound</strong></td><td>Best for <strong>CPU-bound</strong></td></tr>
+    <tr><td>Crash can corrupt shared state</td><td>Crash is isolated to one process</td></tr>
+  </table></div>
+
+  <div class="qa"><div class="q">Q · When would you pick a process pool over a thread pool?</div>
+  <p>When the work is CPU-bound. Threads can't run Python bytecode in parallel because of the GIL, so CPU work needs separate interpreters — processes. The trade-off is startup cost and pickling overhead, so processes pay off only when each task does meaningful work.</p></div>
+
+  <div class="qa"><div class="q">Q · What are the downsides of multiprocessing?</div>
+  <p>Higher memory (each process is a full interpreter), serialization cost and limits (data is pickled across the boundary), harder debugging, and no shared mutable state (you coordinate via queues, pipes, or shared-memory primitives). It's the right tool for CPU parallelism but heavier than threads.</p></div>
+
+  <!-- ===================== SECTION 5 : SYNC ===================== -->
+  <h2 class="sec" id="s5">5 · Race Conditions &amp; Synchronization</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">race condition</em> is a bug where the result depends on the unpredictable <em>timing</em> of overlapping operations. The classic case: <code class="inl">counter += 1</code> is not atomic — it's three steps (read, add, write). Two threads can both read the same value, both add one, and both write back — losing an update.</p></div>
+
+  <div class="def why"><span class="lab">Why it's dangerous</span><p>Because it's <strong>non-deterministic</strong>. The code passes every test on your laptop, then silently loses money/inventory/messages in production under load. You can't fix what you can't reliably reproduce — so you prevent it by design, with synchronization.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 210" role="img" aria-label="A lost-update race condition">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#7f1d1d">Two threads run counter += 1 (start value = 5)</text>
+        <text x="120" y="60" font-size="11" font-weight="700" fill="#0f2743">Thread A</text>
+        <text x="120" y="150" font-size="11" font-weight="700" fill="#0f2743">Thread B</text>
+        <rect x="210" y="42" width="120" height="26" rx="5" fill="#e0f2fe"/><text x="270" y="59" text-anchor="middle" font-size="9.5" fill="#0c4a6e">READ 5</text>
+        <rect x="360" y="42" width="120" height="26" rx="5" fill="#e0f2fe"/><text x="420" y="59" text-anchor="middle" font-size="9.5" fill="#0c4a6e">add → 6</text>
+        <rect x="510" y="42" width="150" height="26" rx="5" fill="#dcfce7"/><text x="585" y="59" text-anchor="middle" font-size="9.5" fill="#14532d">WRITE 6</text>
+        <rect x="285" y="132" width="120" height="26" rx="5" fill="#e0f2fe"/><text x="345" y="149" text-anchor="middle" font-size="9.5" fill="#0c4a6e">READ 5</text>
+        <rect x="435" y="132" width="120" height="26" rx="5" fill="#e0f2fe"/><text x="495" y="149" text-anchor="middle" font-size="9.5" fill="#0c4a6e">add → 6</text>
+        <rect x="640" y="132" width="150" height="26" rx="5" fill="#fee2e2"/><text x="715" y="149" text-anchor="middle" font-size="9.5" fill="#7f1d1d">WRITE 6 (!)</text>
+        <text x="450" y="196" text-anchor="middle" font-size="10" fill="#7f1d1d">Both read 5 before either wrote. Final value is 6, not 7 — one update was lost.</text>
+      </g>
+    </svg>
+    <figcaption>Figure 9.4 — The lost update. Because B read before A wrote, B overwrites A's result. A <code>Lock</code> makes read-add-write a single indivisible step so this can't happen.</figcaption>
+  </figure>
+
+  <h3 class="sub">Lock (mutex) — make a critical section atomic</h3>
+  <div class="def how"><span class="lab">How</span><p>A <em class="term">Lock</em> guarantees only one thread is inside the <em>critical section</em> at a time. Always use it with <code class="inl">with</code> so it's released even on exceptions.</p></div>
+
+<pre><span class="k">import</span> threading
+lock = threading.Lock()
+counter = <span class="n">0</span>
+
+<span class="k">def</span> <span class="f">increment</span>():
+    <span class="k">global</span> counter
+    <span class="k">with</span> lock:                 <span class="c"># only one thread inside at a time</span>
+        counter = counter + <span class="n">1</span>   <span class="c"># read-add-write is now atomic</span></pre>
+
+  <h3 class="sub">The synchronization toolbox</h3>
+  <table>
+    <tr><th>Primitive</th><th>What it does</th><th>Reach for it when…</th></tr>
+    <tr><td><code class="inl">Lock</code></td><td>One thread in the critical section at a time</td><td>Protecting shared mutable state</td></tr>
+    <tr><td><code class="inl">RLock</code></td><td>Re-entrant lock the <em>same</em> thread can acquire repeatedly</td><td>A locked method calls another locked method</td></tr>
+    <tr><td><code class="inl">Semaphore(n)</code></td><td>At most <em>n</em> threads in a region at once</td><td>Bounding concurrency (e.g. a connection pool of 10)</td></tr>
+    <tr><td><code class="inl">Event</code></td><td>One thread signals; others <code class="inl">wait()</code> until set</td><td>"Start now" / "config is ready" fan-out</td></tr>
+    <tr><td><code class="inl">Condition</code></td><td>Wait for a predicate, be notified on change</td><td>Bounded buffers, custom wait/notify</td></tr>
+    <tr><td><code class="inl">queue.Queue</code></td><td>Thread-safe FIFO handoff (locks built in)</td><td><strong>Almost always</strong> — the safest way to share work</td></tr>
+  </table>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">The senior default: don't share state — pass messages</div>
+  <p>Every lock you add is a chance to deadlock. The most robust concurrent designs avoid shared mutable state entirely and hand data between workers through a <code class="inl">queue.Queue</code> (threads) or <code class="inl">asyncio.Queue</code> (async). The queue does the locking for you. "Do not communicate by sharing memory; share memory by communicating."</p></div>
+
+  <h3 class="sub">Semaphore — a bounded connection pool</h3>
+<pre><span class="k">import</span> threading
+pool = threading.Semaphore(<span class="n">3</span>)   <span class="c"># at most 3 "connections" in use</span>
+
+<span class="k">def</span> <span class="f">query</span>(i):
+    <span class="k">with</span> pool:                  <span class="c"># blocks if 3 are already in use</span>
+        <span class="f">talk_to_db</span>(i)             <span class="c"># at most 3 concurrent DB calls</span></pre>
+
+  <div class="def when"><span class="lab">When to lock vs when to queue</span><p>Lock when many threads must touch <em>one</em> shared structure (a cache, a counter). Queue when you can model the work as a <em>pipeline</em> — producers put items, consumers get them. Prefer the queue; it's harder to misuse.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the lock that isn't protecting anything</div>
+  <p>A lock only helps if <strong>every</strong> access to the shared data takes the <em>same</em> lock. One code path that reads/writes the data without the lock reintroduces the race. Locks are a discipline, not a decoration — audit every access.</p></div>
+
+  <div class="qa"><div class="q">Q · What is a race condition and how do you prevent it?</div>
+  <p>A bug where correctness depends on timing of overlapping operations, typically an unsynchronized read-modify-write that loses updates. Prevent it by making the critical section atomic — a <code class="inl">Lock</code> — or by removing shared mutable state and passing data through a thread-safe queue.</p></div>
+
+  <div class="qa"><div class="q">Q · Lock vs RLock vs Semaphore?</div>
+  <p>A <code class="inl">Lock</code> allows one holder; a second acquire by the <em>same</em> thread deadlocks. An <code class="inl">RLock</code> is re-entrant — the owning thread can acquire it multiple times (needed when locked methods call each other). A <code class="inl">Semaphore(n)</code> allows up to <em>n</em> holders — used to bound concurrency, not to guarantee exclusivity.</p></div>
+
+  <div class="qa"><div class="q">Q · Is <code class="inl">counter += 1</code> thread-safe in Python? The GIL protects it, right?</div>
+  <p>No. The GIL guarantees one <em>bytecode</em> at a time, but <code class="inl">+=</code> compiles to several bytecodes (load, add, store) and the interpreter can switch threads between them. So the operation is not atomic and needs a lock. The GIL prevents interpreter corruption, not application-level races.</p></div>
+
+  <!-- ===================== SECTION 6 : DEADLOCK ===================== -->
+  <h2 class="sec" id="s6">6 · Deadlock, Livelock &amp; Starvation</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">deadlock</em> is when two or more threads each hold a lock the other needs and both wait forever. <em class="term">Livelock</em> — threads keep changing state in response to each other but make no progress (two people stepping side to side in a hallway). <em class="term">Starvation</em> — a thread never gets the resource because others keep jumping ahead.</p></div>
+
+  <div class="def why"><span class="lab">Why deadlocks happen — the four Coffman conditions</span><p>A deadlock needs <strong>all four</strong> at once: (1) <em>mutual exclusion</em> — resources aren't shareable; (2) <em>hold-and-wait</em> — a thread holds one while waiting for another; (3) <em>no preemption</em> — you can't force a lock away; (4) <em>circular wait</em> — a cycle of "A waits on B waits on A." Break <em>any one</em> and deadlock is impossible.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 210" role="img" aria-label="Circular wait deadlock">
+      <g font-family="Segoe UI,sans-serif">
+        <circle cx="280" cy="105" r="42" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/><text x="280" y="100" text-anchor="middle" font-size="12" font-weight="800" fill="#0c4a6e">Thread A</text><text x="280" y="118" text-anchor="middle" font-size="9" fill="#0c4a6e">holds Lock 1</text>
+        <circle cx="620" cy="105" r="42" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2"/><text x="620" y="100" text-anchor="middle" font-size="12" font-weight="800" fill="#4c1d95">Thread B</text><text x="620" y="118" text-anchor="middle" font-size="9" fill="#4c1d95">holds Lock 2</text>
+        <path d="M328,88 C430,50 500,50 578,88" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#ar)"/>
+        <text x="450" y="52" text-anchor="middle" font-size="9.5" fill="#7f1d1d">wants Lock 2</text>
+        <path d="M572,122 C470,160 430,160 328,122" fill="none" stroke="#dc2626" stroke-width="3" marker-end="url(#ar)"/>
+        <text x="450" y="176" text-anchor="middle" font-size="9.5" fill="#7f1d1d">wants Lock 1</text>
+        <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker></defs>
+        <text x="450" y="105" text-anchor="middle" font-size="11" font-weight="800" fill="#dc2626">💀 circular wait</text>
+      </g>
+    </svg>
+    <figcaption>Figure 9.5 — Classic deadlock: A holds Lock&nbsp;1 and wants Lock&nbsp;2; B holds Lock&nbsp;2 and wants Lock&nbsp;1. Neither yields. The fix breaks the cycle with a global lock ordering.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How to fix — global lock ordering</span><p>The most practical fix breaks <em>circular wait</em>: define one global order for acquiring locks and have <strong>every</strong> thread acquire in that order. If everyone takes Lock&nbsp;1 before Lock&nbsp;2, no cycle can form.</p></div>
+
+<pre><span class="c"># DEADLOCK: A takes L1→L2, B takes L2→L1</span>
+<span class="c"># FIX: everyone acquires in a fixed global order (by id) </span>
+first, second = <span class="f">sorted</span>((lock_a, lock_b), key=<span class="f">id</span>)
+<span class="k">with</span> first:
+    <span class="k">with</span> second:
+        transfer(...)              <span class="c"># no cycle is possible</span></pre>
+
+  <div class="def when"><span class="lab">Other tactics</span><p>Break a different condition instead: use <code class="inl">acquire(timeout=…)</code> and back off (breaks <em>no-preemption</em>); grab all needed locks at once or none (breaks <em>hold-and-wait</em>); or best of all, use a single lock or a queue so there's nothing to order.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — deadlocks hide until load</div>
+  <p>A two-lock deadlock may need a precise interleaving that only shows up under production concurrency. It won't appear in a single-threaded test. Defend at design time: minimize locks, enforce ordering, add timeouts, and prefer queues. "It worked in testing" is not evidence of freedom from deadlock.</p></div>
+
+  <div class="qa"><div class="q">Q · What are the four conditions for deadlock, and how do you prevent one?</div>
+  <p>Mutual exclusion, hold-and-wait, no preemption, and circular wait — all four must hold. Prevent by breaking any one: impose a global lock ordering (kills circular wait), acquire-all-or-none (kills hold-and-wait), use lock timeouts/back-off (adds preemption), or avoid multiple locks entirely.</p></div>
+
+  <div class="qa"><div class="q">Q · Deadlock vs livelock vs starvation?</div>
+  <p>Deadlock — everyone is blocked forever (no progress, no CPU). Livelock — everyone is active but keeps reacting to each other and still makes no progress (busy, no CPU idle). Starvation — some threads progress but one is perpetually denied the resource by unfair scheduling.</p></div>
+
+  <!-- ===================== SECTION 7 : ASYNCIO ===================== -->
+  <h2 class="sec" id="s7">7 · Asyncio — Single-Threaded Concurrency</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Asyncio</em> runs thousands of tasks on <strong>one thread</strong> using an <em class="term">event loop</em> and <em>cooperative multitasking</em>. A <code class="inl">async def</code> function is a <em class="term">coroutine</em>; it runs until it hits <code class="inl">await</code> on something slow (I/O), then <em>voluntarily yields</em> control back to the loop, which runs another ready coroutine. When the I/O completes, the loop resumes the first one.</p></div>
+
+  <div class="def why"><span class="lab">Why</span><p>Because a thread costs megabytes of stack, so tens of thousands of threads are impractical — but tens of thousands of coroutines are cheap. For servers juggling huge numbers of mostly-idle connections (web sockets, chat, proxies, scrapers), asyncio scales where threads can't, with <strong>no locks needed for CPU state</strong> (only one coroutine runs at a time).</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 220" role="img" aria-label="The asyncio event loop">
+      <g font-family="Segoe UI,sans-serif">
+        <circle cx="160" cy="110" r="70" fill="none" stroke="#0ea5a4" stroke-width="10"/>
+        <path d="M160,40 A70,70 0 0 1 220,145" fill="none" stroke="#7c3aed" stroke-width="10" stroke-linecap="round"/>
+        <text x="160" y="106" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">event</text>
+        <text x="160" y="124" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">loop</text>
+        <text x="160" y="200" text-anchor="middle" font-size="9" fill="#5b6b7b">one thread, one loop</text>
+        <!-- ready queue of tasks -->
+        <text x="430" y="46" font-size="10" font-weight="700" fill="#0f2743">ready tasks</text>
+        <rect x="360" y="56" width="90" height="26" rx="5" fill="#0ea5a4"/><text x="405" y="73" text-anchor="middle" font-size="9" fill="#fff">coro A</text>
+        <rect x="360" y="90" width="90" height="26" rx="5" fill="#7c3aed"/><text x="405" y="107" text-anchor="middle" font-size="9" fill="#fff">coro B</text>
+        <rect x="360" y="124" width="90" height="26" rx="5" fill="#0284c7"/><text x="405" y="141" text-anchor="middle" font-size="9" fill="#fff">coro C</text>
+        <!-- waiting on IO -->
+        <text x="640" y="46" font-size="10" font-weight="700" fill="#0f2743">awaiting I/O (parked)</text>
+        <rect x="590" y="56" width="150" height="26" rx="5" fill="#e5e7eb"/><text x="665" y="73" text-anchor="middle" font-size="9" fill="#5b6b7b">coro D — await db</text>
+        <rect x="590" y="90" width="150" height="26" rx="5" fill="#e5e7eb"/><text x="665" y="107" text-anchor="middle" font-size="9" fill="#5b6b7b">coro E — await http</text>
+        <path d="M455,69 C520,69 540,69 588,69" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar2)"/>
+        <text x="520" y="60" text-anchor="middle" font-size="8" fill="#5b6b7b">await → park</text>
+        <path d="M588,120 C540,150 500,150 452,138" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#ar2)"/>
+        <text x="520" y="160" text-anchor="middle" font-size="8" fill="#16a34a">I/O done → ready</text>
+        <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 9.6 — The event loop runs one ready coroutine until it <code>await</code>s I/O, which parks it; when the I/O completes the coroutine becomes ready again. All on a single thread — cooperative, not preemptive.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How</span><p><code class="inl">asyncio.gather</code> schedules many coroutines and awaits them together — the waits overlap just like a thread pool, but on one thread.</p></div>
+
+<pre><span class="k">import</span> asyncio
+
+<span class="k">async def</span> <span class="f">fetch</span>(name, delay):
+    <span class="k">await</span> asyncio.sleep(delay)          <span class="c"># non-blocking wait -&gt; loop runs others</span>
+    <span class="k">return</span> name
+
+<span class="k">async def</span> <span class="f">main</span>():
+    results = <span class="k">await</span> asyncio.gather(          <span class="c"># run concurrently on ONE thread</span>
+        fetch(<span class="s">"a"</span>, <span class="n">0.1</span>), fetch(<span class="s">"b"</span>, <span class="n">0.1</span>), fetch(<span class="s">"c"</span>, <span class="n">0.1</span>),
+    )
+    <span class="k">return</span> results                        <span class="c"># ~0.1s total, not 0.3s</span>
+
+asyncio.run(main())</pre>
+
+  <div class="def when"><span class="lab">When</span><p>Use asyncio for <strong>high-concurrency I/O</strong>: API gateways, web servers (FastAPI), scrapers, chat/websocket servers, anything with thousands of mostly-waiting connections. Do <em>not</em> use it for CPU-bound work — a coroutine that computes without awaiting freezes the entire loop (see the golden rule below).</p></div>
+
+  <div class="box pitfall"><span class="ic">🚫</span><div class="h">The golden rule of asyncio — never block the loop</div>
+  <p>Because it's one thread, a single blocking call (<code class="inl">time.sleep</code>, a synchronous <code class="inl">requests.get</code>, a heavy CPU loop) <strong>freezes every coroutine</strong> — all your users stall together. Use <code class="inl">await asyncio.sleep</code>, an async HTTP client (<code class="inl">httpx</code>/<code class="inl">aiohttp</code>), and offload CPU work with <code class="inl">loop.run_in_executor(...)</code> to a thread or process pool.</p></div>
+
+  <div class="box insight"><span class="ic">✅</span><div class="h">Async locks &amp; queues exist too</div>
+  <p>Even single-threaded, you still need coordination when a critical section <em>spans an await</em> (control can switch there). Use <code class="inl">asyncio.Lock</code> for that, and <code class="inl">asyncio.Queue</code> for producer/consumer pipelines — same ideas as threads, async-flavored.</p></div>
+
+  <div class="vs"><table>
+    <tr><th class="s">Threads</th><th class="s">Asyncio</th></tr>
+    <tr><td>Preemptive — OS switches anytime</td><td>Cooperative — switches only at <code class="inl">await</code></td></tr>
+    <tr><td>Races anywhere; need locks broadly</td><td>Races only across <code class="inl">await</code>; fewer locks</td></tr>
+    <tr><td>~MBs per thread; hundreds practical</td><td>~KBs per task; tens of thousands practical</td></tr>
+    <tr><td>Works with any blocking library</td><td>Needs async-aware libraries end-to-end</td></tr>
+  </table></div>
+
+  <div class="qa"><div class="q">Q · How does asyncio achieve concurrency on a single thread?</div>
+  <p>With an event loop and cooperative multitasking. Coroutines run until they <code class="inl">await</code> something slow, then yield control to the loop, which runs other ready coroutines. When the awaited I/O completes, the loop resumes the coroutine. No OS thread switching, no GIL fight — just overlapping the waiting.</p></div>
+
+  <div class="qa"><div class="q">Q · What happens if you call a blocking function inside a coroutine?</div>
+  <p>It blocks the entire event loop — every other coroutine stalls until it returns, because they all share one thread. Fix by using async equivalents (<code class="inl">asyncio.sleep</code>, async HTTP/DB clients) or offloading blocking/CPU work to a thread or process pool via <code class="inl">run_in_executor</code>.</p></div>
+
+  <div class="qa"><div class="q">Q · Do you still need locks in asyncio?</div>
+  <p>Sometimes. Only one coroutine runs at a time, so simple operations are safe — but if a critical section spans an <code class="inl">await</code>, control can switch mid-way and another coroutine can observe half-updated state. Use <code class="inl">asyncio.Lock</code> for those, or an <code class="inl">asyncio.Queue</code> to avoid shared state.</p></div>
+
+  <!-- ===================== SECTION 8 : DECISION ===================== -->
+  <h2 class="sec" id="s8">8 · Choosing the Right Model</h2>
+
+  <p>The whole book compresses into one decision. Memorize this table and you can defend any concurrency choice in an interview.</p>
+
+  <table>
+    <tr><th>Your workload</th><th>Reach for</th><th>Why</th></tr>
+    <tr><td>I/O-bound, modest fan-out (few APIs, some files)</td><td><code class="inl">ThreadPoolExecutor</code></td><td>Threads overlap the waiting; shared memory is convenient</td></tr>
+    <tr><td>I/O-bound, huge fan-out (10k+ connections)</td><td><code class="inl">asyncio</code></td><td>Coroutines are far cheaper than threads; scales to tens of thousands</td></tr>
+    <tr><td>CPU-bound (parsing, math, images, crypto)</td><td><code class="inl">ProcessPoolExecutor</code></td><td>Separate interpreters bypass the GIL for true parallelism</td></tr>
+    <tr><td>Mixed (CPU work inside an async server)</td><td>asyncio + <code class="inl">run_in_executor</code></td><td>Keep the loop responsive; offload the heavy part to a pool</td></tr>
+    <tr><td>Sharing work between workers</td><td>a <code class="inl">Queue</code></td><td>Thread/async-safe handoff — avoids most locks entirely</td></tr>
+  </table>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 230" role="img" aria-label="Concurrency decision tree">
+      <g font-family="Segoe UI,sans-serif" font-size="10">
+        <rect x="360" y="12" width="180" height="34" rx="8" fill="#0f2743"/><text x="450" y="34" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">Is it waiting or computing?</text>
+        <path d="M420,46 L250,86" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar3)"/>
+        <path d="M480,46 L650,86" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar3)"/>
+        <text x="300" y="70" font-size="9" fill="#5b6b7b" font-weight="700">WAITING (I/O)</text>
+        <text x="600" y="70" font-size="9" fill="#5b6b7b" font-weight="700">COMPUTING (CPU)</text>
+        <rect x="150" y="90" width="220" height="34" rx="8" fill="#0284c7"/><text x="260" y="112" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">How many at once?</text>
+        <rect x="560" y="90" width="230" height="34" rx="8" fill="#7c3aed"/><text x="675" y="112" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">ProcessPoolExecutor</text>
+        <path d="M210,124 L150,168" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar3)"/>
+        <path d="M310,124 L370,168" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar3)"/>
+        <text x="150" y="150" font-size="9" fill="#5b6b7b">tens–hundreds</text>
+        <text x="400" y="150" font-size="9" fill="#5b6b7b" text-anchor="end">thousands+</text>
+        <rect x="60" y="172" width="200" height="34" rx="8" fill="#0ea5a4"/><text x="160" y="194" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">ThreadPoolExecutor</text>
+        <rect x="300" y="172" width="150" height="34" rx="8" fill="#16a34a"/><text x="375" y="194" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">asyncio</text>
+        <defs><marker id="ar3" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 9.7 — The 15-second decision: waiting → threads (few) or asyncio (many); computing → processes. When you must share, reach for a queue before a lock.</figcaption>
+  </figure>
+
+  <div class="takeaway"><span class="h">🎯 Key takeaways</span>
+  <ul class="tick" style="margin-top:6px">
+    <li><strong>Concurrency ≠ parallelism.</strong> Concurrency overlaps tasks (can be one core); parallelism runs them at once on many cores.</li>
+    <li><strong>The GIL</strong> lets one thread run Python bytecode at a time — so threads help I/O (waits release it) but never CPU work.</li>
+    <li><strong>Threads for waiting, processes for computing, asyncio for massive I/O fan-out.</strong></li>
+    <li><strong>Race conditions</strong> come from unsynchronized shared state; fix with a <code class="inl">Lock</code> — or avoid shared state with a <code class="inl">Queue</code>.</li>
+    <li><strong>Deadlock</strong> needs all four Coffman conditions; break one — usually with a global lock ordering.</li>
+    <li><strong>Asyncio's golden rule:</strong> never block the loop; offload CPU/blocking work with <code class="inl">run_in_executor</code>.</li>
+    <li>Every idea here is runnable in <code class="inl">09-concurrency/examples/</code> — go break it, then fix it.</li>
+  </ul></div>
+</section>
+
+</body>
+</html>

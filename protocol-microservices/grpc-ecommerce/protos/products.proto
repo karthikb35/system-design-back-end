@@ -1,0 +1,55 @@
+// Products service contract.
+syntax = "proto3";
+
+package products;
+
+service ProductService {
+  rpc CreateProduct(CreateProductRequest) returns (ProductReply);
+  rpc GetProduct(GetProductRequest) returns (ProductReply);
+  rpc ListProducts(ListProductsRequest) returns (ListProductsReply);
+  // Called by the Orders service during checkout to decrement inventory.
+  rpc ReserveStock(ReserveStockRequest) returns (ProductReply);
+  // Compensating action: return previously-reserved units when a checkout fails.
+  rpc ReleaseStock(ReleaseStockRequest) returns (ProductReply);
+}
+
+message CreateProductRequest {
+  string sku = 1;
+  string name = 2;
+  string description = 3;
+  // Money is an integer number of cents — never a float.
+  int64 price_cents = 4;
+  int32 stock = 5;
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message ListProductsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ReserveStockRequest {
+  string id = 1;
+  int32 quantity = 2;
+}
+
+message ReleaseStockRequest {
+  string id = 1;
+  int32 quantity = 2;
+}
+
+message ProductReply {
+  string id = 1;
+  string sku = 2;
+  string name = 3;
+  string description = 4;
+  int64 price_cents = 5;
+  int32 stock = 6;
+}
+
+message ListProductsReply {
+  repeated ProductReply products = 1;
+}

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Backend in Production — The Architect's Path, Book VI</title>
+<link rel="stylesheet" href="architects-path.css">
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <div>
+    <div class="kicker">The Architect's Path · Book VI · Edition 2026</div>
+    <h1>Backend in<br>Production</h1>
+    <div class="sub">Where the code meets the <strong style="color:#8ff4ee">real world</strong>: FastAPI at scale, databases that don't fall over, observability that lets you sleep, and event-driven systems that stay decoupled. Every chapter is a <strong style="color:#8ff4ee">junior footgun</strong> and the <strong style="color:#8ff4ee">senior refactor</strong>.</div>
+    <div class="stackrow">⚡ FastAPI · 🗄️ Databases · 🔭 Observability · 📣 Events &amp; Kafka</div>
+    <div class="badges">
+      <span class="badge">⚡ Async done right</span>
+      <span class="badge">📑 Cursor pagination</span>
+      <span class="badge">🔁 Retries &amp; breakers</span>
+      <span class="badge">🧮 N+1 &amp; pooling</span>
+      <span class="badge">🔭 Logs · metrics · traces</span>
+      <span class="badge">📦 Outbox &amp; idempotency</span>
+      <span class="badge">📣 Kafka &amp; sagas</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div><strong style="color:#eaf2fb">Every pathology is a script you can run and measure.</strong><br>Companion code in pillars <code style="color:#cfe0d6">05</code>–<code style="color:#cfe0d6">08</code>.</div>
+    <div style="text-align:right">Anti-pattern → Refactor<br>Diagrams · Gotchas · Interview Q&amp;A</div>
+  </div>
+</section>
+
+<!-- ============================ TOC ============================ -->
+<section class="toc">
+  <h2>Table of Contents</h2>
+  <div class="rule"></div>
+  <p class="small">Book VI takes the theory of Book V and makes it operational. This is the engineering that runs at 3&nbsp;a.m.: the FastAPI event loop, the database round-trips, the logs you'll grep during an incident, and the message bus that keeps services decoupled. Each section is an <strong>anti-pattern → refactor</strong>, then code, gotchas, and interview questions.</p>
+  <ol>
+    <li><span class="n">1</span><div><div class="tt"><a href="#s1">The FastAPI Event Loop</a></div><div class="dd">async vs sync · the blocking-call footgun · threadpool offload</div></div><span class="ic">⚡</span></li>
+    <li><span class="n">2</span><div><div class="tt"><a href="#s2">API Design at Scale</a></div><div class="dd">validation · pagination (offset vs cursor) · versioning · idempotency</div></div><span class="ic">📑</span></li>
+    <li><span class="n">3</span><div><div class="tt"><a href="#s3">Resilient Service Calls</a></div><div class="dd">timeouts · retries · backoff+jitter · circuit breaker</div></div><span class="ic">🔁</span></li>
+    <li><span class="n">4</span><div><div class="tt"><a href="#s4">Talking to the Database</a></div><div class="dd">N+1 · connection pooling · transactions · indexing</div></div><span class="ic">🗄️</span></li>
+    <li><span class="n">5</span><div><div class="tt"><a href="#s5">Scaling the Data Tier</a></div><div class="dd">read replicas · read/write routing · sharding · migrations</div></div><span class="ic">🧱</span></li>
+    <li><span class="n">6</span><div><div class="tt"><a href="#s6">Reliable Writes &amp; Events</a></div><div class="dd">the dual-write problem · transactional outbox · at-least-once</div></div><span class="ic">📦</span></li>
+    <li><span class="n">7</span><div><div class="tt"><a href="#s7">Observability</a></div><div class="dd">structured logs · correlation IDs · RED metrics · traces · the ELK stack</div></div><span class="ic">🔭</span></li>
+    <li><span class="n">8</span><div><div class="tt"><a href="#s8">Event-Driven Systems &amp; Kafka</a></div><div class="dd">brokers · partitions &amp; offsets · idempotent consumers · sagas</div></div><span class="ic">📣</span></li>
+    <li><span class="n">9</span><div><div class="tt"><a href="#s9">Deployment &amp; Operations</a></div><div class="dd">containers · health checks · config &amp; secrets · zero-downtime deploys</div></div><span class="ic">🚀</span></li>
+    <li><span class="n">10</span><div><div class="tt"><a href="#s10">The Production Readiness Checklist</a></div><div class="dd">SLOs · graceful shutdown · load shedding · the on-call mindset</div></div><span class="ic">✅</span></li>
+  </ol>
+  <div class="subitems">Runnable code: <code>pagination.py</code> · <code>retry_backoff.py</code> · <code>connection_pool.py</code> · <code>outbox_pattern.py</code> · <code>structured_logging.py</code> · <code>event_sourcing_cqrs.py</code> · <code>saga.py</code> · <code>idempotent_consumer.py</code></div>
+</section>
+
+<!-- ============================ CHAPTER SHELL ============================ -->
+<section class="chapter" id="s0">
+  <div class="ch-head">
+    <div class="num">🛠️</div>
+    <div><div class="t">Backend in Production</div>
+    <div class="s">The engineering that keeps a service fast, correct, and observable under real load</div></div>
+    <div class="ico">🛠️</div>
+  </div>
+
+  <p class="lead">Books I–V taught you to write correct code and design sound systems. This book is about what happens when that code meets <strong>production traffic, real databases, flaky networks, and a pager</strong>. The theme throughout is the same one that runs through the whole repo: a <strong>junior anti-pattern</strong> that works fine in local testing and quietly detonates under load, and the <strong>senior refactor</strong> that survives. You'll measure the pathologies yourself — the frozen event loop, the N+1 query, the deep-page scan, the retry storm — because seeing the number is what makes the lesson stick.</p>
+
+  <div class="coderef"><div class="h">📂 Runnable code in the repo</div><p style="margin:0 0 3px">Each pathology in this book is a working, self-testing script — run with <span class="path">python &lt;file&gt;</span>:</p>
+  <ul>
+    <li><span class="path">05-fastapi-advanced/production_code.py</span> — the blocking-<code>async</code> footgun vs threadpool offload</li>
+    <li><span class="path">05-fastapi-advanced/examples/pagination.py</span> — offset vs cursor pagination (measures the deep-page scan)</li>
+    <li><span class="path">05-fastapi-advanced/examples/retry_backoff.py</span> — backoff + jitter + circuit breaker (fake clock)</li>
+    <li><span class="path">07-database-scaling/production_code.py</span> — the N+1 query + read routing</li>
+    <li><span class="path">07-database-scaling/examples/connection_pool.py</span> — pooling, leak-safety, exhaustion</li>
+    <li><span class="path">07-database-scaling/examples/outbox_pattern.py</span> — the transactional outbox (no lost events)</li>
+    <li><span class="path">06-elk-monitoring/production_code.py</span> · <span class="path">examples/structured_logging.py</span> — JSON logs, correlation IDs, RED metrics</li>
+    <li><span class="path">08-event-driven-systems/examples/idempotent_consumer.py</span> · <span class="path">saga.py</span> · <span class="path">event_sourcing_cqrs.py</span></li>
+  </ul></div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">Production is where "works on my machine" goes to die</div>
+  <p>Almost every incident in this book has the same shape: code that is correct for <em>one</em> request on <em>one</em> machine with a <em>fast</em> dependency, that breaks when there are thousands of concurrent requests, a slow replica, or a partial failure. Senior engineering is designing for the <strong>concurrent, failing, observable</strong> case from the start — and being able to prove it with a number.</p></div>
+
+  <!-- ===================== 1 : EVENT LOOP ===================== -->
+  <h2 class="sec" id="s1">1 · The FastAPI Event Loop</h2>
+
+  <div class="def what"><span class="lab">What</span><p>FastAPI runs <code class="inl">async def</code> routes on a single-threaded <em class="term">event loop</em>. The loop serves many requests concurrently by switching between them whenever one <code class="inl">await</code>s I/O. A <em class="term">blocking call</em> — <code class="inl">time.sleep</code>, a synchronous DB driver, <code class="inl">requests</code>, heavy CPU — inside an async route holds the loop and stalls <strong>every other request</strong>.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because this is the number-one FastAPI production footgun, and it's invisible in local testing where you send one request at a time. Under concurrency the throughput collapses: while one route blocks, not even a trivial <code class="inl">/health</code> can respond. The fix is to either <code class="inl">await</code> genuinely-async I/O, offload the blocking work to a threadpool, or make the route a plain <code class="inl">def</code>.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 190" role="img" aria-label="Blocking call freezing the event loop">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="230" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#b91c1c">❌ blocking call in async route</text>
+        <text x="670" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">✅ offload / await — loop stays free</text>
+        <line x1="60" y1="70" x2="400" y2="70" stroke="#94a3b8" stroke-width="2"/>
+        <rect x="80" y="58" width="230" height="24" rx="4" fill="#fee2e2" stroke="#dc2626"/><text x="195" y="74" text-anchor="middle" font-size="9" fill="#7f1d1d">req A blocks the loop (time.sleep)</text>
+        <rect x="80" y="92" width="230" height="16" rx="3" fill="#fca5a5"/><text x="195" y="104" text-anchor="middle" font-size="8" fill="#7f1d1d">req B, C, /health — all WAITING</text>
+        <text x="230" y="132" text-anchor="middle" font-size="8.5" fill="#b91c1c">throughput ≈ 1 request at a time</text>
+        <line x1="500" y1="70" x2="840" y2="70" stroke="#94a3b8" stroke-width="2"/>
+        <rect x="510" y="58" width="70" height="16" rx="3" fill="#dcfce7" stroke="#16a34a"/><text x="545" y="70" text-anchor="middle" font-size="7.5" fill="#14532d">A await</text>
+        <rect x="588" y="58" width="70" height="16" rx="3" fill="#dcfce7" stroke="#16a34a"/><text x="623" y="70" text-anchor="middle" font-size="7.5" fill="#14532d">B await</text>
+        <rect x="666" y="58" width="70" height="16" rx="3" fill="#dcfce7" stroke="#16a34a"/><text x="701" y="70" text-anchor="middle" font-size="7.5" fill="#14532d">C await</text>
+        <rect x="744" y="58" width="86" height="16" rx="3" fill="#dcfce7" stroke="#16a34a"/><text x="787" y="70" text-anchor="middle" font-size="7.5" fill="#14532d">/health</text>
+        <text x="670" y="104" text-anchor="middle" font-size="8.5" fill="#14532d">loop interleaves — all served concurrently</text>
+        <text x="670" y="132" text-anchor="middle" font-size="8.5" fill="#14532d">throughput scales with concurrency</text>
+      </g>
+    </svg>
+    <figcaption>Figure 6.1 — One blocking call in an async route holds the single event loop, so every other request (even <code>/health</code>) waits its turn. Offloading to a threadpool — or awaiting real async I/O — lets the loop interleave requests and serve them concurrently. Measured in <code>05-fastapi-advanced/production_code.py</code>.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — the refactor</span></div>
+<pre><span class="c"># ❌ freezes the loop for EVERYONE while it sleeps</span>
+<span class="nd">@app.get</span>(<span class="s">"/junior/report"</span>)
+<span class="k">async def</span> <span class="f">report_junior</span>():
+    result = _blocking_io()                      <span class="c"># blocking call in async route</span>
+    <span class="k">return</span> {<span class="s">"result"</span>: result}
+
+<span class="c"># ✅ offload the blocking call so the loop keeps serving others</span>
+<span class="nd">@app.get</span>(<span class="s">"/senior/report"</span>)
+<span class="k">async def</span> <span class="f">report_senior</span>():
+    result = <span class="k">await</span> run_in_threadpool(_blocking_io)
+    <span class="k">return</span> {<span class="s">"result"</span>: result}</pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — a plain <code class="inl">def</code> route is safe; an <code class="inl">async def</code> with blocking I/O is not</div>
+  <p>Counter-intuitively, if your route must do blocking work, a synchronous <code class="inl">def</code> route is <em>safer</em> than an <code class="inl">async def</code> one: FastAPI automatically runs <code class="inl">def</code> routes in a threadpool, so they don't block the loop. The danger is specifically blocking work inside <code class="inl">async def</code>. Rule of thumb: if you can't <code class="inl">await</code> it, either offload it or make the route <code class="inl">def</code>.</p></div>
+
+  <div class="qa"><div class="q">Q · Why does a blocking call in an <code class="inl">async def</code> route hurt so much?</div>
+  <p>Async routes share one event loop thread. The loop only switches tasks at <code class="inl">await</code> points, so a blocking call (no <code class="inl">await</code>) holds the thread for its full duration, during which no other request — including health checks — can run. It looks fine under single-request testing and collapses under concurrency. Fix by awaiting async I/O, offloading to a threadpool, or using a <code class="inl">def</code> route.</p></div>
+
+  <div class="qa"><div class="q">Q · When would you deliberately use a synchronous <code class="inl">def</code> route?</div>
+  <p>When the work is inherently blocking (a sync DB driver, a CPU-bound computation, a legacy library with no async API). FastAPI runs <code class="inl">def</code> routes in a threadpool automatically, keeping the event loop free. Reserve <code class="inl">async def</code> for routes that actually <code class="inl">await</code> async I/O end-to-end.</p></div>
+
+  <!-- ===================== 2 : API DESIGN ===================== -->
+  <h2 class="sec" id="s2">2 · API Design at Scale</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The contract your service exposes: request <em class="term">validation</em> (Pydantic models at the boundary), <em class="term">pagination</em> (how clients page through large result sets), <em class="term">versioning</em> (evolving without breaking clients), and <em class="term">idempotency</em> (safe retries for writes). The headline decision at scale is <strong>offset vs cursor (keyset)</strong> pagination.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because <code class="inl">LIMIT ? OFFSET ?</code> pagination degrades the deeper clients page — the database must scan and discard every skipped row — and it can skip or duplicate rows when data changes between requests. Cursor pagination (<code class="inl">WHERE id &gt; last_seen</code>) does constant work per page and returns stable results. On a large table this is a 1000× difference, measured in the companion script.</p></div>
+
+  <table>
+    <tr><th>Pagination</th><th>Deep-page cost</th><th>Stability</th><th>Random access</th></tr>
+    <tr><td>Offset (<code class="inl">LIMIT/OFFSET</code>)</td><td>O(offset) — scans skipped rows</td><td>skips/dupes on insert</td><td>yes ("go to page 50")</td></tr>
+    <tr><td>Cursor / keyset</td><td>O(limit) — constant</td><td>stable</td><td>no (next/prev only)</td></tr>
+  </table>
+
+  <div class="def how"><span class="lab">How — keyset beats offset</span></div>
+<pre><span class="c"># ❌ OFFSET: the DB scans and throws away every skipped row</span>
+SELECT * FROM items ORDER BY id LIMIT <span class="n">20</span> OFFSET <span class="n">180000</span>;   <span class="c"># scans 180,020</span>
+
+<span class="c"># ✅ KEYSET: seek straight to the cursor via the index</span>
+SELECT * FROM items WHERE id &gt; <span class="n">180000</span> ORDER BY id LIMIT <span class="n">20</span>;   <span class="c"># touches 20</span></pre>
+
+  <div class="coderef"><div class="h">📂 Measured in the repo</div>
+  <ul><li><span class="path">05-fastapi-advanced/examples/pagination.py</span> — deep page: OFFSET scans 180,020 rows for 20 results; KEYSET touches 20 (~9000× cheaper), and keyset stays O(limit) per page at any depth.</li></ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — validate at the boundary, and cap the page size</div>
+  <p>Trust nothing from the client. Use a Pydantic model to validate and coerce input at the edge, and <em>always</em> cap <code class="inl">limit</code> (e.g., max 100) — otherwise a client asking for <code class="inl">limit=10000000</code> can OOM your service or melt the database. Reject early with a 422, before any business logic runs.</p></div>
+
+  <div class="qa"><div class="q">Q · Offset vs cursor pagination — when each?</div>
+  <p>Cursor (keyset) for large datasets and infinite-scroll feeds: constant cost per page and stable under concurrent inserts, but no random page jumps. Offset for small/bounded datasets or admin UIs that need "jump to page N," accepting that deep pages get slow and results can shift. Most high-scale public APIs use cursors.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you version an API without breaking clients?</div>
+  <p>Prefer additive, backward-compatible changes (new optional fields, new endpoints) so existing clients keep working. For breaking changes, version explicitly (URL path <code class="inl">/v2/…</code> or a header), run old and new side by side during migration, and deprecate on a published timeline. Never repurpose or remove an existing field's meaning in place.</p></div>
+
+  <!-- ===================== 3 : RESILIENT CALLS ===================== -->
+  <h2 class="sec" id="s3">3 · Resilient Service Calls</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The discipline of calling other services safely: a <em class="term">timeout</em> on every call (never wait forever), bounded <em class="term">retries</em> with <em class="term">exponential backoff + jitter</em>, and a <em class="term">circuit breaker</em> that stops calling a dependency that's clearly down. Together they turn "a dependency is struggling" into "we degrade gracefully" instead of "we amplify the outage."</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because naive retries are how a small blip becomes a full outage. When a service slows, clients retrying immediately multiply the load — a <em>retry storm</em> that keeps the struggling dependency down. Backoff+jitter spaces retries out; a circuit breaker gives a dead dependency room to recover instead of pounding it.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 175" role="img" aria-label="Circuit breaker state machine">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">Circuit breaker: closed → open → half-open</text>
+        <circle cx="150" cy="95" r="42" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="150" y="92" text-anchor="middle" font-size="10" font-weight="700" fill="#14532d">CLOSED</text><text x="150" y="106" text-anchor="middle" font-size="7.5" fill="#14532d">calls pass</text>
+        <circle cx="450" cy="95" r="42" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/><text x="450" y="92" text-anchor="middle" font-size="10" font-weight="700" fill="#7f1d1d">OPEN</text><text x="450" y="106" text-anchor="middle" font-size="7.5" fill="#7f1d1d">fail fast</text>
+        <circle cx="750" cy="95" r="42" fill="#fef3c7" stroke="#d97706" stroke-width="2"/><text x="750" y="90" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b45309">HALF-OPEN</text><text x="750" y="104" text-anchor="middle" font-size="7.5" fill="#b45309">one probe</text>
+        <path d="M192,95 L408,95" stroke="#dc2626" stroke-width="1.8" marker-end="url(#ar)"/><text x="300" y="88" text-anchor="middle" font-size="8" fill="#7f1d1d">N failures</text>
+        <path d="M492,80 C580,40 660,50 720,66" stroke="#d97706" stroke-width="1.8" fill="none" marker-end="url(#ar)"/><text x="600" y="45" text-anchor="middle" font-size="8" fill="#b45309">cooldown elapsed</text>
+        <path d="M720,120 C640,150 250,150 165,132" stroke="#16a34a" stroke-width="1.8" fill="none" marker-end="url(#ar)"/><text x="450" y="160" text-anchor="middle" font-size="8" fill="#14532d">probe succeeds → reset</text>
+        <path d="M760,138 C800,150 810,110 792,98" stroke="#dc2626" stroke-width="1.5" fill="none" marker-end="url(#ar)"/><text x="828" y="130" text-anchor="middle" font-size="7.5" fill="#7f1d1d">probe fails</text>
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 6.2 — The circuit breaker as a state machine. Closed lets calls through; after N failures it trips open and fails fast (sparing the dependency); after a cooldown it goes half-open and lets one probe through — success closes it, failure re-opens. Implemented with a fake clock in <code>retry_backoff.py</code>.</figcaption>
+  </figure>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — retries without jitter synchronize the storm</div>
+  <p>Even <em>with</em> exponential backoff, if every client uses the same delays they all retry at the same instants — synchronized waves that keep hammering the dependency. <strong>Full jitter</strong> (a random delay between 0 and the backoff ceiling) spreads retries out so the load smooths. Also cap total attempts and pair with a circuit breaker so you stop retrying a dependency that's truly down.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Timeouts are non-negotiable</div>
+  <p>Every network call needs a timeout — without one, a hung dependency ties up your workers/connections until <em>you</em> run out and go down too. Set timeouts shorter than your own SLA, budget them across a call chain (the total must fit your deadline), and treat a timeout as a failure that feeds the retry/breaker logic.</p></div>
+
+  <div class="qa"><div class="q">Q · What is a retry storm and how do you prevent it?</div>
+  <p>When a dependency slows, clients retry immediately and multiply its load, keeping it down — a self-amplifying outage. Prevent it with exponential backoff + full jitter (spaced, desynchronized retries), a capped attempt count / retry budget, and a circuit breaker that fails fast once the dependency is clearly unhealthy, giving it room to recover.</p></div>
+
+  <div class="qa"><div class="q">Q · Which requests are safe to retry?</div>
+  <p>Idempotent ones — where repeating has the same effect as doing it once (GETs, PUTs, deletes, or writes guarded by an idempotency key). Retrying a non-idempotent write (a bare "charge card") risks duplicate side effects. Make writes idempotent (idempotency keys) before enabling retries on them.</p></div>
+
+  <!-- ===================== 4 : DATABASE ===================== -->
+  <h2 class="sec" id="s4">4 · Talking to the Database</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The mechanics of accessing data correctly: avoiding the <em class="term">N+1 query</em> (one query for a list, then one per row), reusing connections through a <em class="term">pool</em> instead of opening one per request, wrapping related writes in a <em class="term">transaction</em>, and adding <em class="term">indexes</em> to turn full-table scans into seeks.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because the database is almost always the first thing to fall over, and the causes are boringly consistent: an ORM lazily firing 200 queries to render one page, connections leaked until the DB refuses new ones, and a missing index turning a 1ms lookup into a 500ms scan. These are invisible on a laptop with 10 rows and fatal at production scale.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 175" role="img" aria-label="N+1 query versus a single joined query">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="225" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#b91c1c">❌ N+1 — 1 + N round-trips</text>
+        <text x="675" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">✅ one joined/batched query</text>
+        <rect x="60" y="40" width="70" height="26" rx="5" fill="#eef6ff" stroke="#0284c7"/><text x="95" y="57" text-anchor="middle" font-size="8.5" fill="#0c4a6e">app</text>
+        <rect x="330" y="40" width="70" height="26" rx="5" fill="#f1f5f9" stroke="#64748b"/><text x="365" y="57" text-anchor="middle" font-size="8.5" fill="#334155">DB</text>
+        <path d="M130,48 L328,48" stroke="#dc2626" stroke-width="1.3" marker-end="url(#an)"/><text x="228" y="43" text-anchor="middle" font-size="7" fill="#7f1d1d">list orders (1)</text>
+        <path d="M130,60 L328,60" stroke="#dc2626" stroke-width="1.1" marker-end="url(#an)"/>
+        <path d="M130,72 L328,72" stroke="#dc2626" stroke-width="1.1" marker-end="url(#an)"/>
+        <path d="M130,84 L328,84" stroke="#dc2626" stroke-width="1.1" marker-end="url(#an)"/>
+        <text x="228" y="98" text-anchor="middle" font-size="7.5" fill="#b91c1c">…+1 per order (N) → 100 orders = 101 trips</text>
+        <text x="225" y="130" text-anchor="middle" font-size="8.5" fill="#b91c1c">latency grows with row count</text>
+        <rect x="510" y="45" width="70" height="26" rx="5" fill="#eef6ff" stroke="#0284c7"/><text x="545" y="62" text-anchor="middle" font-size="8.5" fill="#0c4a6e">app</text>
+        <rect x="780" y="45" width="70" height="26" rx="5" fill="#f1f5f9" stroke="#64748b"/><text x="815" y="62" text-anchor="middle" font-size="8.5" fill="#334155">DB</text>
+        <path d="M580,58 L778,58" stroke="#16a34a" stroke-width="2" marker-end="url(#ag)"/><text x="678" y="52" text-anchor="middle" font-size="7.5" fill="#14532d">JOIN — one trip</text>
+        <text x="675" y="100" text-anchor="middle" font-size="8.5" fill="#14532d">constant round-trips regardless of N</text>
+        <defs>
+          <marker id="an" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/></marker>
+          <marker id="ag" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/></marker>
+        </defs>
+      </g>
+    </svg>
+    <figcaption>Figure 6.3 — The N+1 query. Rendering a list with a related entity per row lazily fires one query <em>per row</em> — 101 round-trips for 100 orders. A single joined or batched query fetches everything in one trip, independent of row count. Demonstrated in <code>07-database-scaling/production_code.py</code>.</figcaption>
+  </figure>
+
+  <div class="coderef"><div class="h">📂 Runnable in the repo</div>
+  <ul>
+    <li><span class="path">07-database-scaling/production_code.py</span> — counts queries: N+1 fires 1+N; the batched/joined version fires O(1).</li>
+    <li><span class="path">07-database-scaling/examples/connection_pool.py</span> — 100 requests served by 3 pooled connections; leak-safe even on error; exhaustion detected.</li>
+  </ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the connection leak &amp; the "too many connections" outage</div>
+  <p>Forget to return a connection on an error path and it's leaked; enough leaks and the pool empties, every request hangs waiting, and the app is down — even though the database is healthy. The fix is to acquire connections through a context manager that <em>always</em> releases in a <code class="inl">finally</code>, and to bound the pool so a slow query can't open unlimited connections.</p></div>
+
+  <div class="qa"><div class="q">Q · What is the N+1 query problem and how do you fix it?</div>
+  <p>Fetching a list (1 query) and then a related record per row (N queries) yields 1+N round-trips, so latency grows with result size. Fix it by fetching related data in one go: a JOIN, an eager-load/prefetch (e.g. <code class="inl">selectinload</code>), or an <code class="inl">IN (...)</code> batch. The round-trip count should be constant regardless of row count.</p></div>
+
+  <div class="qa"><div class="q">Q · Why pool database connections?</div>
+  <p>Opening a connection is expensive (TCP + auth handshake), and databases cap concurrent connections. A pool opens a bounded set once and reuses them across requests, cutting latency and protecting the DB's connection limit. The critical discipline is always returning connections (context managers) so leaks don't exhaust the pool.</p></div>
+
+  <!-- ===================== 5 : SCALING DATA TIER ===================== -->
+  <h2 class="sec" id="s5">5 · Scaling the Data Tier</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Growing the database past one node: <em class="term">read replicas</em> (copies that serve reads), <em class="term">read/write routing</em> (writes to the primary, reads to replicas), <em class="term">sharding</em> (splitting data across nodes), and safe <em class="term">schema migrations</em> (evolving structure without downtime). This is Book&nbsp;V's replication/partitioning theory, made concrete in an app.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because a single primary eventually caps out on read throughput, then on write throughput and storage. Read replicas offload the (usually dominant) read traffic; sharding scales writes and capacity. But each adds a failure mode — replication lag causing stale reads, cross-shard queries, and migrations that lock tables — that you must design around.</p></div>
+
+  <div class="def how"><span class="lab">How — route reads to replicas, writes to the primary</span></div>
+<pre><span class="k">async def</span> <span class="f">get_session</span>(readonly: <span class="k">bool</span> = <span class="k">False</span>):
+    <span class="k">return</span> replica_session() <span class="k">if</span> readonly <span class="k">else</span> primary_session()
+
+<span class="nd">@app.get</span>(<span class="s">"/orders"</span>)          <span class="c"># reads -> replica (spares the primary)</span>
+<span class="k">async def</span> <span class="f">list_orders</span>(db = Depends(<span class="k">lambda</span>: get_session(readonly=<span class="k">True</span>))): ...
+
+<span class="nd">@app.post</span>(<span class="s">"/orders"</span>)         <span class="c"># writes -> primary</span>
+<span class="k">async def</span> <span class="f">place_order</span>(db = Depends(get_session)): ...</pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — replication lag breaks "read your own writes"</div>
+  <p>Route a read to a replica right after a write and the user may not see their own change (the replica hasn't caught up). Fix by routing a user's reads to the primary for a short window after they write, or by tracking a write token and reading from a replica that's caught up to it. Never assume a replica is current.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the migration that locked the table</div>
+  <p>Adding a column with a default, or an index, on a large table can hold a lock long enough to stall every write — an outage during a routine deploy. Use online/concurrent DDL, add columns nullable-then-backfill in batches, and split destructive changes into expand → migrate → contract phases so old and new code both work during the rollout.</p></div>
+
+  <div class="qa"><div class="q">Q · How do read replicas help, and what's the catch?</div>
+  <p>They serve read traffic (usually the majority), offloading the primary so it can focus on writes, and add redundancy. The catch is replication lag: replicas are slightly behind, so reads can be stale — problematic for read-your-writes. Route latency-tolerant reads to replicas and consistency-critical reads (or a user's own recent writes) to the primary.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you run a schema migration with zero downtime?</div>
+  <p>Use the expand/contract pattern: first make additive, backward-compatible changes (add nullable columns/tables) so old and new code coexist; deploy code that writes both old and new; backfill data in batches; switch reads to the new shape; then contract by removing the old columns once nothing uses them. Avoid long-locking DDL on big tables.</p></div>
+
+  <!-- ===================== 6 : RELIABLE WRITES ===================== -->
+  <h2 class="sec" id="s6">6 · Reliable Writes &amp; Events</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Making a write and its side effect (an event, an email, an update to another service) reliable. The core hazard is the <em class="term">dual-write problem</em>: you can't atomically write to a database <em>and</em> a message broker. The standard fix is the <em class="term">transactional outbox</em> — write the business row and an outbox row in one DB transaction, then a relay publishes the outbox.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because "save the order, then publish OrderPlaced" is two systems with no shared transaction: crash in between and you get an order with no event (downstream never hears) or an event with no order (a phantom). At scale this happens constantly, and the inconsistencies are silent and permanent until a customer complains.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 175" role="img" aria-label="Transactional outbox pattern">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">One DB transaction writes the order AND the outbox row</text>
+        <rect x="60" y="55" width="100" height="40" rx="8" fill="#e0f2fe" stroke="#0284c7"/><text x="110" y="72" text-anchor="middle" font-size="9" fill="#0c4a6e">endpoint</text><text x="110" y="86" text-anchor="middle" font-size="7.5" fill="#0c4a6e">place order</text>
+        <rect x="230" y="40" width="180" height="80" rx="8" fill="#f0fdf4" stroke="#16a34a"/><text x="320" y="36" text-anchor="middle" font-size="8.5" fill="#14532d">single DB transaction</text>
+        <rect x="250" y="52" width="140" height="24" rx="4" fill="#dcfce7"/><text x="320" y="68" text-anchor="middle" font-size="8" fill="#14532d">orders row</text>
+        <rect x="250" y="84" width="140" height="24" rx="4" fill="#fef3c7"/><text x="320" y="100" text-anchor="middle" font-size="8" fill="#b45309">outbox row (pending)</text>
+        <rect x="470" y="60" width="90" height="34" rx="8" fill="#eef6ff" stroke="#0284c7"/><text x="515" y="81" text-anchor="middle" font-size="8.5" fill="#0c4a6e">relay poll</text>
+        <rect x="640" y="60" width="90" height="34" rx="8" fill="#fef3c7" stroke="#d97706"/><text x="685" y="81" text-anchor="middle" font-size="8.5" fill="#b45309">Kafka</text>
+        <rect x="800" y="60" width="70" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/><text x="835" y="81" text-anchor="middle" font-size="8" fill="#14532d">consumers</text>
+        <path d="M160,75 L228,75" stroke="#64748b" stroke-width="1.5" marker-end="url(#ao)"/>
+        <path d="M410,90 L468,80" stroke="#64748b" stroke-width="1.5" marker-end="url(#ao)"/>
+        <path d="M560,77 L638,77" stroke="#64748b" stroke-width="1.5" marker-end="url(#ao)"/>
+        <path d="M730,77 L798,77" stroke="#64748b" stroke-width="1.5" marker-end="url(#ao)"/>
+        <text x="515" y="112" text-anchor="middle" font-size="7.5" fill="#475569">marks row sent after publish → at-least-once</text>
+        <defs><marker id="ao" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 6.4 — The transactional outbox. The order and an outbox row commit together in one DB transaction (atomic), so a crash never leaves them out of sync. A separate relay polls unsent outbox rows and publishes them to Kafka, marking each sent — at-least-once, so consumers must be idempotent. Built in <code>07-database-scaling/examples/outbox_pattern.py</code>.</figcaption>
+  </figure>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">At-least-once + idempotent consumers = exactly-once effect</div>
+  <p>The relay marks a row sent <em>after</em> publishing, so a crash in between re-sends it — delivery is at-least-once, never lost. The duplicates are handled on the consumer side: dedupe by event id so processing the same event twice has the same effect as once. "Exactly-once delivery" is largely a myth; "exactly-once <em>effect</em>" via idempotency is the achievable goal.</p></div>
+
+  <div class="qa"><div class="q">Q · What is the dual-write problem?</div>
+  <p>Writing to two systems that can't share a transaction — e.g., a database and a message broker — with no atomicity between them. A crash after the first write and before the second leaves them inconsistent (an order without its event, or vice versa). The transactional outbox solves it by writing the business change and the event to the <em>same</em> database in one transaction, then relaying the event separately.</p></div>
+
+  <div class="qa"><div class="q">Q · How does the transactional outbox guarantee delivery?</div>
+  <p>The event is stored as an outbox row inside the same DB transaction as the business write, so it's durable and atomic with the change. A relay/poller then reads unsent rows and publishes them, marking each sent only after a successful publish. If it crashes mid-way it re-publishes on restart (at-least-once), so no event is lost; consumers dedupe to absorb duplicates.</p></div>
+
+  <!-- ===================== 7 : OBSERVABILITY ===================== -->
+  <h2 class="sec" id="s7">7 · Observability</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The ability to understand what your system is doing from the outside, via three pillars: <em class="term">logs</em> (structured, searchable events), <em class="term">metrics</em> (aggregated numbers over time — the RED method: Rate, Errors, Duration), and <em class="term">traces</em> (one request's path across services). A <em class="term">correlation ID</em> stitches all a request's logs together; the <em class="term">ELK/OpenSearch</em> stack aggregates and searches them.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because when production breaks at 3&nbsp;a.m., you can only fix what you can see. <code class="inl">print(f"user {u} did {x}")</code> is unsearchable, has no request id, and leaks secrets. Structured JSON logs with a correlation id let you filter to a single failing request across every service; RED metrics tell you <em>which</em> endpoint is on fire; traces show <em>where</em> the time went.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 165" role="img" aria-label="The three pillars of observability">
+      <g font-family="Segoe UI,sans-serif">
+        <rect x="60" y="45" width="230" height="80" rx="10" fill="#eef6ff" stroke="#0284c7"/><text x="175" y="70" text-anchor="middle" font-size="12" font-weight="800" fill="#0c4a6e">📝 Logs</text><text x="175" y="90" text-anchor="middle" font-size="8.5" fill="#0c4a6e">structured JSON events</text><text x="175" y="104" text-anchor="middle" font-size="8.5" fill="#0c4a6e">"what happened" (per event)</text>
+        <rect x="335" y="45" width="230" height="80" rx="10" fill="#f0fdf4" stroke="#16a34a"/><text x="450" y="70" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">📊 Metrics</text><text x="450" y="90" text-anchor="middle" font-size="8.5" fill="#14532d">Rate · Errors · Duration</text><text x="450" y="104" text-anchor="middle" font-size="8.5" fill="#14532d">"how much / how healthy"</text>
+        <rect x="610" y="45" width="230" height="80" rx="10" fill="#fef3c7" stroke="#d97706"/><text x="725" y="70" text-anchor="middle" font-size="12" font-weight="800" fill="#b45309">🧵 Traces</text><text x="725" y="90" text-anchor="middle" font-size="8.5" fill="#b45309">one request across services</text><text x="725" y="104" text-anchor="middle" font-size="8.5" fill="#b45309">"where did the time go"</text>
+        <text x="450" y="30" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">a correlation ID ties all three to one request</text>
+      </g>
+    </svg>
+    <figcaption>Figure 6.5 — The three pillars of observability. Logs say what happened, metrics say how much and how healthy, traces say where the time went — and a shared correlation ID lets you pivot between them for a single request. Structured logs, correlation IDs, and RED metrics are built in <code>06-elk-monitoring/examples/structured_logging.py</code>.</figcaption>
+  </figure>
+
+  <div class="coderef"><div class="h">📂 Runnable in the repo</div>
+  <ul>
+    <li><span class="path">06-elk-monitoring/production_code.py</span> — a correlation-id middleware (contextvar) + JSON logging.</li>
+    <li><span class="path">06-elk-monitoring/examples/structured_logging.py</span> — JSON logs, per-request correlation, secret redaction, and RED metrics (rate/errors/p95).</li>
+    <li><span class="path">06-elk-monitoring/docker-compose.yml</span>, <code class="inl">logstash/</code>, <code class="inl">filebeat/</code> — a real ELK pipeline to run locally.</li>
+  </ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — logging secrets and PII</div>
+  <p>Dumping request bodies or headers into logs happily records passwords, tokens, and card numbers — a compliance breach sitting in your log store forever. Redact known-sensitive fields at the logging boundary (allowlist what to log, or denylist secrets), never log full auth headers, and scrub PII. The <code class="inl">structured_logging.py</code> example redacts <code class="inl">password/token/secret/card</code> automatically.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Alert on symptoms (SLOs), not causes</div>
+  <p>Page humans for what users feel — error rate and latency breaching an SLO — not for every CPU spike or single failed request (that's alert fatigue). Use the RED/golden signals for alerting, keep detailed logs and traces for diagnosis after the page, and make every alert actionable. A good alert answers "users are being hurt, right now."</p></div>
+
+  <div class="qa"><div class="q">Q · Why structured logging over plain strings?</div>
+  <p>Structured logs (JSON with named fields) are machine-parseable, so a log platform can filter, aggregate, and alert on them (<code class="inl">event="request.failed" AND status=500</code>). Plain f-string logs are only human-readable and nearly impossible to query at scale. Structure also lets you attach a correlation id to every line and redact sensitive fields consistently.</p></div>
+
+  <div class="qa"><div class="q">Q · Logs vs metrics vs traces — when do you reach for each?</div>
+  <p>Metrics first: they tell you <em>something</em> is wrong and how bad (error rate/latency by endpoint). Traces next: they show <em>where</em> in a request's cross-service path the time or failure is. Logs last: the detailed record of <em>what</em> happened for a specific request, found via its correlation id. Together they take you from "alarm" to "root cause."</p></div>
+
+  <!-- ===================== 8 : EVENT-DRIVEN/KAFKA ===================== -->
+  <h2 class="sec" id="s8">8 · Event-Driven Systems &amp; Kafka</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Decoupling services with a durable log-based broker (<em class="term">Kafka</em>). Producers append <em class="term">events</em> to <em class="term">topics</em> split into <em class="term">partitions</em>; consumers track their position with <em class="term">offsets</em> and can replay. Because delivery is <em class="term">at-least-once</em>, consumers must be <em class="term">idempotent</em>; cross-service workflows use the <em class="term">saga</em> pattern instead of distributed transactions.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because synchronous chaining ("place order" calls inventory, then email, then analytics inline) couples availability and latency — if email is slow, order placement is slow; if analytics is down, orders fail. Publishing an <code class="inl">OrderPlaced</code> event lets independent consumers react on their own schedule, absorbing spikes and letting you add consumers without touching the producer.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 175" role="img" aria-label="Kafka partitions, offsets and consumers">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">A topic = an append-only, partitioned, RETAINED log</text>
+        <text x="70" y="52" font-size="9" font-weight="700" fill="#475569">partition 0</text>
+        <g>
+          <rect x="70" y="58" width="26" height="22" fill="#e0f2fe" stroke="#0284c7"/><rect x="98" y="58" width="26" height="22" fill="#e0f2fe" stroke="#0284c7"/><rect x="126" y="58" width="26" height="22" fill="#e0f2fe" stroke="#0284c7"/><rect x="154" y="58" width="26" height="22" fill="#bae6fd" stroke="#0284c7"/><rect x="182" y="58" width="26" height="22" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="3"/>
+          <text x="83" y="73" text-anchor="middle" font-size="8" fill="#0c4a6e">0</text><text x="111" y="73" text-anchor="middle" font-size="8" fill="#0c4a6e">1</text><text x="139" y="73" text-anchor="middle" font-size="8" fill="#0c4a6e">2</text><text x="167" y="73" text-anchor="middle" font-size="8" fill="#0c4a6e">3</text>
+        </g>
+        <text x="167" y="96" text-anchor="middle" font-size="7.5" fill="#0284c7">↑ consumer offset = 3</text>
+        <text x="70" y="118" font-size="9" font-weight="700" fill="#475569">partition 1</text>
+        <g>
+          <rect x="70" y="124" width="26" height="22" fill="#dcfce7" stroke="#16a34a"/><rect x="98" y="124" width="26" height="22" fill="#dcfce7" stroke="#16a34a"/><rect x="126" y="124" width="26" height="22" fill="#bbf7d0" stroke="#16a34a"/><rect x="154" y="124" width="26" height="22" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="3"/>
+        </g>
+        <text x="360" y="70" font-size="8.5" fill="#334155">• key → partition (same key,</text>
+        <text x="360" y="84" font-size="8.5" fill="#334155">&nbsp;&nbsp;same partition → ordering)</text>
+        <text x="360" y="100" font-size="8.5" fill="#334155">• events retained, not deleted</text>
+        <text x="360" y="114" font-size="8.5" fill="#334155">&nbsp;&nbsp;on read → replay any time</text>
+        <rect x="640" y="55" width="120" height="30" rx="7" fill="#fef3c7" stroke="#d97706"/><text x="700" y="74" text-anchor="middle" font-size="8.5" fill="#b45309">consumer group A</text>
+        <rect x="640" y="100" width="120" height="30" rx="7" fill="#fef3c7" stroke="#d97706"/><text x="700" y="119" text-anchor="middle" font-size="8.5" fill="#b45309">consumer group B</text>
+        <text x="700" y="148" text-anchor="middle" font-size="7.5" fill="#b45309">each group has its own offsets</text>
+      </g>
+    </svg>
+    <figcaption>Figure 6.6 — Kafka's model. A topic is a partitioned, append-only log that <em>retains</em> events after they're read; each consumer group tracks its own offsets and can replay. The message key routes to a partition, giving per-key ordering. Simulated (partitions, offsets, replay, at-least-once, DLQ) in <code>08-event-driven-systems/examples/idempotent_consumer.py</code>.</figcaption>
+  </figure>
+
+  <div class="coderef"><div class="h">📂 Runnable in the repo</div>
+  <ul>
+    <li><span class="path">08-event-driven-systems/production_code.py</span> — synchronous chaining vs publish-an-event.</li>
+    <li><span class="path">08-event-driven-systems/examples/idempotent_consumer.py</span> — an in-memory broker with partitions, offsets, replay, at-least-once, an idempotent consumer, and a dead-letter queue.</li>
+    <li><span class="path">08-event-driven-systems/examples/saga.py</span> — an orchestration saga with compensating actions (undo in reverse on failure).</li>
+    <li><span class="path">08-event-driven-systems/examples/event_sourcing_cqrs.py</span> — event sourcing + CQRS with snapshots.</li>
+  </ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the poison message that stalls the partition</div>
+  <p>Kafka preserves order within a partition, so a single event a consumer can never process (a "poison message") can block every event behind it — the partition wedges. The fix is a <em>dead-letter queue</em>: after N failed attempts, move the message aside so the partition keeps flowing, and investigate the DLQ separately. The <code class="inl">idempotent_consumer.py</code> example includes one.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Sagas replace distributed transactions</div>
+  <p>You can't wrap "reserve inventory → charge card → create shipment" in one ACID transaction across services. A saga runs them as a sequence of local transactions; if a later step fails, it invokes <em>compensating actions</em> (refund the card, release the inventory) in reverse to undo the earlier ones. It trades atomicity for eventual consistency plus explicit rollback logic — see <code class="inl">saga.py</code>.</p></div>
+
+  <div class="qa"><div class="q">Q · Why must Kafka consumers be idempotent?</div>
+  <p>Because Kafka guarantees at-least-once delivery: after a consumer processes a message but before it commits its offset, a crash or rebalance re-delivers that message. If processing isn't idempotent, the effect happens twice (double charge, duplicate row). Deduping by a stable event id (or using upserts / natural idempotency) makes redelivery harmless — an exactly-once <em>effect</em>.</p></div>
+
+  <div class="qa"><div class="q">Q · What does a saga do when a step fails?</div>
+  <p>It runs compensating transactions for the steps already completed, in reverse order, to semantically undo them (e.g., refund a payment, release a reservation) — since you can't roll back committed local transactions across services. The system reaches a consistent state through explicit compensation rather than a distributed rollback, accepting eventual consistency in between.</p></div>
+
+  <!-- ===================== 9 : DEPLOYMENT ===================== -->
+  <h2 class="sec" id="s9">9 · Deployment &amp; Operations</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Getting the service running reliably in production: packaging it in a <em class="term">container</em>, exposing <em class="term">health checks</em> (liveness/readiness), managing <em class="term">config &amp; secrets</em> via the environment, and rolling out new versions with <em class="term">zero downtime</em> (rolling/blue-green/canary).</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because the best code is worthless if deploys cause outages, secrets are baked into images, or a crashed process never restarts. Containers make "works on my machine" reproducible; health checks let the orchestrator route around sick instances; environment config keeps secrets out of the codebase; and progressive rollouts catch a bad release before it hits everyone.</p></div>
+
+  <table>
+    <tr><th>Rollout</th><th>How</th><th>Trade-off</th></tr>
+    <tr><td>Rolling</td><td>replace instances a few at a time</td><td>simple; mixed versions run together</td></tr>
+    <tr><td>Blue-green</td><td>stand up new fleet, flip traffic at once</td><td>instant rollback; double the infra briefly</td></tr>
+    <tr><td>Canary</td><td>send a small % to the new version first</td><td>catches bad releases early; more orchestration</td></tr>
+  </table>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — secrets in the image or the repo</div>
+  <p>Hard-coding an API key in the code or a <code class="inl">Dockerfile</code> bakes it into every image layer and every git clone — permanently, even after you "delete" it. Inject secrets at runtime from the environment or a secrets manager, keep <code class="inl">.env</code> out of version control (see <code class="inl">06-elk-monitoring/.env.example</code> as the committed template), and rotate anything that ever leaked.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Liveness vs readiness — they answer different questions</div>
+  <p><em>Liveness</em>: "is the process wedged and in need of a restart?" (fail → kill &amp; restart). <em>Readiness</em>: "can it serve traffic <em>right now</em>?" (fail → stop routing to it, but don't restart). Conflating them is a classic outage: a slow dependency makes readiness fail, but if it's wired as liveness the orchestrator restarts healthy pods in a loop. Keep them separate.</p></div>
+
+  <div class="qa"><div class="q">Q · Liveness vs readiness probes?</div>
+  <p>Liveness detects a hung process that needs restarting; failing it triggers a restart. Readiness detects whether an instance can currently serve requests (dependencies up, warmup done); failing it removes the instance from the load balancer without restarting. Use readiness for transient "not ready yet" states and liveness only for truly unrecoverable ones.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you deploy without downtime?</div>
+  <p>Roll out progressively (rolling/canary/blue-green) behind health checks so traffic only goes to ready instances, and keep changes backward-compatible so old and new versions coexist during the rollout (especially DB schema — expand/contract). Drain in-flight requests on shutdown (graceful termination) and keep rollback fast (blue-green or a previous image) for when a release misbehaves.</p></div>
+
+  <!-- ===================== 10 : READINESS CHECKLIST ===================== -->
+  <h2 class="sec" id="s10">10 · The Production Readiness Checklist</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The set of properties a service needs before it carries real traffic and a pager: defined <em class="term">SLOs</em>, <em class="term">graceful shutdown</em>, <em class="term">load shedding</em>, capacity headroom, runbooks, and alerts. It's the difference between "it runs" and "it's operable."</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because production readiness isn't a feature you add later — it's the acceptance criteria for shipping. A service without graceful shutdown drops in-flight requests on every deploy; one without load shedding falls over completely under overload instead of degrading; one without SLOs has no shared definition of "healthy" to alert on.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Graceful shutdown &amp; load shedding</div>
+  <p><strong>Graceful shutdown</strong>: on SIGTERM, stop accepting new requests, finish in-flight ones (up to a deadline), close DB/broker connections, then exit — so a deploy doesn't drop live traffic. <strong>Load shedding</strong>: when overloaded, reject <em>some</em> requests fast (429) to protect the rest, rather than slowing to a crawl for everyone and collapsing. Both are about failing partially instead of totally.</p></div>
+
+  <div class="box analogy"><span class="ic">🧠</span><div class="h">SLIs, SLOs, and the error budget</div>
+  <p>An <strong>SLI</strong> is a measured signal (e.g., % of requests under 200ms). An <strong>SLO</strong> is the target for it (99.9%). The gap between the SLO and 100% is your <strong>error budget</strong> — the amount of unreliability you're allowed to spend. It reframes reliability as a budget: if you're within budget, ship features faster; if you've blown it, stop and stabilize. It aligns product speed with reliability instead of pitting them against each other.</p></div>
+
+  <div class="qa"><div class="q">Q · What is an error budget and how do teams use it?</div>
+  <p>It's <code class="inl">1 − SLO</code> — the allowed amount of failure over a window (e.g., 0.1% of requests may miss the latency target). Teams use it as a control knob: with budget remaining, they ship changes aggressively; once it's exhausted, they freeze features and focus on reliability. It turns "how reliable is reliable enough?" into a shared, data-driven decision.</p></div>
+
+  <div class="qa"><div class="q">Q · What happens to in-flight requests during a deploy?</div>
+  <p>With graceful shutdown, the instance stops accepting new requests on SIGTERM, finishes in-flight ones up to a timeout, closes connections cleanly, then exits — so no live request is dropped. Without it, the process is killed mid-request and clients see errors on every rollout. Orchestrators also stop routing new traffic (readiness/pre-stop hooks) before termination to drain cleanly.</p></div>
+
+  <div class="box takeaway"><span class="h">🎯 Key takeaways</span>
+  <ul class="tick" style="margin-top:6px">
+    <li><strong>Never block the event loop</strong> — offload blocking work to a threadpool or use a <code class="inl">def</code> route.</li>
+    <li><strong>Cursor over offset pagination</strong> at scale — constant work per page, stable results.</li>
+    <li><strong>Every remote call needs a timeout</strong>, bounded retries with backoff+jitter, and a circuit breaker.</li>
+    <li><strong>Kill the N+1</strong> with joins/batching; <strong>pool connections</strong> and always release them.</li>
+    <li><strong>Route reads to replicas, writes to the primary</strong> — and design around replication lag.</li>
+    <li><strong>Solve dual-writes with the transactional outbox</strong>; make consumers idempotent for at-least-once.</li>
+    <li><strong>Observe with structured logs + correlation IDs + RED metrics + traces</strong>; alert on SLOs, redact secrets.</li>
+    <li><strong>Event-driven decouples</strong> — Kafka partitions/offsets, idempotent consumers, DLQs, and sagas for workflows.</li>
+    <li><strong>Deploy safely</strong>: containers, split liveness/readiness, secrets from the environment, graceful shutdown, progressive rollouts.</li>
+    <li>Every pathology here is runnable in pillars <code class="inl">05</code>–<code class="inl">08</code> — measure it, break it, fix it.</li>
+  </ul></div>
+</section>
+
+</body>
+</html>

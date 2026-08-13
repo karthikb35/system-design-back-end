@@ -1,0 +1,153 @@
+# =============================================================================
+# Production-grade centralized logging stack (ELK + Filebeat) for FastAPI
+# =============================================================================
+# Pipeline:  app (stdout JSON) -> Filebeat -> Logstash -> Elasticsearch -> Kibana
+#
+# This is a HARDENED SINGLE-HOST TEMPLATE suitable as the basis for a real
+# deployment. For true production you would run Elasticsearch as a multi-node
+# cluster (ideally on Kubernetes/ECK or dedicated hosts), terminate TLS
+# everywhere, and manage secrets via a vault. Hardening TODOs are marked below.
+#
+# Prereqs:
+#   1. Copy .env.example -> .env and set strong passwords.
+#   2. Linux host: set `sysctl -w vm.max_map_count=262144` (Elasticsearch needs it).
+#   3. docker compose up -d
+#
+# Security: xpack.security is ENABLED (authentication required). TLS between
+# components is left as the final hardening step (see NOTE blocks) so the
+# template starts cleanly; do NOT expose these ports publicly without TLS.
+# =============================================================================
+
+x-logging: &default-logging
+  # Cap container log growth so the *logging stack itself* can't fill the disk.
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ---------------------------------------------------------------------------
+  # Elasticsearch — the indexed, searchable store (the "E")
+  # ---------------------------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: elk-elasticsearch
+    environment:
+      - node.name=es01
+      - cluster.name=logging-cluster
+      - discovery.type=single-node          # TODO(prod): multi-node + zen discovery
+      - xpack.security.enabled=true
+      - xpack.security.enrollment.enabled=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env}
+      - bootstrap.memory_lock=true           # never swap the heap
+      # Set heap to ~50% of the container memory limit, max ~31g.
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      # TODO(prod): enable TLS
+      # - xpack.security.http.ssl.enabled=true
+      # - xpack.security.transport.ssl.enabled=true
+    ulimits:
+      memlock: { soft: -1, hard: -1 }        # required for bootstrap.memory_lock
+      nofile: { soft: 65536, hard: 65536 }
+    deploy:
+      resources:
+        limits: { memory: 2g }               # heap (1g) + overhead
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - "127.0.0.1:9200:9200"                # bind to localhost only
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:${ELASTIC_PASSWORD} http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+    restart: unless-stopped
+    logging: *default-logging
+    networks: [elk]
+
+  # ---------------------------------------------------------------------------
+  # Logstash — parse, enrich, transform, buffer (the "L")
+  # ---------------------------------------------------------------------------
+  # Runs a PERSISTENT QUEUE on disk so a burst or a brief Elasticsearch outage
+  # doesn't drop logs (backpressure handling — see architectural_notes.md).
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.4
+    container_name: elk-logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - "LS_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.monitoring.enabled=false
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ls-queue:/usr/share/logstash/data          # persistent queue survives restarts
+    ports:
+      - "127.0.0.1:5044:5044"                # Beats input
+    deploy:
+      resources:
+        limits: { memory: 1g }
+    restart: unless-stopped
+    logging: *default-logging
+    networks: [elk]
+
+  # ---------------------------------------------------------------------------
+  # Kibana — search, dashboards, alerting (the "K")
+  # ---------------------------------------------------------------------------
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: elk-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      # Kibana authenticates with the built-in `kibana_system` user, NOT elastic.
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD:?set KIBANA_SYSTEM_PASSWORD in .env}
+      - SERVER_PUBLICBASEURL=http://localhost:5601
+    ports:
+      - "127.0.0.1:5601:5601"
+    deploy:
+      resources:
+        limits: { memory: 1g }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q '\"level\":\"available\"'"]
+      interval: 20s
+      timeout: 10s
+      retries: 20
+    restart: unless-stopped
+    logging: *default-logging
+    networks: [elk]
+
+  # ---------------------------------------------------------------------------
+  # Filebeat — lightweight shipper collecting container/app logs
+  # ---------------------------------------------------------------------------
+  # Ships stdout JSON logs to Logstash. Has its own on-disk buffer, giving a
+  # first line of backpressure defense if Logstash is briefly unavailable.
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.13.4
+    container_name: elk-filebeat
+    user: root
+    depends_on:
+      logstash:
+        condition: service_started
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro   # container logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro               # container metadata
+      - fb-data:/usr/share/filebeat/data                            # registry + buffer
+    command: ["--strict.perms=false"]
+    restart: unless-stopped
+    logging: *default-logging
+    networks: [elk]
+
+volumes:
+  es-data:
+  ls-queue:
+  fb-data:
+
+networks:
+  elk:
+    driver: bridge

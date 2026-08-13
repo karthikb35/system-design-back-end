@@ -1,0 +1,124 @@
+# =============================================================================
+# gRPC e-commerce — full system orchestration.
+#   - 1 Postgres container (3 databases, one per service)
+#   - users, products, orders gRPC services
+#   - an API Gateway (HTTP on the outside, gRPC client on the inside)
+#
+# IMPORTANT: every service builds with the REPOSITORY ROOT as its build context
+# so the Dockerfile can COPY the shared `protos/` and regenerate stubs. That is
+# why each service uses `build.context: .` + `build.dockerfile: <path>`.
+#
+# Start everything:   docker compose up --build -d
+# =============================================================================
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ecom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ecom_pw}
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init-databases.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecom}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  users:
+    build:
+      context: .
+      dockerfile: services/users/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecom}:${POSTGRES_PASSWORD:-ecom_pw}@postgres:5432/${USERS_DB:-users_db}
+      GRPC_BIND: "[::]:50051"
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_NAME: users
+    ports:
+      - "50051:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  products:
+    build:
+      context: .
+      dockerfile: services/products/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecom}:${POSTGRES_PASSWORD:-ecom_pw}@postgres:5432/${PRODUCTS_DB:-products_db}
+      GRPC_BIND: "[::]:50052"
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_NAME: products
+    ports:
+      - "50052:50052"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  orders:
+    build:
+      context: .
+      dockerfile: services/orders/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecom}:${POSTGRES_PASSWORD:-ecom_pw}@postgres:5432/${ORDERS_DB:-orders_db}
+      GRPC_BIND: "[::]:50053"
+      USERS_SERVICE_ADDR: ${USERS_SERVICE_ADDR:-users:50051}
+      PRODUCTS_SERVICE_ADDR: ${PRODUCTS_SERVICE_ADDR:-products:50052}
+      GRPC_TIMEOUT_SECONDS: ${GRPC_TIMEOUT_SECONDS:-5.0}
+      GRPC_MAX_RETRIES: ${GRPC_MAX_RETRIES:-3}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_NAME: orders
+    ports:
+      - "50053:50053"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      users:
+        condition: service_started
+      products:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    environment:
+      USERS_SERVICE_ADDR: ${USERS_SERVICE_ADDR:-users:50051}
+      PRODUCTS_SERVICE_ADDR: ${PRODUCTS_SERVICE_ADDR:-products:50052}
+      ORDERS_SERVICE_ADDR: ${ORDERS_SERVICE_ADDR:-orders:50053}
+      GRPC_TIMEOUT_SECONDS: ${GRPC_TIMEOUT_SECONDS:-5.0}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_NAME: gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      users:
+        condition: service_started
+      products:
+        condition: service_started
+      orders:
+        condition: service_started
+
+volumes:
+  pgdata:

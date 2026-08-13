@@ -1,0 +1,52 @@
+// Orders service contract.
+//
+// The Orders service is both a gRPC *server* (implements OrderService) and a
+// gRPC *client* (it calls UserService and ProductService to fulfil an order).
+syntax = "proto3";
+
+package orders;
+
+service OrderService {
+  rpc PlaceOrder(PlaceOrderRequest) returns (OrderReply);
+  rpc GetOrder(GetOrderRequest) returns (OrderReply);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersReply);
+}
+
+message OrderItemInput {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+message PlaceOrderRequest {
+  string user_id = 1;
+  repeated OrderItemInput items = 2;
+}
+
+message GetOrderRequest {
+  string id = 1;
+}
+
+message ListOrdersRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message OrderItemReply {
+  string product_id = 1;
+  int32 quantity = 2;
+  // Price snapshot taken at purchase time.
+  int64 unit_price_cents = 3;
+}
+
+message OrderReply {
+  string id = 1;
+  string user_id = 2;
+  string status = 3;
+  int64 total_cents = 4;
+  repeated OrderItemReply items = 5;
+}
+
+message ListOrdersReply {
+  repeated OrderReply orders = 1;
+}

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Data Structures &amp; Algorithms — The Architect's Path, Book II</title>
+<link rel="stylesheet" href="architects-path.css">
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <div>
+    <div class="kicker">The Architect's Path · Book II · Edition 2026</div>
+    <h1>Data Structures<br>&amp; Algorithms</h1>
+    <div class="sub">Not memorized — <strong style="color:#8ff4ee">built</strong>. Every structure coded from scratch and every algorithm derived from its <strong style="color:#8ff4ee">What</strong>, <strong style="color:#8ff4ee">Why</strong>, <strong style="color:#8ff4ee">How</strong>, and <strong style="color:#8ff4ee">When</strong> — so you can pick the right tool under pressure.</div>
+    <div class="stackrow">🧮 Big-O · 🗃️ Hash tables · 🌲 Balanced trees · ⛰️ Heaps · 🕸️ Graphs · 🧩 DP</div>
+    <div class="badges">
+      <span class="badge">⏱️ Complexity analysis</span>
+      <span class="badge">🗃️ Collisions &amp; resizing</span>
+      <span class="badge">🌲 AVL rotations</span>
+      <span class="badge">⛰️ Heaps &amp; heapsort</span>
+      <span class="badge">🔤 Tries</span>
+      <span class="badge">🕸️ BFS · DFS · Dijkstra</span>
+      <span class="badge">🧩 DP taxonomy</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div><strong style="color:#eaf2fb">Every structure is a script you can run.</strong><br>Companion code in <code style="color:#cfe0d6">01-dsa/examples/</code>.</div>
+    <div style="text-align:right">What → Why → How → When<br>Diagrams · Gotchas · Interview Q&amp;A</div>
+  </div>
+</section>
+
+<!-- ============================ TOC ============================ -->
+<section class="toc">
+  <h2>Table of Contents</h2>
+  <div class="rule"></div>
+  <p class="small">Book II of the series — built directly on <strong>Book I</strong>'s language fluency. Part&nbsp;A is the data structures (each coded from scratch, not just described); Part&nbsp;B is the algorithm families that operate on them. Every section is <strong>What → Why → How → When</strong>, then code, gotchas, and interview questions.</p>
+  <ol>
+    <li><span class="n">1</span><div><div class="tt"><a href="#s1">Big-O &amp; Complexity Analysis</a></div><div class="dd">Time vs space · amortized · the growth hierarchy · how to reason</div></div><span class="ic">⏱️</span></li>
+    <li><span class="n">2</span><div><div class="tt"><a href="#s2">Arrays, Linked Lists &amp; Dynamic Arrays</a></div><div class="dd">Contiguous vs pointer · amortized append · when each wins</div></div><span class="ic">🧵</span></li>
+    <li><span class="n">3</span><div><div class="tt"><a href="#s3">Stacks, Queues &amp; Deques</a></div><div class="dd">LIFO · FIFO · the O(1)-both-ends deque · real uses</div></div><span class="ic">🥞</span></li>
+    <li><span class="n">4</span><div><div class="tt"><a href="#s4">Hash Tables — How dict Really Works</a></div><div class="dd">Hashing · collisions · chaining vs open addressing · load factor</div></div><span class="ic">🗃️</span></li>
+    <li><span class="n">5</span><div><div class="tt"><a href="#s5">Trees, BSTs &amp; Balancing</a></div><div class="dd">Traversals · why a BST degenerates · AVL / red-black rotations</div></div><span class="ic">🌲</span></li>
+    <li><span class="n">6</span><div><div class="tt"><a href="#s6">Heaps &amp; Priority Queues</a></div><div class="dd">Array-backed tree · sift up/down · heapsort · O(n) heapify</div></div><span class="ic">⛰️</span></li>
+    <li><span class="n">7</span><div><div class="tt"><a href="#s7">Tries (Prefix Trees)</a></div><div class="dd">O(L) prefix queries · autocomplete · routing tables</div></div><span class="ic">🔤</span></li>
+    <li><span class="n">8</span><div><div class="tt"><a href="#s8">Graphs &amp; Traversal</a></div><div class="dd">Representations · BFS/DFS · Dijkstra · union-find</div></div><span class="ic">🕸️</span></li>
+    <li><span class="n">9</span><div><div class="tt"><a href="#s9">Sorting &amp; Searching</a></div><div class="dd">Quicksort · mergesort · stability · binary search invariants</div></div><span class="ic">🔀</span></li>
+    <li><span class="n">10</span><div><div class="tt"><a href="#s10">Recursion, Divide &amp; Conquer, Backtracking</a></div><div class="dd">Base/recursive case · the call stack · pruning the search tree</div></div><span class="ic">🌀</span></li>
+    <li><span class="n">11</span><div><div class="tt"><a href="#s11">Dynamic Programming — the Taxonomy</a></div><div class="dd">Overlapping subproblems · memoization vs tabulation · the patterns</div></div><span class="ic">🧩</span></li>
+    <li><span class="n">12</span><div><div class="tt"><a href="#s12">Greedy Algorithms &amp; Bit Manipulation</a></div><div class="dd">When greedy is provably right · thinking in bits</div></div><span class="ic">🎯</span></li>
+  </ol>
+  <div class="subitems">Runnable code: <code>data_structures.py</code> · <code>hash_tables.py</code> · <code>balanced_trees.py</code> · <code>heaps.py</code> · <code>tries.py</code> · <code>graphs.py</code> · <code>sorting_searching.py</code> · <code>recursion_dp_greedy_backtracking.py</code> · <code>bit_manipulation.py</code></div>
+</section>
+
+<!-- ============================ CHAPTER SHELL ============================ -->
+<section class="chapter" id="s0">
+  <div class="ch-head">
+    <div class="num">🧮</div>
+    <div><div class="t">Data Structures &amp; Algorithms</div>
+    <div class="s">The vocabulary of efficiency — built from scratch, not memorized</div></div>
+    <div class="ico">🧮</div>
+  </div>
+
+  <p class="lead">Data structures are how you <strong>organize</strong> data; algorithms are how you <strong>operate</strong> on it. Together they decide whether your code answers in a millisecond or times out. This book refuses to treat them as flashcards — you'll <em>build</em> a hash table, rotate an AVL tree, sift a heap, and derive dynamic programming from plain recursion, so the Big-O stops being trivia and becomes intuition. Part&nbsp;A is the structures; Part&nbsp;B is the algorithm families that run on them.</p>
+
+  <div class="coderef"><div class="h">📂 Runnable code in the repo</div><p style="margin:0 0 3px">Every structure and algorithm below is a working, self-testing script — run each with <span class="path">python &lt;file&gt;</span>:</p>
+  <ul>
+    <li><span class="path">01-dsa/examples/data_structures.py</span> — arrays, linked lists, stacks, queues, deques</li>
+    <li><span class="path">01-dsa/examples/hash_tables.py</span> — dict from scratch: chaining &amp; open addressing, load factor, resize</li>
+    <li><span class="path">01-dsa/examples/balanced_trees.py</span> — AVL tree with the four rotations; height stays log&nbsp;n</li>
+    <li><span class="path">01-dsa/examples/heaps.py</span> — binary min-heap, sift up/down, O(n) heapify, heapsort</li>
+    <li><span class="path">01-dsa/examples/tries.py</span> — prefix tree: insert / search / starts_with / autocomplete</li>
+    <li><span class="path">01-dsa/examples/graphs.py</span> — adjacency list, BFS, DFS, Dijkstra, union-find</li>
+    <li><span class="path">01-dsa/examples/sorting_searching.py</span> — quicksort, mergesort, binary search</li>
+    <li><span class="path">01-dsa/examples/recursion_dp_greedy_backtracking.py</span> — recursion, DP, greedy, backtracking</li>
+    <li><span class="path">01-dsa/examples/bit_manipulation.py</span> — bit tricks: XOR loner, subset masks, popcount</li>
+  </ul></div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">Part A — Structures · Part B — Algorithms</div>
+  <p>Chapters 1–8 build the containers (and prove their Big-O by constructing them). Chapters 9–12 are the algorithm families — sorting, recursion, dynamic programming, greedy — that turn those containers into solutions. The through-line: <strong>choose the structure that makes your hot operation cheap</strong>, then apply the algorithm family the problem's shape demands.</p></div>
+
+  <!-- ===================== 1 : BIG-O ===================== -->
+  <h2 class="sec" id="s1">1 · Big-O &amp; Complexity Analysis</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Big-O</em> describes how an algorithm's cost <strong>grows as the input grows</strong> — it ignores constants and small terms to capture the shape of the curve. <code class="inl">O(1)</code> is constant, <code class="inl">O(log n)</code> halving, <code class="inl">O(n)</code> linear, <code class="inl">O(n log n)</code> good sorts, <code class="inl">O(n²)</code> nested loops, <code class="inl">O(2ⁿ)</code> combinatorial. You analyze both <em>time</em> and <em>space</em>.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because it's the language of every design decision. "Is this fast enough?" is unanswerable without knowing how it scales. A choice that's fine at 100 items (O(n²)) melts down at 1,000,000. Big-O is how you predict that <em>before</em> shipping — and how interviewers probe whether you can.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 220" role="img" aria-label="Big-O growth curves">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">How cost grows with input size n</text>
+        <line x1="70" y1="180" x2="850" y2="180" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="70" y1="180" x2="70" y2="40" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="855" y="184" font-size="9" fill="#64748b">n →</text>
+        <text x="52" y="46" font-size="9" fill="#64748b">ops</text>
+        <path d="M70,175 L850,170" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+        <text x="720" y="163" font-size="10" fill="#16a34a" font-weight="700">O(1) / O(log n)</text>
+        <path d="M70,178 L850,70" fill="none" stroke="#0284c7" stroke-width="2.5"/>
+        <text x="770" y="72" font-size="10" fill="#0284c7" font-weight="700">O(n)</text>
+        <path d="M70,178 Q500,120 720,45" fill="none" stroke="#d97706" stroke-width="2.5"/>
+        <text x="600" y="88" font-size="10" fill="#d97706" font-weight="700">O(n log n)</text>
+        <path d="M70,178 Q300,175 250,45" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+        <text x="200" y="60" font-size="10" fill="#dc2626" font-weight="700">O(n²)</text>
+        <path d="M70,178 Q140,178 120,45" fill="none" stroke="#7c3aed" stroke-width="2.5"/>
+        <text x="95" y="60" font-size="10" fill="#7c3aed" font-weight="700">O(2ⁿ)</text>
+      </g>
+    </svg>
+    <figcaption>Figure 2.1 — The growth hierarchy. The gap between classes explodes with n: at a million items, O(n log n) is fine, O(n²) is a trillion operations, and O(2ⁿ) is hopeless. Constants (the "50×") vanish against the shape.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — reading complexity off code</span></div>
+<pre><span class="c"># O(1) — no loop over the input</span>
+first = items[<span class="n">0</span>]
+
+<span class="c"># O(n) — one pass</span>
+<span class="k">for</span> x <span class="k">in</span> items: total += x
+
+<span class="c"># O(n²) — nested pass over the same input</span>
+<span class="k">for</span> a <span class="k">in</span> items:
+    <span class="k">for</span> b <span class="k">in</span> items: compare(a, b)
+
+<span class="c"># O(log n) — the search space HALVES each step</span>
+<span class="k">while</span> lo &lt;= hi:
+    mid = (lo + hi) // <span class="n">2</span>       <span class="c"># binary search</span></pre>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Amortized ≠ per-call</div>
+  <p>Appending to a Python list is <strong>amortized O(1)</strong>: most appends are instant, but occasionally the list doubles its backing array (an O(n) copy). Spread over many appends the average is constant. "Amortized" means "averaged over a sequence of operations" — a distinct idea from average-case (averaged over inputs).</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — hidden costs in one-liners</div>
+  <p><code class="inl">if x in my_list</code> looks O(1) but is <strong>O(n)</strong> — it scans. <code class="inl">list.insert(0, x)</code> is O(n) (shifts everything). String concatenation in a loop is O(n²). The elegant line can hide the quadratic; know your containers' Big-O cold.</p></div>
+
+  <div class="qa"><div class="q">Q · What's the difference between average-case and amortized complexity?</div>
+  <p>Average-case averages over the distribution of <em>inputs</em> (e.g., quicksort is O(n log n) on average). Amortized averages the cost of one operation over a <em>sequence</em> of operations on the same structure (e.g., dynamic-array append is O(1) amortized because the rare O(n) resize is paid back by many cheap appends).</p></div>
+
+  <div class="qa"><div class="q">Q · Why do we drop constants and lower-order terms?</div>
+  <p>Big-O captures <em>growth</em>, not exact runtime. As n → ∞ the highest-order term dominates and machine-specific constants become noise. <code class="inl">3n² + 100n + 5</code> is O(n²) because for large n the n² term swamps the rest.</p></div>
+
+  <!-- ===================== 2 : ARRAYS/LISTS ===================== -->
+  <h2 class="sec" id="s2">2 · Arrays, Linked Lists &amp; Dynamic Arrays</h2>
+
+  <div class="def what"><span class="lab">What</span><p>An <em class="term">array</em> stores elements in one <strong>contiguous</strong> block — index access is O(1) arithmetic. A <em class="term">linked list</em> stores each element in its own node with a <strong>pointer</strong> to the next — no contiguity, so O(1) insert/delete at a known node but O(n) to reach it. Python's <code class="inl">list</code> is a <em class="term">dynamic array</em>: contiguous, but it grows by reallocating.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>This is the first real trade-off in the book: <strong>fast random access vs fast middle-insertion</strong>. Pick wrong and a hot loop turns quadratic. It also teaches <em>cache locality</em> — contiguous arrays are dramatically faster in practice than pointer-chasing lists, even at the same Big-O.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 190" role="img" aria-label="Array vs linked list memory layout">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="230" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0c4a6e">ARRAY — contiguous, O(1) index</text>
+        <text x="680" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#7c3aed">LINKED LIST — scattered nodes + pointers</text>
+        <g>
+          <rect x="40" y="55" width="55" height="40" fill="#e0f2fe" stroke="#0284c7"/><text x="67" y="80" text-anchor="middle" font-size="11" fill="#0c4a6e">A</text>
+          <rect x="95" y="55" width="55" height="40" fill="#e0f2fe" stroke="#0284c7"/><text x="122" y="80" text-anchor="middle" font-size="11" fill="#0c4a6e">B</text>
+          <rect x="150" y="55" width="55" height="40" fill="#e0f2fe" stroke="#0284c7"/><text x="177" y="80" text-anchor="middle" font-size="11" fill="#0c4a6e">C</text>
+          <rect x="205" y="55" width="55" height="40" fill="#e0f2fe" stroke="#0284c7"/><text x="232" y="80" text-anchor="middle" font-size="11" fill="#0c4a6e">D</text>
+          <text x="150" y="118" text-anchor="middle" font-size="9" fill="#0c4a6e">addr = base + i·size → jump straight to any index</text>
+          <text x="150" y="150" text-anchor="middle" font-size="9" fill="#7f1d1d">insert in middle = shift everything right = O(n)</text>
+        </g>
+        <g>
+          <rect x="470" y="55" width="60" height="34" rx="6" fill="#f3e8ff" stroke="#7c3aed"/><text x="500" y="77" text-anchor="middle" font-size="10" fill="#4c1d95">A ·→</text>
+          <rect x="600" y="95" width="60" height="34" rx="6" fill="#f3e8ff" stroke="#7c3aed"/><text x="630" y="117" text-anchor="middle" font-size="10" fill="#4c1d95">B ·→</text>
+          <rect x="720" y="55" width="60" height="34" rx="6" fill="#f3e8ff" stroke="#7c3aed"/><text x="750" y="77" text-anchor="middle" font-size="10" fill="#4c1d95">C ·→</text>
+          <rect x="800" y="110" width="55" height="34" rx="6" fill="#f3e8ff" stroke="#7c3aed"/><text x="827" y="132" text-anchor="middle" font-size="10" fill="#4c1d95">D ∅</text>
+          <path d="M530,72 L598,105" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ar2)"/>
+          <path d="M660,112 L718,80" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ar2)"/>
+          <path d="M780,72 L800,118" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ar2)"/>
+          <text x="660" y="165" text-anchor="middle" font-size="9" fill="#7c3aed">reach index i = follow i pointers = O(n); splice = O(1) once there</text>
+        </g>
+        <defs><marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c3aed"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 2.2 — Contiguous arrays give O(1) indexing and cache-friendly scans but O(n) middle inserts. Linked lists give O(1) splicing once you hold the node, but O(n) to find it and poor cache behavior. Python's <code>list</code> is a dynamic array; <code>collections.deque</code> is a doubly-linked block list.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th>Operation</th><th>Dynamic array (list)</th><th>Linked list</th></tr>
+    <tr><td>Index access <code class="inl">a[i]</code></td><td>O(1)</td><td>O(n)</td></tr>
+    <tr><td>Append at end</td><td>O(1) amortized</td><td>O(1) (with tail)</td></tr>
+    <tr><td>Insert / delete at front</td><td>O(n)</td><td>O(1)</td></tr>
+    <tr><td>Insert / delete in middle</td><td>O(n)</td><td>O(1) once located</td></tr>
+    <tr><td>Cache locality</td><td>excellent</td><td>poor</td></tr>
+  </table>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Why append is amortized O(1)</div>
+  <p>A dynamic array over-allocates: when it fills, it copies into a new block ~2× as big. That copy is O(n), but it happens rarely enough that the <em>total</em> cost of n appends is O(n) — so O(1) each on average. This is the canonical amortized-analysis example.</p></div>
+
+  <div class="qa"><div class="q">Q · When is a linked list actually the right choice?</div>
+  <p>When you do many insertions/deletions at positions you already hold a reference to (e.g., an LRU cache's recency list, or a queue), and you don't need random access. In practice, arrays win most of the time due to cache locality — so reach for a linked structure only when the O(1) splice genuinely dominates your workload.</p></div>
+
+  <!-- ===================== 3 : STACKS/QUEUES ===================== -->
+  <h2 class="sec" id="s3">3 · Stacks, Queues &amp; Deques</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Restricted-access sequences defined by <em>where</em> you add/remove. A <em class="term">stack</em> is LIFO (last-in, first-out) — push/pop at one end. A <em class="term">queue</em> is FIFO (first-in, first-out) — enqueue at the back, dequeue at the front. A <em class="term">deque</em> ("deck") allows O(1) at <strong>both</strong> ends.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because the access discipline <em>is</em> the algorithm. A stack is the call stack, undo history, expression parsing, and DFS. A queue is BFS, task scheduling, and buffering. Choosing the right one makes the solution fall out naturally.</p></div>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre><span class="k">from</span> collections <span class="k">import</span> deque
+
+stack = []                    <span class="c"># a list makes a fine stack</span>
+stack.append(<span class="n">1</span>); stack.pop()    <span class="c"># push / pop — both O(1) at the end</span>
+
+queue = deque()               <span class="c"># NEVER use list.pop(0) — that's O(n)</span>
+queue.append(<span class="n">1</span>)              <span class="c"># enqueue at back — O(1)</span>
+queue.popleft()               <span class="c"># dequeue at front — O(1)</span></pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — <code class="inl">list.pop(0)</code> is O(n)</div>
+  <p>Using a plain list as a queue and calling <code class="inl">pop(0)</code> shifts every remaining element left — O(n) per dequeue, O(n²) overall. Use <code class="inl">collections.deque</code>, whose <code class="inl">popleft()</code> is O(1). This single mistake quietly turns a linear algorithm quadratic.</p></div>
+
+  <div class="qa"><div class="q">Q · Stack vs queue — give a real use for each.</div>
+  <p>Stack (LIFO): the function call stack, undo/redo, balanced-parenthesis checking, and depth-first search. Queue (FIFO): breadth-first search, print/task scheduling, and rate-limiting buffers. If order of processing must match order of arrival, it's a queue; if you want to revisit the most recent thing first, it's a stack.</p></div>
+
+  <!-- ===================== 4 : HASH TABLES ===================== -->
+  <h2 class="sec" id="s4">4 · Hash Tables — How <code class="inl">dict</code> Really Works</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">hash table</em> gives average O(1) lookup by running the key through a <em class="term">hash function</em> to get an array index. Two keys can map to the same slot — a <em class="term">collision</em> — and the resolution strategy defines the table. Python's <code class="inl">dict</code> and <code class="inl">set</code> are hash tables using open addressing.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because the hash table is the workhorse of practical computing — it turns countless O(n²) problems into O(n). Understanding <em>how</em> it hits O(1) (and how it degrades to O(n) with a bad hash or a full table) is one of the most common senior interview probes, and it's why <code class="inl">__hash__</code>/<code class="inl">__eq__</code> from Book&nbsp;I matter.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 210" role="img" aria-label="Collision resolution strategies">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="225" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#0c4a6e">SEPARATE CHAINING — slot holds a bucket list</text>
+        <text x="675" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#b45309">OPEN ADDRESSING — probe to next free slot</text>
+        <g>
+          <rect x="40" y="40" width="40" height="26" fill="#f1f5f9" stroke="#94a3b8"/><text x="60" y="58" text-anchor="middle" font-size="9">0</text>
+          <rect x="40" y="66" width="40" height="26" fill="#e0f2fe" stroke="#0284c7"/><text x="60" y="84" text-anchor="middle" font-size="9">1</text>
+          <rect x="40" y="92" width="40" height="26" fill="#f1f5f9" stroke="#94a3b8"/><text x="60" y="110" text-anchor="middle" font-size="9">2</text>
+          <rect x="40" y="118" width="40" height="26" fill="#e0f2fe" stroke="#0284c7"/><text x="60" y="136" text-anchor="middle" font-size="9">3</text>
+          <rect x="110" y="66" width="60" height="26" rx="5" fill="#dbeafe"/><text x="140" y="84" text-anchor="middle" font-size="9">"cat"</text>
+          <rect x="180" y="66" width="60" height="26" rx="5" fill="#dbeafe"/><text x="210" y="84" text-anchor="middle" font-size="9">"tac"</text>
+          <path d="M80,79 L108,79" stroke="#0284c7" stroke-width="1.5" marker-end="url(#ar4)"/>
+          <path d="M170,79 L178,79" stroke="#0284c7" stroke-width="1.5" marker-end="url(#ar4)"/>
+          <rect x="110" y="118" width="60" height="26" rx="5" fill="#dbeafe"/><text x="140" y="136" text-anchor="middle" font-size="9">"dog"</text>
+          <path d="M80,131 L108,131" stroke="#0284c7" stroke-width="1.5" marker-end="url(#ar4)"/>
+          <text x="230" y="170" text-anchor="middle" font-size="9" fill="#0c4a6e">"cat" &amp; "tac" collide at slot 1 → appended to the same bucket</text>
+        </g>
+        <g>
+          <rect x="500" y="40" width="150" height="26" fill="#fef3c7" stroke="#d97706"/><text x="575" y="58" text-anchor="middle" font-size="9">slot 1: "cat"</text>
+          <rect x="500" y="66" width="150" height="26" fill="#fef3c7" stroke="#d97706"/><text x="575" y="84" text-anchor="middle" font-size="9">slot 2: "tac" (probed +1)</text>
+          <rect x="500" y="92" width="150" height="26" fill="#f1f5f9" stroke="#94a3b8"/><text x="575" y="110" text-anchor="middle" font-size="9">slot 3: empty</text>
+          <path d="M660,53 C700,53 700,79 660,79" fill="none" stroke="#d97706" stroke-width="1.5" marker-end="url(#ar4b)"/>
+          <text x="720" y="70" font-size="9" fill="#b45309">collision →</text>
+          <text x="720" y="83" font-size="9" fill="#b45309">step forward</text>
+          <text x="675" y="150" text-anchor="middle" font-size="9" fill="#b45309">all entries live in ONE array; delete needs a tombstone</text>
+          <text x="675" y="170" text-anchor="middle" font-size="9" fill="#b45309">cache-friendly, but clusters as load factor rises</text>
+        </g>
+        <defs>
+          <marker id="ar4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0284c7"/></marker>
+          <marker id="ar4b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d97706"/></marker>
+        </defs>
+      </g>
+    </svg>
+    <figcaption>Figure 2.3 — Two collision strategies. Chaining keeps a list per slot (simple, degrades gracefully). Open addressing probes forward to the next free slot (cache-friendly, needs tombstones on delete, clusters under high load). Both are built from scratch in <code>hash_tables.py</code>.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — the core of a hash map (chaining)</span></div>
+<pre><span class="k">def</span> <span class="f">_index</span>(self, key):
+    <span class="k">return</span> <span class="f">hash</span>(key) % self._cap        <span class="c"># fold hash into [0, cap)</span>
+
+<span class="k">def</span> <span class="f">put</span>(self, key, value):
+    bucket = self._buckets[self._index(key)]
+    <span class="k">for</span> i, (k, _) <span class="k">in</span> <span class="f">enumerate</span>(bucket):
+        <span class="k">if</span> k == key: bucket[i] = (key, value); <span class="k">return</span>   <span class="c"># update</span>
+    bucket.append((key, value)); self._size += <span class="n">1</span>
+    <span class="k">if</span> self._size / self._cap &gt; <span class="n">0.75</span>:       <span class="c"># load factor threshold</span>
+        self._resize(self._cap * <span class="n">2</span>)          <span class="c"># re-hash into a bigger table</span></pre>
+
+  <div class="def when"><span class="lab">When — load factor &amp; resizing</span><p>The <em class="term">load factor</em> = entries / slots. As it rises, collisions rise and O(1) drifts toward O(n). Tables therefore <strong>resize</strong> (double and re-hash everything) once past a threshold (~0.66 for CPython's dict). Resizing is O(n) but amortized away — the price of keeping lookups constant.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — a bad hash destroys O(1)</div>
+  <p>If every key hashes to the same slot, a hash table degenerates into a linked list: O(n) lookups. This is the basis of hash-flooding denial-of-service attacks — why Python randomizes string hashing per process (<code class="inl">PYTHONHASHSEED</code>). Custom <code class="inl">__hash__</code> should spread values well and stay consistent with <code class="inl">__eq__</code>.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Chaining vs open addressing</div>
+  <p><strong>Chaining</strong> tolerates high load factors and simple deletes but scatters memory (pointer chasing). <strong>Open addressing</strong> keeps everything in one cache-friendly array but clusters as it fills and needs <em>tombstones</em> so deletes don't break probe chains. CPython's dict uses open addressing with a clever probe sequence.</p></div>
+
+  <div class="qa"><div class="q">Q · How does a hash table achieve O(1) lookup, and when does it fail?</div>
+  <p>It converts the key to an array index in O(1) via hashing, so it jumps straight to the slot. It degrades to O(n) when many keys collide — from a poor hash function, adversarial input, or a load factor that's too high. Resizing and a good hash keep the average constant.</p></div>
+
+  <div class="qa"><div class="q">Q · Chaining vs open addressing — trade-offs?</div>
+  <p>Chaining stores a list per bucket: simple, handles high load and deletes gracefully, but uses extra memory and chases pointers. Open addressing stores all entries in the array itself: cache-friendly and compact, but suffers clustering at high load and needs tombstones for deletion. Open addressing usually wins on modern hardware at moderate load factors.</p></div>
+
+  <!-- ===================== 5 : TREES/BST ===================== -->
+  <h2 class="sec" id="s5">5 · Trees, BSTs &amp; Balancing</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">tree</em> is a hierarchy of nodes with one root and no cycles. A <em class="term">binary search tree</em> (BST) orders it: every left descendant &lt; node &lt; every right descendant, giving O(log n) search — <em>if balanced</em>. A <em class="term">self-balancing</em> tree (AVL, red-black) performs <em class="term">rotations</em> after each insert to keep height ≈ log n.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because a plain BST built from sorted data degenerates into a linked list — O(n), the very thing it was meant to beat. Balanced trees guarantee O(log n) <em>worst case</em>, which is why they back ordered maps (C++ <code class="inl">std::map</code>), database indexes (B-trees are the disk cousin), and range queries a hash table can't do.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 200" role="img" aria-label="AVL rotation restoring balance">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="200" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#7f1d1d">UNBALANCED (right-heavy)</text>
+        <text x="690" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">AFTER LEFT ROTATION — balanced</text>
+        <g>
+          <circle cx="120" cy="50" r="18" fill="#fee2e2" stroke="#dc2626"/><text x="120" y="55" text-anchor="middle" font-size="11" fill="#7f1d1d">10</text>
+          <circle cx="180" cy="100" r="18" fill="#fee2e2" stroke="#dc2626"/><text x="180" y="105" text-anchor="middle" font-size="11" fill="#7f1d1d">20</text>
+          <circle cx="240" cy="150" r="18" fill="#fee2e2" stroke="#dc2626"/><text x="240" y="155" text-anchor="middle" font-size="11" fill="#7f1d1d">30</text>
+          <path d="M133,62 L167,88" stroke="#dc2626" stroke-width="2"/>
+          <path d="M193,112 L227,138" stroke="#dc2626" stroke-width="2"/>
+          <text x="180" y="185" text-anchor="middle" font-size="9" fill="#7f1d1d">height 3 for 3 nodes → a chain (O(n))</text>
+        </g>
+        <text x="440" y="105" font-size="26" fill="#64748b">→</text>
+        <g>
+          <circle cx="690" cy="60" r="18" fill="#dcfce7" stroke="#16a34a"/><text x="690" y="65" text-anchor="middle" font-size="11" fill="#14532d">20</text>
+          <circle cx="630" cy="120" r="18" fill="#dcfce7" stroke="#16a34a"/><text x="630" y="125" text-anchor="middle" font-size="11" fill="#14532d">10</text>
+          <circle cx="750" cy="120" r="18" fill="#dcfce7" stroke="#16a34a"/><text x="750" y="125" text-anchor="middle" font-size="11" fill="#14532d">30</text>
+          <path d="M677,72 L643,108" stroke="#16a34a" stroke-width="2"/>
+          <path d="M703,72 L737,108" stroke="#16a34a" stroke-width="2"/>
+          <text x="690" y="165" text-anchor="middle" font-size="9" fill="#14532d">height 2 → O(log n) restored</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Figure 2.4 — A left rotation lifts the middle key to the root, rebalancing a right-heavy chain. AVL insert applies the matching rotation (LL / RR / LR / RL) whenever a node's subtree heights differ by more than 1. Built in <code>balanced_trees.py</code>, where 1,000 sorted inserts stay at height 10.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — a left rotation</span></div>
+<pre><span class="k">def</span> <span class="f">_rotate_left</span>(x):
+    y = x.right
+    x.right = y.left     <span class="c"># y's left subtree becomes x's right</span>
+    y.left = x           <span class="c"># x sinks under y</span>
+    _update(x); _update(y)   <span class="c"># fix cached heights, bottom-up</span>
+    <span class="k">return</span> y             <span class="c"># y is the new subtree root</span></pre>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Tree traversals</div>
+  <p><strong>In-order</strong> (left, node, right) visits a BST in sorted order. <strong>Pre-order</strong> (node, left, right) copies/serializes a tree. <strong>Post-order</strong> (left, right, node) frees/evaluates bottom-up. <strong>Level-order</strong> (BFS with a queue) processes tier by tier. Knowing which traversal yields what is a frequent interview beat.</p></div>
+
+  <div class="box analogy"><span class="ic">🧠</span><div class="h">AVL vs red-black</div>
+  <p>Both guarantee O(log n). <strong>AVL</strong> is more rigidly balanced → faster lookups, more rotations on write. <strong>Red-black</strong> is looser → fewer rotations, better for write-heavy loads (which is why language libraries and the Linux kernel favor it). Same goal, different balance/rebalance trade-off.</p></div>
+
+  <div class="qa"><div class="q">Q · Why not always use a hash table instead of a balanced tree?</div>
+  <p>Hash tables give O(1) point lookups but no <em>order</em>: you can't ask "smallest key ≥ x," iterate in sorted order, or do range queries efficiently. Balanced BSTs give O(log n) for all of those. Choose a tree when ordering/ranges matter, a hash table when you only need key→value by exact key.</p></div>
+
+  <div class="qa"><div class="q">Q · What makes a BST degenerate, and how is it fixed?</div>
+  <p>Inserting sorted (or reverse-sorted) keys into a naive BST creates a chain of height n — O(n) operations. Self-balancing trees fix it by rotating after inserts/deletes to keep the height within a constant factor of log n, restoring the O(log n) guarantee regardless of insertion order.</p></div>
+
+  <!-- ===================== 6 : HEAPS ===================== -->
+  <h2 class="sec" id="s6">6 · Heaps &amp; Priority Queues</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">binary heap</em> is a complete binary tree stored in a <strong>flat array</strong> (no pointers), maintaining the heap property: in a <em>min-heap</em>, every parent ≤ its children, so the minimum is always at index 0. It's the standard implementation of a <em class="term">priority queue</em>.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because "always give me the smallest/largest next" is everywhere: Dijkstra's shortest path, event simulation, task scheduling, top-k queries, and merging sorted streams. A heap does peek-min in O(1) and push/pop in O(log n) — far better than sorting repeatedly.</p></div>
+
+  <div class="def how"><span class="lab">How — array arithmetic replaces pointers</span></div>
+<pre><span class="c"># for the node at index i:</span>
+parent = (i - <span class="n">1</span>) // <span class="n">2</span>
+left   = <span class="n">2</span>*i + <span class="n">1</span>
+right  = <span class="n">2</span>*i + <span class="n">2</span>
+
+<span class="k">def</span> <span class="f">_sift_up</span>(self, i):        <span class="c"># after push: bubble new leaf up</span>
+    <span class="k">while</span> i &gt; <span class="n">0</span> <span class="k">and</span> self._a[i] &lt; self._a[(i-<span class="n">1</span>)//<span class="n">2</span>]:
+        p = (i-<span class="n">1</span>)//<span class="n">2</span>
+        self._a[i], self._a[p] = self._a[p], self._a[i]
+        i = p                     <span class="c"># O(log n): one swap per level</span></pre>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">heapify is O(n), not O(n log n)</div>
+  <p>Building a heap from an existing array by sifting <em>down</em> from the middle to the root is O(n) — the leaves (half the nodes) do no work, and higher nodes are few. Pushing n items one at a time would be O(n log n). This "build cheaply, then extract" is exactly how <strong>heapsort</strong> achieves O(n log n) in place.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — Python's <code class="inl">heapq</code> is a min-heap only</div>
+  <p>There's no max-heap flag. For a max-heap, push negated values (<code class="inl">heapq.heappush(h, -x)</code>) or wrap items in a reverse-comparing key. And a heap is <em>not</em> sorted — it only guarantees the root is the extreme; iterating the array is not ordered.</p></div>
+
+  <div class="qa"><div class="q">Q · Heap vs sorted list for a priority queue?</div>
+  <p>A heap gives O(1) peek and O(log n) insert/extract with no full ordering maintained. A sorted list gives O(1) peek and O(1) extract but O(n) insert (shifting). For a workload of interleaved inserts and extract-min (like Dijkstra), the heap's O(log n) insert wins decisively.</p></div>
+
+  <div class="qa"><div class="q">Q · How would you find the k largest elements in a stream?</div>
+  <p>Keep a <em>min</em>-heap of size k: push each item, and if the heap exceeds k, pop the smallest. What remains are the k largest, in O(n log k) time and O(k) space — far better than sorting all n items when k ≪ n.</p></div>
+
+  <!-- ===================== 7 : TRIES ===================== -->
+  <h2 class="sec" id="s7">7 · Tries (Prefix Trees)</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">trie</em> stores strings by <strong>sharing prefixes</strong>: each node is a character, a root-to-node path spells a prefix, and a flag marks the end of a real word. Insert, search, and prefix-check are all O(L) where L is the key length — independent of how many words are stored.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because it answers questions a hash set fundamentally can't: "which words start with <code class="inl">pre</code>?" A hash set knows only exact membership. Tries power autocomplete, spell-checkers, IP routing tables (longest-prefix match), and T9 text entry.</p></div>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre><span class="k">def</span> <span class="f">insert</span>(self, word):
+    node = self._root
+    <span class="k">for</span> ch <span class="k">in</span> word:
+        node = node.children.setdefault(ch, _TrieNode())   <span class="c"># walk/extend</span>
+    node.is_word = <span class="k">True</span>       <span class="c"># mark the end of a real word</span>
+
+<span class="k">def</span> <span class="f">autocomplete</span>(self, prefix):
+    node = self._find(prefix)     <span class="c"># O(L) to reach the prefix</span>
+    <span class="k">return</span> [] <span class="k">if</span> node <span class="k">is</span> <span class="k">None</span> <span class="k">else</span> self._collect(node, prefix)   <span class="c"># DFS the subtree</span></pre>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Trie vs hash set</div>
+  <p>A hash set: O(L) exact lookup, no prefix support, compact. A trie: O(L) exact <em>and</em> prefix lookup, plus sorted iteration for free, at the cost of more memory (a node per character). Use a trie precisely when <strong>prefix</strong> operations are the point.</p></div>
+
+  <div class="qa"><div class="q">Q · When would you use a trie over a hash map?</div>
+  <p>When you need prefix operations — autocomplete, "all keys starting with X," or longest-prefix matching (IP routing) — which a hash map can't do without scanning everything. The trie trades extra memory for O(L) prefix queries and naturally ordered traversal.</p></div>
+
+  <!-- ===================== 8 : GRAPHS ===================== -->
+  <h2 class="sec" id="s8">8 · Graphs &amp; Traversal</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">graph</em> is nodes (vertices) connected by edges — the most general structure, modeling anything relational: maps, social networks, dependencies, the web. Stored as an <em class="term">adjacency list</em> (dict of neighbor lists, sparse-friendly) or <em class="term">adjacency matrix</em> (2-D grid, dense/fast-edge-check). You explore it with <em class="term">BFS</em> or <em class="term">DFS</em>.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because an astonishing range of problems <em>are</em> graph problems in disguise: shortest routes, dependency ordering (topological sort), cycle detection, connectivity, and scheduling. Recognizing "this is a graph" and reaching for the right traversal is a core problem-solving skill.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 200" role="img" aria-label="BFS versus DFS traversal order">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="225" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#0284c7">BFS — queue, tier by tier (shortest path in unweighted)</text>
+        <text x="675" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#7c3aed">DFS — stack/recursion, deep first</text>
+        <g stroke="#94a3b8" stroke-width="1.5">
+          <line x1="150" y1="55" x2="100" y2="110"/><line x1="150" y1="55" x2="200" y2="110"/>
+          <line x1="100" y1="110" x2="70" y2="165"/><line x1="100" y1="110" x2="150" y2="165"/>
+        </g>
+        <circle cx="150" cy="55" r="16" fill="#e0f2fe" stroke="#0284c7"/><text x="150" y="60" text-anchor="middle" font-size="10">1</text>
+        <circle cx="100" cy="110" r="16" fill="#e0f2fe" stroke="#0284c7"/><text x="100" y="115" text-anchor="middle" font-size="10">2</text>
+        <circle cx="200" cy="110" r="16" fill="#e0f2fe" stroke="#0284c7"/><text x="200" y="115" text-anchor="middle" font-size="10">3</text>
+        <circle cx="70" cy="165" r="16" fill="#e0f2fe" stroke="#0284c7"/><text x="70" y="170" text-anchor="middle" font-size="10">4</text>
+        <circle cx="150" cy="165" r="16" fill="#e0f2fe" stroke="#0284c7"/><text x="150" y="170" text-anchor="middle" font-size="10">5</text>
+        <text x="290" y="115" text-anchor="middle" font-size="9" fill="#0284c7">visit 1,2,3,4,5</text>
+        <g stroke="#c4b5fd" stroke-width="1.5">
+          <line x1="600" y1="55" x2="550" y2="110"/><line x1="600" y1="55" x2="650" y2="110"/>
+          <line x1="550" y1="110" x2="520" y2="165"/><line x1="550" y1="110" x2="600" y2="165"/>
+        </g>
+        <circle cx="600" cy="55" r="16" fill="#f3e8ff" stroke="#7c3aed"/><text x="600" y="60" text-anchor="middle" font-size="10">1</text>
+        <circle cx="550" cy="110" r="16" fill="#f3e8ff" stroke="#7c3aed"/><text x="550" y="115" text-anchor="middle" font-size="10">2</text>
+        <circle cx="650" cy="110" r="16" fill="#f3e8ff" stroke="#7c3aed"/><text x="650" y="115" text-anchor="middle" font-size="10">5</text>
+        <circle cx="520" cy="165" r="16" fill="#f3e8ff" stroke="#7c3aed"/><text x="520" y="170" text-anchor="middle" font-size="10">3</text>
+        <circle cx="600" cy="165" r="16" fill="#f3e8ff" stroke="#7c3aed"/><text x="600" y="170" text-anchor="middle" font-size="10">4</text>
+        <text x="740" y="115" text-anchor="middle" font-size="9" fill="#7c3aed">visit 1,2,3,4,5</text>
+      </g>
+    </svg>
+    <figcaption>Figure 2.5 — BFS uses a <em>queue</em> and fans out level by level (finds shortest paths in unweighted graphs); DFS uses a <em>stack</em>/recursion and plunges deep before backtracking (natural for cycle detection and topological sort). Both, plus Dijkstra and union-find, live in <code>graphs.py</code>.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — BFS (shortest path, unweighted)</span></div>
+<pre><span class="k">from</span> collections <span class="k">import</span> deque
+<span class="k">def</span> <span class="f">bfs</span>(graph, start):
+    seen, q = {start}, deque([start])
+    <span class="k">while</span> q:
+        node = q.popleft()          <span class="c"># FIFO → nearest-first</span>
+        <span class="k">for</span> nbr <span class="k">in</span> graph[node]:
+            <span class="k">if</span> nbr <span class="k">not</span> <span class="k">in</span> seen:
+                seen.add(nbr); q.append(nbr)   <span class="c"># mark on enqueue, not dequeue</span></pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — mark visited on <em>enqueue</em>, not dequeue</div>
+  <p>In BFS, add a node to <code class="inl">seen</code> the moment you push it. Marking only when you pop lets the same node be enqueued multiple times before it's processed — inflating the queue and, in dense graphs, causing exponential blowup. Also: BFS's shortest-path guarantee holds only for <strong>unweighted</strong> graphs — weighted graphs need Dijkstra.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Dijkstra &amp; union-find</div>
+  <p><strong>Dijkstra</strong> = BFS with a <em>priority queue</em>: always expand the closest unfinished node, giving shortest paths on non-negative weighted graphs in O(E log V). <strong>Union-find</strong> (disjoint-set) tracks connectivity with near-O(1) union/find via path compression — the backbone of Kruskal's MST and cycle detection.</p></div>
+
+  <div class="qa"><div class="q">Q · BFS vs DFS — when do you pick each?</div>
+  <p>BFS (queue) explores nearest-first — use it for shortest paths in unweighted graphs and level-order problems. DFS (stack/recursion) goes deep — use it for cycle detection, topological sorting, connected components, and exhaustive path/backtracking searches. Memory differs too: BFS holds a whole frontier; DFS holds one path.</p></div>
+
+  <div class="qa"><div class="q">Q · Adjacency list vs adjacency matrix?</div>
+  <p>Adjacency list uses O(V+E) space and is efficient for sparse graphs and iterating neighbors — the usual choice. Adjacency matrix uses O(V²) space but gives O(1) edge-existence checks, good for dense graphs or algorithms that query arbitrary edges frequently.</p></div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">End of Part A</div>
+  <p>You've built the containers and can defend every Big-O by how they're constructed. Part&nbsp;B is the algorithm families — sorting, recursion, dynamic programming, greedy — that operate on these structures to actually solve problems.</p></div>
+
+  <!-- ===================== 9 : SORTING/SEARCHING ===================== -->
+  <h2 class="sec" id="s9">9 · Sorting &amp; Searching</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Sorting arranges data by a key; searching finds an element. The comparison sorts that matter: <em class="term">mergesort</em> (divide-and-conquer, stable, guaranteed O(n log n)), <em class="term">quicksort</em> (partition around a pivot, in-place, O(n log n) average but O(n²) worst), and <em class="term">binary search</em> (O(log n) on <strong>sorted</strong> data by halving).</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Sorting is the pre-processing that unlocks binary search, deduplication, and countless greedy algorithms. And the classic sorts teach the two most important algorithmic paradigms — divide-and-conquer and the space/stability trade-off — that recur throughout the field.</p></div>
+
+  <table>
+    <tr><th>Algorithm</th><th>Average</th><th>Worst</th><th>Space</th><th>Stable?</th><th>Notes</th></tr>
+    <tr><td>Quicksort</td><td>O(n log n)</td><td>O(n²)</td><td>O(log n)</td><td>no</td><td>fast in practice, in-place</td></tr>
+    <tr><td>Mergesort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>yes</td><td>stable, predictable</td></tr>
+    <tr><td>Heapsort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(1)</td><td>no</td><td>in-place, no worst case</td></tr>
+    <tr><td>Timsort (Python)</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>yes</td><td><code class="inl">sorted()</code>; great on real data</td></tr>
+    <tr><td>Binary search</td><td>O(log n)</td><td>O(log n)</td><td>O(1)</td><td>—</td><td>requires sorted input</td></tr>
+  </table>
+
+  <div class="def how"><span class="lab">How — binary search (get the invariant right)</span></div>
+<pre><span class="k">def</span> <span class="f">binary_search</span>(a, target):
+    lo, hi = <span class="n">0</span>, <span class="f">len</span>(a) - <span class="n">1</span>       <span class="c"># INCLUSIVE bounds</span>
+    <span class="k">while</span> lo &lt;= hi:               <span class="c"># &lt;= because hi is a valid index</span>
+        mid = (lo + hi) // <span class="n">2</span>
+        <span class="k">if</span> a[mid] == target: <span class="k">return</span> mid
+        <span class="k">if</span> a[mid] &lt; target: lo = mid + <span class="n">1</span>   <span class="c"># discard left half</span>
+        <span class="k">else</span>: hi = mid - <span class="n">1</span>              <span class="c"># discard right half</span>
+    <span class="k">return</span> -<span class="n">1</span></pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — binary search off-by-one</div>
+  <p>The endless bug: mismatching the bound convention. If <code class="inl">hi = len(a) - 1</code> (inclusive), the loop is <code class="inl">while lo &lt;= hi</code> and you move to <code class="inl">mid ± 1</code>. If <code class="inl">hi = len(a)</code> (exclusive), it's <code class="inl">while lo &lt; hi</code>. Mixing the two causes infinite loops or missed elements. Pick one convention and hold it.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Stability matters</div>
+  <p>A <em>stable</em> sort preserves the relative order of equal keys — essential when sorting by multiple criteria in passes (sort by name, then stably by age). Python's <code class="inl">sorted()</code> (Timsort) is stable; quicksort and heapsort are not. This is a favorite interview distinction.</p></div>
+
+  <div class="qa"><div class="q">Q · Quicksort vs mergesort — trade-offs?</div>
+  <p>Quicksort sorts in place with O(log n) stack space and is usually fastest in practice, but has an O(n²) worst case (mitigated by randomized/median pivots) and isn't stable. Mergesort guarantees O(n log n) and is stable, but needs O(n) extra space. Choose mergesort when you need stability or worst-case guarantees, quicksort for in-place speed.</p></div>
+
+  <div class="qa"><div class="q">Q · Why does binary search require sorted data?</div>
+  <p>Each step discards half the search space based on comparing the target to the middle element — that decision is only valid if the data is ordered. On unsorted data the halving assumption breaks, and you must fall back to an O(n) linear scan.</p></div>
+
+  <!-- ===================== 10 : RECURSION ===================== -->
+  <h2 class="sec" id="s10">10 · Recursion, Divide &amp; Conquer, Backtracking</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Recursion</em> solves a problem by solving smaller instances of itself, bottoming out at a <em class="term">base case</em>. <em class="term">Divide &amp; conquer</em> splits into independent subproblems, solves each, and combines (mergesort, quicksort). <em class="term">Backtracking</em> explores a decision tree, abandoning ("pruning") branches that can't lead to a solution.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because recursion is the natural shape of hierarchical data (trees, filesystems) and of "try all combinations" problems (permutations, N-queens, sudoku). Backtracking with good pruning turns an intractable brute force into something that finishes.</p></div>
+
+  <div class="def how"><span class="lab">How — backtracking skeleton</span></div>
+<pre><span class="k">def</span> <span class="f">backtrack</span>(state, choices, results):
+    <span class="k">if</span> is_solution(state):
+        results.append(state.copy()); <span class="k">return</span>       <span class="c"># base case</span>
+    <span class="k">for</span> choice <span class="k">in</span> choices:
+        <span class="k">if</span> <span class="k">not</span> valid(state, choice): <span class="k">continue</span>       <span class="c"># PRUNE dead branches</span>
+        state.append(choice)                     <span class="c"># choose</span>
+        backtrack(state, choices, results)       <span class="c"># explore</span>
+        state.pop()                              <span class="c"># un-choose (backtrack)</span></pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — missing/faulty base case → stack overflow</div>
+  <p>Every recursion needs a base case that's actually reached, and each call must move <em>toward</em> it. Miss that and you get infinite recursion — Python raises <code class="inl">RecursionError</code> at ~1000 frames by default. Deep-but-finite recursion (e.g., a 10,000-node linked list) can hit the same limit; convert to iteration or raise the limit deliberately.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">The call stack IS a stack</div>
+  <p>Recursion uses the call stack — the same LIFO structure from §3. Any recursion can be rewritten iteratively with an explicit stack, which is how you avoid <code class="inl">RecursionError</code> for very deep problems and gain fine control over traversal order.</p></div>
+
+  <div class="qa"><div class="q">Q · What are the two essential parts of any recursion?</div>
+  <p>A base case (a stopping condition solved directly, without recursing) and a recursive case that reduces the problem toward the base case. Without a reachable base case you recurse forever; without progress toward it, likewise. Every correct recursion has both.</p></div>
+
+  <div class="qa"><div class="q">Q · How does backtracking differ from brute force?</div>
+  <p>Both explore the space of candidates, but backtracking <em>prunes</em>: it abandons a partial solution the instant it can't possibly succeed, cutting whole subtrees. Brute force enumerates everything blindly. Good pruning is what makes N-queens or sudoku solvable in reasonable time.</p></div>
+
+  <!-- ===================== 11 : DP ===================== -->
+  <h2 class="sec" id="s11">11 · Dynamic Programming — the Taxonomy</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Dynamic programming</em> (DP) solves problems with <strong>overlapping subproblems</strong> and <strong>optimal substructure</strong> by solving each subproblem <em>once</em> and reusing the answer. Two styles: <em class="term">memoization</em> (top-down recursion + a cache) and <em class="term">tabulation</em> (bottom-up, filling a table).</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because DP is how you turn an exponential recursion into a polynomial one — the difference between O(2ⁿ) and O(n). It's the hardest interview category precisely because it requires <em>recognizing</em> the two hallmarks and defining the right state. Master the taxonomy and most DP problems collapse into a handful of templates.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 190" role="img" aria-label="Overlapping subproblems in Fibonacci">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">fib(5) — the SAME subproblems recur (memoize once, reuse)</text>
+        <circle cx="450" cy="48" r="16" fill="#e0f2fe" stroke="#0284c7"/><text x="450" y="53" text-anchor="middle" font-size="10">5</text>
+        <circle cx="330" cy="95" r="16" fill="#e0f2fe" stroke="#0284c7"/><text x="330" y="100" text-anchor="middle" font-size="10">4</text>
+        <circle cx="570" cy="95" r="16" fill="#fee2e2" stroke="#dc2626"/><text x="570" y="100" text-anchor="middle" font-size="10">3</text>
+        <circle cx="250" cy="150" r="16" fill="#fee2e2" stroke="#dc2626"/><text x="250" y="155" text-anchor="middle" font-size="10">3</text>
+        <circle cx="400" cy="150" r="16" fill="#fef3c7" stroke="#d97706"/><text x="400" y="155" text-anchor="middle" font-size="10">2</text>
+        <circle cx="640" cy="150" r="16" fill="#fef3c7" stroke="#d97706"/><text x="640" y="155" text-anchor="middle" font-size="10">2</text>
+        <circle cx="510" cy="150" r="16" fill="#fef3c7" stroke="#d97706"/><text x="510" y="155" text-anchor="middle" font-size="10">2</text>
+        <g stroke="#94a3b8" stroke-width="1.3">
+          <line x1="438" y1="60" x2="342" y2="83"/><line x1="462" y1="60" x2="558" y2="83"/>
+          <line x1="318" y1="107" x2="262" y2="138"/><line x1="342" y1="107" x2="388" y2="138"/>
+          <line x1="558" y1="107" x2="518" y2="138"/><line x1="582" y1="107" x2="628" y2="138"/>
+        </g>
+        <text x="450" y="182" text-anchor="middle" font-size="9" fill="#7f1d1d">fib(3) computed twice, fib(2) three times → cache each state once → O(n) instead of O(2ⁿ)</text>
+      </g>
+    </svg>
+    <figcaption>Figure 2.7 — DP's defining trait: the recursion tree revisits identical subproblems (fib(3), fib(2)…). Caching each state's answer once collapses an O(2ⁿ) tree into an O(n) computation. This is memoization; tabulation fills the same answers bottom-up.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — the same problem, both styles</span></div>
+<pre><span class="k">from</span> functools <span class="k">import</span> lru_cache
+
+<span class="nd">@lru_cache(maxsize=None)</span>        <span class="c"># TOP-DOWN memoization: cache decorates recursion</span>
+<span class="k">def</span> <span class="f">fib_memo</span>(n):
+    <span class="k">return</span> n <span class="k">if</span> n &lt; <span class="n">2</span> <span class="k">else</span> fib_memo(n-<span class="n">1</span>) + fib_memo(n-<span class="n">2</span>)
+
+<span class="k">def</span> <span class="f">fib_tab</span>(n):               <span class="c"># BOTTOM-UP tabulation: fill a table iteratively</span>
+    <span class="k">if</span> n &lt; <span class="n">2</span>: <span class="k">return</span> n
+    a, b = <span class="n">0</span>, <span class="n">1</span>
+    <span class="k">for</span> _ <span class="k">in</span> <span class="f">range</span>(n - <span class="n">1</span>): a, b = b, a + b   <span class="c"># O(n) time, O(1) space</span>
+    <span class="k">return</span> b</pre>
+
+  <table>
+    <tr><th>DP pattern</th><th>State (what you memoize)</th><th>Classic problem</th></tr>
+    <tr><td>1-D sequence</td><td><code class="inl">dp[i]</code> = best up to index i</td><td>climbing stairs, house robber, LIS</td></tr>
+    <tr><td>2-D grid</td><td><code class="inl">dp[i][j]</code> = best at cell (i,j)</td><td>unique paths, min path sum</td></tr>
+    <tr><td>Two sequences</td><td><code class="inl">dp[i][j]</code> = compare prefixes</td><td>LCS, edit distance</td></tr>
+    <tr><td>Knapsack / subset</td><td><code class="inl">dp[i][w]</code> = value with capacity w</td><td>0/1 knapsack, coin change, partition</td></tr>
+    <tr><td>Interval</td><td><code class="inl">dp[i][j]</code> = best over range i…j</td><td>matrix-chain, burst balloons</td></tr>
+  </table>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Memoization vs tabulation</div>
+  <p><strong>Memoization</strong> (top-down) mirrors the recursion, only computes the states you actually need, and is easy to write from a brute-force solution. <strong>Tabulation</strong> (bottom-up) avoids recursion overhead/stack limits and often enables <em>space optimization</em> (keep only the last row/two variables, as in <code class="inl">fib_tab</code>). Same complexity, different ergonomics.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — is it actually DP?</div>
+  <p>DP requires <em>both</em> overlapping subproblems <em>and</em> optimal substructure. If subproblems don't repeat, memoization buys nothing — it's plain divide-and-conquer. If a locally optimal choice is always globally optimal, a <em>greedy</em> algorithm is simpler and faster. Misclassifying wastes time; identify the structure first.</p></div>
+
+  <div class="qa"><div class="q">Q · What two properties make a problem suitable for DP?</div>
+  <p>Overlapping subproblems (the same smaller problems recur, so caching pays off) and optimal substructure (an optimal solution is built from optimal solutions to subproblems). Without overlap it's just divide-and-conquer; without optimal substructure DP doesn't apply.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you approach a DP problem you've never seen?</div>
+  <p>Define the state (what does <code class="inl">dp[i]</code> or <code class="inl">dp[i][j]</code> mean?), write the recurrence (how does a state depend on smaller states?), identify base cases, then choose memoization or tabulation and consider space optimization. Starting from a correct brute-force recursion and adding a cache is the reliable path.</p></div>
+
+  <!-- ===================== 12 : GREEDY/BITS ===================== -->
+  <h2 class="sec" id="s12">12 · Greedy Algorithms &amp; Bit Manipulation</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">greedy</em> algorithm builds a solution by always taking the locally best choice, never reconsidering. It's correct only when the problem has the <em class="term">greedy-choice property</em> (a local optimum leads to a global one). <em class="term">Bit manipulation</em> operates directly on binary representations for O(1)-space, branch-free tricks.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Greedy is the simplest, fastest paradigm <em>when it applies</em> — interval scheduling, Huffman coding, Dijkstra, and MST are all greedy. The hard part is <em>proving</em> it's correct rather than assuming it. Bit tricks show up in low-level code, hashing, flags, and subset enumeration, and they signal comfort with how data is really represented.</p></div>
+
+  <div class="def how"><span class="lab">How — greedy interval scheduling &amp; bit tricks</span></div>
+<pre><span class="c"># GREEDY: max non-overlapping intervals → always pick earliest finish</span>
+intervals.sort(key=<span class="k">lambda</span> iv: iv[<span class="n">1</span>])    <span class="c"># by end time</span>
+count, end = <span class="n">0</span>, <span class="f">float</span>(<span class="s">"-inf"</span>)
+<span class="k">for</span> s, e <span class="k">in</span> intervals:
+    <span class="k">if</span> s &gt;= end: count += <span class="n">1</span>; end = e   <span class="c"># take it; it can't hurt</span>
+
+<span class="c"># BITS: XOR cancels pairs → the lone unpaired number, O(1) space</span>
+result = <span class="n">0</span>
+<span class="k">for</span> n <span class="k">in</span> nums: result ^= n     <span class="c"># x^x==0, x^0==x</span>
+
+n &amp; (n - <span class="n">1</span>)      <span class="c"># clears the lowest set bit (Kernighan popcount)</span>
+n &amp; (n - <span class="n">1</span>) == <span class="n">0</span>   <span class="c"># n is a power of two (n &gt; 0)</span></pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — greedy is often <em>wrong</em></div>
+  <p>Greedy fails whenever a locally optimal choice blocks a better global one. Coin change with denominations {1, 3, 4} making 6: greedy takes 4+1+1 (three coins), but 3+3 (two coins) is optimal — that problem needs DP. Always verify the greedy-choice property (ideally with an exchange argument) before trusting it.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Subsets via bitmask</div>
+  <p>The 2ⁿ subsets of n items map to the integers <code class="inl">0…2ⁿ−1</code>: bit j of the counter means "include item j." <code class="inl">for mask in range(1&lt;&lt;n)</code> enumerates every subset in one loop — a clean, allocation-free way to brute-force small combinatorial problems.</p></div>
+
+  <div class="qa"><div class="q">Q · When is greedy correct, and how do you know?</div>
+  <p>When the problem has the greedy-choice property (a local optimum extends to a global optimum) and optimal substructure. You prove it — typically with an exchange argument showing any optimal solution can be transformed into the greedy one without getting worse. If you can't prove it, suspect DP.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you check if an integer is a power of two in O(1)?</div>
+  <p><code class="inl">n &gt; 0 and (n &amp; (n - 1)) == 0</code>. A power of two has exactly one set bit; subtracting 1 flips that bit and sets all lower bits, so ANDing gives 0. It's a branch-free constant-time test with no loops or division.</p></div>
+
+  <div class="takeaway"><span class="h">🎯 Key takeaways</span>
+  <ul class="tick" style="margin-top:6px">
+    <li><strong>Big-O is the language of scale</strong> — know your containers' complexities cold; watch for hidden O(n) in innocent one-liners.</li>
+    <li><strong>Arrays vs linked lists</strong> = random access vs cheap splicing; dynamic-array append is amortized O(1).</li>
+    <li><strong>Hash tables</strong> hit O(1) via hashing; collisions (chaining vs open addressing) and load-factor resizing keep them fast.</li>
+    <li><strong>Balanced trees</strong> (AVL/red-black) rotate to guarantee O(log n) and give ordering a hash table can't.</li>
+    <li><strong>Heaps</strong> = O(1) peek, O(log n) push/pop, O(n) build; <strong>tries</strong> give O(L) prefix queries.</li>
+    <li><strong>Graphs</strong>: BFS (queue, shortest unweighted), DFS (stack, cycles/topo), Dijkstra (PQ), union-find (connectivity).</li>
+    <li><strong>DP</strong> needs overlapping subproblems + optimal substructure; <strong>greedy</strong> needs the greedy-choice property (prove it).</li>
+    <li>Every structure and algorithm is runnable in <code class="inl">01-dsa/examples/</code> — build it, break it, measure it.</li>
+  </ul></div>
+</section>
+
+</body>
+</html>

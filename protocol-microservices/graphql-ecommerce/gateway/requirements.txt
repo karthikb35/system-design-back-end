@@ -1,0 +1,7 @@
+# Pins target the Docker image (python:3.12-slim). Local venvs use unpinned latest.
+strawberry-graphql==0.324.0
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic-settings==2.7.0
+httpx==0.28.1
+prometheus-client==0.21.1

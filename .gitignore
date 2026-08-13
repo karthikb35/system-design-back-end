@@ -1,0 +1,43 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# ===== Virtual envs =====
+.venv/
+venv/
+env/
+
+# ===== Environment (never commit real secrets) =====
+.env
+.env.*
+
+# ===== Coverage / test artifacts =====
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# ===== Generated documents =====
+# Book/study-guide PDFs are build artifacts produced by CI
+# (.github/workflows/docs-pdf.yml) from the HTML sources, then published
+# to the "study-guide-pdfs" rolling release. Do not commit them.
+*.pdf
+
+# ===== Node / tooling caches (Playwright, etc.) =====
+node_modules/
+.playwright/
+playwright-report/
+
+# ===== OS / editor =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

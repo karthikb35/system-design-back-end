@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python Mastery — The Architect's Path, Book I</title>
+<link rel="stylesheet" href="architects-path.css">
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <div>
+    <div class="kicker">The Architect's Path · Book I · Edition 2026</div>
+    <h1>Python<br>Mastery</h1>
+    <div class="sub">From variables to metaclasses — the complete language, explained with the <strong style="color:#8ff4ee">What</strong>, the <strong style="color:#8ff4ee">Why</strong>, the <strong style="color:#8ff4ee">How</strong>, and the <strong style="color:#8ff4ee">When</strong>. Everything the DSA, design, and systems books are built on.</div>
+    <div class="stackrow">🐍 Foundations · 🎯 Data model · 🧬 Descriptors · 🧠 Memory</div>
+    <div class="badges">
+      <span class="badge">🔤 Types &amp; collections</span>
+      <span class="badge">🔁 Iterators &amp; generators</span>
+      <span class="badge">🎀 Decorators &amp; dunder</span>
+      <span class="badge">🧩 Descriptors &amp; __slots__</span>
+      <span class="badge">🏗️ Metaclasses</span>
+      <span class="badge">🧠 Typing &amp; GC</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div><strong style="color:#eaf2fb">Every idea is a script you can run.</strong><br>Companion code in <code style="color:#cfe0d6">00-python-foundations/</code>.</div>
+    <div style="text-align:right">What → Why → How → When<br>Diagrams · Gotchas · Interview Q&amp;A</div>
+  </div>
+</section>
+
+<!-- ============================ TOC ============================ -->
+<section class="toc">
+  <h2>Table of Contents</h2>
+  <div class="rule"></div>
+  <p class="small">Book I of the series — the foundation everything else stands on. Part&nbsp;A is the language; Part&nbsp;B is the advanced data model that senior interviews probe. Every section is <strong>What → Why → How → When</strong>, then code, gotchas, and interview questions.</p>
+  <ol>
+    <li><span class="n">1</span><div><div class="tt"><a href="#s1">Variables, Types &amp; Operators</a></div><div class="dd">Objects &amp; names · mutable vs immutable · <code>==</code> vs <code>is</code> · truthiness</div></div><span class="ic">🔤</span></li>
+    <li><span class="n">2</span><div><div class="tt"><a href="#s2">Control Flow</a></div><div class="dd">if/elif/else · for/while · for-else · <code>match</code></div></div><span class="ic">🔀</span></li>
+    <li><span class="n">3</span><div><div class="tt"><a href="#s3">The Four Collections</a></div><div class="dd">list · tuple · set · dict · the <code>collections</code> upgrades</div></div><span class="ic">📦</span></li>
+    <li><span class="n">4</span><div><div class="tt"><a href="#s4">Functions, *args/**kwargs &amp; Comprehensions</a></div><div class="dd">Defaults · variadics · lambdas · functional tools</div></div><span class="ic">🧮</span></li>
+    <li><span class="n">5</span><div><div class="tt"><a href="#s5">Modules, Files &amp; Exceptions</a></div><div class="dd">import · <code>with</code> · try/except/else/finally · EAFP</div></div><span class="ic">🗂️</span></li>
+    <li><span class="n">6</span><div><div class="tt"><a href="#s6">OOP &amp; the Four Pillars</a></div><div class="dd">Encapsulation · abstraction · inheritance · polymorphism · MRO</div></div><span class="ic">🧱</span></li>
+    <li><span class="n">7</span><div><div class="tt"><a href="#s7">Iterators, Generators &amp; Decorators</a></div><div class="dd">The iterator protocol · <code>yield</code> · lazy pipelines · <code>@</code></div></div><span class="ic">🔁</span></li>
+    <li><span class="n">8</span><div><div class="tt"><a href="#s8">The Data Model — Advanced Dunder Methods</a></div><div class="dd">eq/hash · ordering · containers · context managers · <code>__call__</code></div></div><span class="ic">🎯</span></li>
+    <li><span class="n">9</span><div><div class="tt"><a href="#s9">Descriptors, __slots__ &amp; Metaclasses</a></div><div class="dd">How <code>@property</code> works · fixed fields · class creation</div></div><span class="ic">🧬</span></li>
+    <li><span class="n">10</span><div><div class="tt"><a href="#s10">Typing, Context Managers &amp; Memory</a></div><div class="dd">Generics &amp; Protocols · <code>@contextmanager</code> · refcounting · GC · weakref</div></div><span class="ic">🧠</span></li>
+  </ol>
+  <div class="subitems">Runnable code: <code>fundamentals.py</code> · <code>oop.py</code> · <code>iterators_generators_decorators.py</code> · <code>advanced_dunder.py</code> · <code>descriptors_slots_meta.py</code> · <code>typing_and_memory.py</code></div>
+</section>
+
+<!-- ============================ CHAPTER SHELL ============================ -->
+<section class="chapter" id="s0">
+  <div class="ch-head">
+    <div class="num">🐍</div>
+    <div><div class="t">Python Mastery</div>
+    <div class="s">The language itself, from first assignment to metaclass — fluently</div></div>
+    <div class="ico">🐍</div>
+  </div>
+
+  <p class="lead">Before data structures, patterns, and systems, you need <strong>fluency</strong> in the language. This book is that foundation — and then it keeps going, into the "how does Python itself work?" territory (the data model, descriptors, metaclasses, the memory model) that separates someone who <em>uses</em> Python from someone who <em>understands</em> it. Part&nbsp;A is the everyday language; Part&nbsp;B is the senior-interview data model.</p>
+
+  <div class="coderef"><div class="h">📂 Runnable code in the repo</div><p style="margin:0 0 3px">Every concept below is a working, self-testing script — run each with <span class="path">python &lt;file&gt;</span>:</p>
+  <ul>
+    <li><span class="path">00-python-foundations/fundamentals.py</span> — types, control flow, collections, functions, files, exceptions</li>
+    <li><span class="path">00-python-foundations/oop.py</span> — four pillars, dunder methods, dataclasses</li>
+    <li><span class="path">00-python-foundations/iterators_generators_decorators.py</span> — iterator protocol, generators, decorators</li>
+    <li><span class="path">00-python-foundations/advanced_dunder.py</span> — eq/hash, ordering, containers, context managers, <code class="inl">__call__</code></li>
+    <li><span class="path">00-python-foundations/descriptors_slots_meta.py</span> — descriptors, <code class="inl">__slots__</code>, decorators-with-args, metaclasses</li>
+    <li><span class="path">00-python-foundations/typing_and_memory.py</span> — generics, Protocols, context managers, refcounting, GC, weakref</li>
+  </ul></div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">Part A — Foundations · Part B — The advanced data model</div>
+  <p>Chapters 1–7 are the language a bootcamp front-loads. Chapters 8–10 are what turns "I write Python" into "I understand the object model" — the questions that decide senior/staff interviews. Skim Part&nbsp;A if it's familiar; do not skip Part&nbsp;B.</p></div>
+
+  <!-- ===================== 1 : TYPES ===================== -->
+  <h2 class="sec" id="s1">1 · Variables, Types &amp; Operators</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">variable</em> is a <strong>name bound to an object</strong> — not a box holding a value, but a label pointing at one. You never declare a type; you assign, and the name points at whatever object you gave it. The built-in types split into <em class="term">immutable</em> (can't change in place: <code class="inl">int, float, bool, str, tuple, frozenset</code>) and <em class="term">mutable</em> (<code class="inl">list, dict, set</code>).</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because "name points at object" explains Python's most infamous bugs. Two names can point at the <em>same</em> mutable object (<em class="term">aliasing</em>) — change it through one name and the other sees it too. And immutability is <em>why</em> some objects can be dict keys (they're hashable and won't change underfoot).</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 190" role="img" aria-label="Names point at objects; aliasing">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="230" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#7f1d1d">MUTABLE — aliasing shares changes</text>
+        <text x="675" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">IMMUTABLE — rebinding makes a new object</text>
+        <!-- mutable -->
+        <rect x="40" y="50" width="70" height="30" rx="6" fill="#e0f2fe"/><text x="75" y="70" text-anchor="middle" font-size="11" fill="#0c4a6e">a</text>
+        <rect x="40" y="110" width="70" height="30" rx="6" fill="#e0f2fe"/><text x="75" y="130" text-anchor="middle" font-size="11" fill="#0c4a6e">b</text>
+        <rect x="220" y="78" width="150" height="34" rx="8" fill="#fee2e2" stroke="#dc2626"/><text x="295" y="100" text-anchor="middle" font-size="10" fill="#7f1d1d">[1, 2, 3] (one list)</text>
+        <path d="M110,66 L218,88" stroke="#0284c7" stroke-width="2" marker-end="url(#arp)"/>
+        <path d="M110,126 L218,100" stroke="#0284c7" stroke-width="2" marker-end="url(#arp)"/>
+        <text x="200" y="150" text-anchor="middle" font-size="9" fill="#7f1d1d">b = a → both names, one object → a.append changes b too</text>
+        <!-- immutable -->
+        <rect x="470" y="60" width="70" height="30" rx="6" fill="#dcfce7"/><text x="505" y="80" text-anchor="middle" font-size="11" fill="#14532d">x</text>
+        <rect x="650" y="52" width="90" height="30" rx="8" fill="#f0fdf4" stroke="#16a34a"/><text x="695" y="72" text-anchor="middle" font-size="10" fill="#14532d">5</text>
+        <rect x="650" y="100" width="90" height="30" rx="8" fill="#f0fdf4" stroke="#16a34a"/><text x="695" y="120" text-anchor="middle" font-size="10" fill="#14532d">6 (new)</text>
+        <path d="M540,74 L648,66" stroke="#16a34a" stroke-width="2" marker-end="url(#arp)"/>
+        <path d="M540,80 L648,112" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4" marker-end="url(#arp)"/>
+        <text x="640" y="150" text-anchor="middle" font-size="9" fill="#14532d">x += 1 rebinds x to a NEW int; the old 5 is untouched</text>
+        <defs><marker id="arp" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 1.1 — Names are labels on objects. Aliasing a mutable object shares edits; "changing" an immutable object actually rebinds the name to a brand-new object.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre>x = <span class="n">42</span>            <span class="c"># int (immutable)</span>
+name = <span class="s">"Ada"</span>      <span class="c"># str (immutable)</span>
+nums = [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]   <span class="c"># list (mutable)</span>
+a, b = b, a       <span class="c"># tuple unpacking → swap, no temp variable</span></pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — <code class="inl">==</code> vs <code class="inl">is</code></div>
+  <p><code class="inl">==</code> compares <strong>values</strong>; <code class="inl">is</code> compares <strong>identity</strong> (same object in memory). Use <code class="inl">==</code> for equality and reserve <code class="inl">is</code> for singletons like <code class="inl">None</code> (<code class="inl">if x is None</code>). Comparing values with <code class="inl">is</code> works by accident for small cached ints and interned strings, then breaks for everything else — a genuinely confusing bug.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Truthiness</div>
+  <p>Empty containers (<code class="inl">[]</code>, <code class="inl">{}</code>, <code class="inl">""</code>), <code class="inl">0</code>, and <code class="inl">None</code> are <em>falsy</em>; almost everything else is <em>truthy</em>. So <code class="inl">if items:</code> reads as "if there are items" — more Pythonic than <code class="inl">if len(items) &gt; 0:</code>.</p></div>
+
+  <div class="qa"><div class="q">Q · Mutable vs immutable — why does it matter?</div>
+  <p>Immutable objects can't change after creation, so "editing" makes a new object; mutable ones change in place. It matters for aliasing bugs (shared references), for dict/set keys (must be immutable/hashable), and for the mutable-default-argument trap.</p></div>
+
+  <!-- ===================== 2 : CONTROL FLOW ===================== -->
+  <h2 class="sec" id="s2">2 · Control Flow</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Conditionals (<code class="inl">if/elif/else</code>) branch on truth; loops (<code class="inl">for</code>, <code class="inl">while</code>) repeat. Blocks are defined by <strong>indentation</strong>, not braces. Python 3.10 added <code class="inl">match</code> — structural pattern matching, not a plain switch.</p></div>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre><span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(<span class="n">5</span>):
+    <span class="k">if</span> i % <span class="n">2</span> == <span class="n">0</span>: <span class="k">continue</span>   <span class="c"># skip to next iteration</span>
+    <span class="k">if</span> i == <span class="n">3</span>: <span class="k">break</span>          <span class="c"># exit the loop entirely</span>
+    <span class="k">print</span>(i)
+<span class="k">else</span>:                          <span class="c"># runs only if the loop finished WITHOUT break</span>
+    <span class="k">print</span>(<span class="s">"completed"</span>)
+
+<span class="k">match</span> command:                 <span class="c"># structural pattern matching (3.10+)</span>
+    <span class="k">case</span> <span class="s">"start"</span>: run()
+    <span class="k">case</span> [<span class="s">"move"</span>, x, y]: move(x, y)   <span class="c"># destructures a list</span>
+    <span class="k">case</span> _: unknown()             <span class="c"># wildcard / default</span></pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the <code class="inl">for…else</code> that surprises everyone</div>
+  <p>The <code class="inl">else</code> on a loop runs when the loop finished <strong>without hitting <code class="inl">break</code></strong> — perfect for search loops ("else: not found"). It does <em>not</em> mean "if the loop didn't run." Misreading this is a classic source of confusion.</p></div>
+
+  <div class="qa"><div class="q">Q · What does <code class="inl">for…else</code> do?</div>
+  <p>The <code class="inl">else</code> block runs only if the loop completed normally (no <code class="inl">break</code>). It's ideal for "search and report not-found" without a separate flag variable.</p></div>
+
+  <!-- ===================== 3 : COLLECTIONS ===================== -->
+  <h2 class="sec" id="s3">3 · The Four Collections</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Python ships four workhorse containers. Knowing their properties and Big-O <em>cold</em> is the foundation of everything downstream — it's how you pick the structure that makes your hot operation cheap.</p></div>
+
+  <table>
+    <tr><th>Type</th><th>Ordered?</th><th>Mutable?</th><th>Dups?</th><th>Lookup</th><th>Use for</th></tr>
+    <tr><td><code class="inl">list [ ]</code></td><td>yes</td><td>yes</td><td>yes</td><td>O(n)</td><td>ordered sequence you'll change</td></tr>
+    <tr><td><code class="inl">tuple ( )</code></td><td>yes</td><td>no</td><td>yes</td><td>O(n)</td><td>fixed record; dict key; multi-return</td></tr>
+    <tr><td><code class="inl">set { }</code></td><td>no</td><td>yes</td><td>no</td><td>O(1)</td><td>membership tests, dedupe</td></tr>
+    <tr><td><code class="inl">dict {k:v}</code></td><td>insertion</td><td>yes</td><td>keys unique</td><td>O(1)</td><td>key→value mapping (the most-used)</td></tr>
+  </table>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre>squares = [n*n <span class="k">for</span> n <span class="k">in</span> <span class="f">range</span>(<span class="n">5</span>)]          <span class="c"># list comp: [0,1,4,9,16]</span>
+prices  = {<span class="s">"apple"</span>: <span class="n">3</span>, <span class="s">"pear"</span>: <span class="n">5</span>}
+prices.get(<span class="s">"plum"</span>, <span class="n">0</span>)                    <span class="c"># 0 default instead of KeyError</span>
+a, b = {<span class="n">1</span>,<span class="n">2</span>,<span class="n">3</span>}, {<span class="n">2</span>,<span class="n">3</span>,<span class="n">4</span>}
+a &amp; b   <span class="c"># {2,3} intersection      a | b union      a - b difference</span></pre>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">The <code class="inl">collections</code> upgrades</div>
+  <p><code class="inl">defaultdict</code> (auto-creates missing values), <code class="inl">Counter</code> (counts in one line), <code class="inl">deque</code> (O(1) at both ends — your queue), <code class="inl">namedtuple</code>/<code class="inl">dataclass</code> (readable records). Reaching for these instead of hand-rolling is a mark of fluency.</p></div>
+
+  <div class="qa"><div class="q">Q · When would you choose a set over a list?</div>
+  <p>When you need fast membership tests or automatic de-duplication and don't care about order. <code class="inl">x in a_set</code> is O(1) vs O(n) for a list — turning many O(n²) algorithms into O(n).</p></div>
+
+  <div class="qa"><div class="q">Q · List vs tuple — why does the immutable one exist?</div>
+  <p>Tuples are immutable, so they're hashable (usable as dict keys / set members), safe to share without defensive copies, and signal "fixed record." Lists are for collections you'll grow or reorder.</p></div>
+
+  <!-- ===================== 4 : FUNCTIONS ===================== -->
+  <h2 class="sec" id="s4">4 · Functions, *args/**kwargs &amp; Comprehensions</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Functions package reusable behavior. Python supports positional and keyword arguments, defaults, variadic <code class="inl">*args</code>/<code class="inl">**kwargs</code>, and <strong>first-class functions</strong> — functions are objects you can pass around, store, and return.</p></div>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre><span class="k">def</span> <span class="f">greet</span>(name, greeting=<span class="s">"Hi"</span>, *args, **kwargs):
+    <span class="k">return</span> <span class="s">f"{greeting}, {name}"</span>
+
+double = <span class="k">lambda</span> x: x * <span class="n">2</span>              <span class="c"># anonymous one-expression function</span>
+<span class="f">list</span>(<span class="f">map</span>(<span class="k">lambda</span> x: x*<span class="n">2</span>, [<span class="n">1</span>,<span class="n">2</span>,<span class="n">3</span>]))     <span class="c"># [2,4,6]</span>
+<span class="f">list</span>(<span class="f">filter</span>(<span class="k">lambda</span> x: x&gt;<span class="n">1</span>, [<span class="n">1</span>,<span class="n">2</span>,<span class="n">3</span>]))  <span class="c"># [2,3]</span></pre>
+
+  <div class="box pitfall"><span class="ic">🚫</span><div class="h">The mutable-default-argument trap</div>
+  <p><code class="inl">def add(x, items=[]):</code> creates the list <strong>once</strong> at definition time — every call shares it, so values leak across calls. Fix: default to <code class="inl">None</code> and create inside: <code class="inl">items = items or []</code>. This is one of the most-asked Python gotchas.</p></div>
+
+  <div class="qa"><div class="q">Q · What are <code class="inl">*args</code> and <code class="inl">**kwargs</code>?</div>
+  <p><code class="inl">*args</code> collects extra positional arguments into a tuple; <code class="inl">**kwargs</code> collects extra keyword arguments into a dict. They let a function accept any number of arguments and are essential for decorators and wrappers that forward arbitrary calls.</p></div>
+
+  <!-- ===================== 5 : MODULES/FILES/EXC ===================== -->
+  <h2 class="sec" id="s5">5 · Modules, Files &amp; Exceptions</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">module</em> is a <code class="inl">.py</code> file; a <em class="term">package</em> is a folder of modules. <code class="inl">import</code> loads them. Files are read/written with <code class="inl">open()</code>, always inside a <code class="inl">with</code> block. Runtime errors are <em class="term">exceptions</em>, caught with <code class="inl">try/except</code>.</p></div>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre><span class="k">with</span> <span class="f">open</span>(<span class="s">"data.txt"</span>) <span class="k">as</span> f:   <span class="c"># context manager → auto-closes even on error</span>
+    <span class="k">for</span> line <span class="k">in</span> f:            <span class="c"># iterate lazily, memory-cheap</span>
+        process(line.strip())
+
+<span class="k">try</span>:
+    result = risky()
+<span class="k">except</span> (ValueError, KeyError) <span class="k">as</span> e:   <span class="c"># catch specific types, not bare except</span>
+    log.error(e); <span class="k">raise</span>              <span class="c"># re-raise after logging</span>
+<span class="k">else</span>:
+    commit(result)                        <span class="c"># only if no exception</span>
+<span class="k">finally</span>:
+    cleanup()                             <span class="c"># ALWAYS runs</span></pre>
+
+  <div class="def when"><span class="lab">When — EAFP over LBYL</span><p>Python favors <em class="term">EAFP</em> ("easier to ask forgiveness than permission") — try the operation and handle failure — over <em class="term">LBYL</em> ("look before you leap") pre-checks. EAFP is often faster and avoids a race between the check and the use.</p></div>
+
+  <div class="box pitfall"><span class="ic">🚫</span><div class="h">Never swallow with a bare <code class="inl">except:</code></div>
+  <p><code class="inl">except:</code> catches <em>everything</em> — including <code class="inl">KeyboardInterrupt</code> and the bugs you wanted to see — and hides the real problem. Always catch the narrowest exception you can handle, and let the rest propagate.</p></div>
+
+  <div class="qa"><div class="q">Q · Why <code class="inl">with open(...)</code> instead of <code class="inl">open()</code> + <code class="inl">close()</code>?</div>
+  <p>The <code class="inl">with</code> statement is a context manager: it guarantees the file closes when the block exits, even on an exception. Manual <code class="inl">close()</code> is easy to skip on an early return or error, leaking file handles.</p></div>
+
+  <!-- ===================== 6 : OOP ===================== -->
+  <h2 class="sec" id="s6">6 · OOP &amp; the Four Pillars</h2>
+
+  <div class="def what"><span class="lab">What</span><p>OOP bundles <strong>data</strong> (attributes) and <strong>behavior</strong> (methods) into classes; you create objects (instances) from them. Its four pillars — encapsulation, abstraction, inheritance, polymorphism — are the base ideas that SOLID and design patterns build on.</p></div>
+
+  <table>
+    <tr><th>Pillar</th><th>Meaning</th><th>One-line example</th></tr>
+    <tr><td>🔒 Encapsulation</td><td>Bundle state with the methods that guard it; hide internals</td><td>a <code class="inl">BankAccount</code> hides <code class="inl">_balance</code> behind <code class="inl">deposit()</code></td></tr>
+    <tr><td>🎭 Abstraction</td><td>Expose <em>what</em>, hide <em>how</em> (interfaces / ABCs)</td><td>you call <code class="inl">repo.save()</code> without knowing it's Postgres</td></tr>
+    <tr><td>🧬 Inheritance</td><td>A subclass reuses and specializes a base class</td><td><code class="inl">Dog(Animal)</code> reuses <code class="inl">Animal</code></td></tr>
+    <tr><td>🔀 Polymorphism</td><td>Same call, different behavior per class</td><td><code class="inl">animal.speak()</code> → "Woof" or "Meow"</td></tr>
+  </table>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre><span class="k">from</span> abc <span class="k">import</span> ABC, abstractmethod
+
+<span class="k">class</span> <span class="f">Animal</span>(ABC):
+    <span class="k">def</span> <span class="f">__init__</span>(self, name):   <span class="c"># constructor — runs on creation</span>
+        self.name = name
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="f">speak</span>(self): ...     <span class="c"># subclasses MUST define</span>
+
+<span class="k">class</span> <span class="f">Dog</span>(Animal):
+    <span class="k">def</span> <span class="f">speak</span>(self): <span class="k">return</span> <span class="s">"Woof"</span>   <span class="c"># overrides — polymorphism</span>
+
+<span class="k">for</span> a <span class="k">in</span> [Dog(<span class="s">"Rex"</span>), Cat(<span class="s">"Mia"</span>)]:
+    <span class="k">print</span>(a.speak())            <span class="c"># same call, different behavior</span></pre>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">MRO — the Method Resolution Order</div>
+  <p>With multiple inheritance, Python looks methods up in a deterministic order (C3 linearization), visible as <code class="inl">Cls.__mro__</code>. <code class="inl">super()</code> follows this chain — it doesn't mean "my parent," it means "the next class in the MRO." Understanding this untangles diamond-inheritance surprises.</p></div>
+
+  <div class="qa"><div class="q">Q · What is <code class="inl">self</code>, and why is it the first parameter?</div>
+  <p><code class="inl">self</code> is the instance the method was called on — Python passes it explicitly so the method can read/write that object's attributes. <code class="inl">dog.speak()</code> is really <code class="inl">Dog.speak(dog)</code>.</p></div>
+
+  <!-- ===================== 7 : ITER/GEN/DEC ===================== -->
+  <h2 class="sec" id="s7">7 · Iterators, Generators &amp; Decorators</h2>
+
+  <div class="def what"><span class="lab">What</span><p>An <em class="term">iterator</em> produces items one at a time via <code class="inl">__next__</code>; anything iterable works in a <code class="inl">for</code> loop. A <em class="term">generator</em> is the easy way to make one — a function that <code class="inl">yield</code>s values lazily, computing each only when asked and holding just one in memory. A <em class="term">decorator</em> wraps a function to add behavior without editing it.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 150" role="img" aria-label="Generator lazy pipeline">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">A generator pipeline pulls ONE item at a time (constant memory)</text>
+        <rect x="40"  y="55" width="150" height="40" rx="8" fill="#e0f2fe"/><text x="115" y="80" text-anchor="middle" font-size="10" fill="#0c4a6e">read_lines(file)</text>
+        <rect x="250" y="55" width="150" height="40" rx="8" fill="#f0fbfa"/><text x="325" y="80" text-anchor="middle" font-size="10" fill="#0b7d7c">strip &amp; parse</text>
+        <rect x="460" y="55" width="150" height="40" rx="8" fill="#f8f6ff"/><text x="535" y="80" text-anchor="middle" font-size="10" fill="#4c1d95">filter(valid)</text>
+        <rect x="670" y="55" width="180" height="40" rx="8" fill="#f0fdf4"/><text x="760" y="80" text-anchor="middle" font-size="10" fill="#14532d">sum / write out</text>
+        <path d="M190,75 L248,75" stroke="#64748b" stroke-width="2" marker-end="url(#arg)"/>
+        <path d="M400,75 L458,75" stroke="#64748b" stroke-width="2" marker-end="url(#arg)"/>
+        <path d="M610,75 L668,75" stroke="#64748b" stroke-width="2" marker-end="url(#arg)"/>
+        <text x="450" y="128" text-anchor="middle" font-size="9" fill="#5b6b7b">Nothing is materialized — a 10&nbsp;GB file streams through in constant memory</text>
+        <defs><marker id="arg" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 7.1 — Generators compose into lazy pipelines: each stage pulls one item from the previous, so you process streams larger than memory. This is the same idea behind Kafka consumers.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How</span></div>
+<pre><span class="k">def</span> <span class="f">read_big_file</span>(path):        <span class="c"># process a 10GB file in constant memory</span>
+    <span class="k">with</span> <span class="f">open</span>(path) <span class="k">as</span> f:
+        <span class="k">for</span> line <span class="k">in</span> f:
+            <span class="k">yield</span> line.strip()     <span class="c"># produces one line at a time — lazy</span>
+
+total = <span class="f">sum</span>(n*n <span class="k">for</span> n <span class="k">in</span> <span class="f">range</span>(<span class="n">1_000_000</span>))   <span class="c"># generator expr — no giant list built</span>
+
+<span class="k">import</span> functools, time
+<span class="k">def</span> <span class="f">timed</span>(fn):
+    <span class="nd">@functools.wraps(fn)</span>         <span class="c"># preserve fn's name/docstring</span>
+    <span class="k">def</span> <span class="f">wrapper</span>(*args, **kwargs):
+        start = time.perf_counter()
+        result = fn(*args, **kwargs)
+        <span class="k">print</span>(<span class="s">f"{fn.__name__} took {time.perf_counter()-start:.3f}s"</span>)
+        <span class="k">return</span> result
+    <span class="k">return</span> wrapper
+
+<span class="nd">@timed</span>                          <span class="c"># slow = timed(slow)</span>
+<span class="k">def</span> <span class="f">slow</span>(): time.sleep(<span class="n">1</span>)</pre>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Decorators you'll meet everywhere</div>
+  <p><code class="inl">@property</code>, <code class="inl">@staticmethod</code>/<code class="inl">@classmethod</code>, <code class="inl">@functools.lru_cache</code> (memoize — the DP trick), <code class="inl">@dataclass</code>, and framework routes like <code class="inl">@app.get("/")</code>. A decorator is just <code class="inl">fn = deco(fn)</code>.</p></div>
+
+  <div class="qa"><div class="q">Q · List vs generator — when each?</div>
+  <p>A list holds all items in memory (fast repeated access, known length). A generator yields lazily (tiny memory, single pass, unknown length). Use a generator for large/infinite streams and one-time iteration; a list when you need random access or to reuse the data.</p></div>
+
+  <div class="qa"><div class="q">Q · How does a decorator work under the hood?</div>
+  <p><code class="inl">@deco</code> above <code class="inl">def f</code> is exactly <code class="inl">f = deco(f)</code>: <code class="inl">deco</code> receives the original function and returns a replacement (usually an inner wrapper that calls the original with <code class="inl">*args, **kwargs</code> and adds behavior). Use <code class="inl">functools.wraps</code> so the wrapper keeps the original's name/docstring.</p></div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">End of Part A</div>
+  <p>You now have the everyday language. Part&nbsp;B answers "how does Python <em>itself</em> work?" — the data model, descriptors, metaclasses, and memory. This is the material that decides senior and staff interviews.</p></div>
+
+  <!-- ===================== 8 : DUNDER ===================== -->
+  <h2 class="sec" id="s8">8 · The Data Model — Advanced Dunder Methods</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Dunder</em> ("double underscore") methods are the hooks that let your objects plug into Python's <strong>syntax</strong>. Implement them and your class behaves like a built-in: it prints, compares, hashes, iterates, indexes, works in <code class="inl">with</code>, and can even be called like a function. This is Python's "protocols over inheritance" philosophy.</p></div>
+
+  <div class="def why"><span class="lab">Why</span><p>Because it's how you build expressive, native-feeling APIs — a <code class="inl">Money</code> that supports <code class="inl">+</code> and sorting, a <code class="inl">Playlist</code> you can index and loop over, a <code class="inl">Transaction</code> that rolls back in a <code class="inl">with</code> block. "Pythonic" libraries are built almost entirely on the data model.</p></div>
+
+  <div class="def how"><span class="lab">How — the equality/hash contract</span><p>The most tested dunder pair. <code class="inl">__eq__</code> defines value equality; <code class="inl">__hash__</code> makes an object usable as a dict key / set member. The contract: <strong>if two objects are equal, they must hash equal.</strong> Break it and your object silently misbehaves in sets/dicts.</p></div>
+
+<pre><span class="k">from</span> functools <span class="k">import</span> total_ordering
+
+<span class="nd">@total_ordering</span>                     <span class="c"># derive &lt;=, &gt;, &gt;= from __eq__ + __lt__</span>
+<span class="k">class</span> <span class="f">Money</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, dollars): self.cents = <span class="f">round</span>(dollars * <span class="n">100</span>)
+    <span class="k">def</span> <span class="f">__repr__</span>(self):  <span class="k">return</span> <span class="s">f"Money({self.cents/100:.2f})"</span>   <span class="c"># dev-facing</span>
+    <span class="k">def</span> <span class="f">__eq__</span>(self, o): <span class="k">return</span> isinstance(o, Money) <span class="k">and</span> self.cents == o.cents
+    <span class="k">def</span> <span class="f">__hash__</span>(self):  <span class="k">return</span> <span class="f">hash</span>(self.cents)      <span class="c"># equal → same hash</span>
+    <span class="k">def</span> <span class="f">__lt__</span>(self, o): <span class="k">return</span> self.cents &lt; o.cents
+    <span class="k">def</span> <span class="f">__add__</span>(self, o): <span class="k">return</span> Money((self.cents + o.cents)/<span class="n">100</span>)
+
+<span class="f">sorted</span>([Money(<span class="n">3</span>), Money(<span class="n">1</span>)])      <span class="c"># works via __lt__</span>
+{Money(<span class="n">5</span>)} &amp; {Money(<span class="n">5</span>)}            <span class="c"># works via __eq__/__hash__</span></pre>
+
+  <table>
+    <tr><th>Dunder</th><th>Enables</th><th>You get syntax</th></tr>
+    <tr><td><code class="inl">__repr__</code> / <code class="inl">__str__</code></td><td>developer vs user string</td><td><code class="inl">repr(x)</code>, <code class="inl">print(x)</code></td></tr>
+    <tr><td><code class="inl">__eq__</code> + <code class="inl">__hash__</code></td><td>value equality &amp; hashing</td><td><code class="inl">x == y</code>, <code class="inl">{x}</code>, <code class="inl">d[x]</code></td></tr>
+    <tr><td><code class="inl">__lt__</code> (+ total_ordering)</td><td>ordering</td><td><code class="inl">x &lt; y</code>, <code class="inl">sorted()</code></td></tr>
+    <tr><td><code class="inl">__len__</code> / <code class="inl">__getitem__</code> / <code class="inl">__contains__</code></td><td>container behavior</td><td><code class="inl">len(x)</code>, <code class="inl">x[i]</code>, <code class="inl">i in x</code></td></tr>
+    <tr><td><code class="inl">__iter__</code> / <code class="inl">__next__</code></td><td>iteration</td><td><code class="inl">for i in x</code></td></tr>
+    <tr><td><code class="inl">__enter__</code> / <code class="inl">__exit__</code></td><td>context management</td><td><code class="inl">with x:</code></td></tr>
+    <tr><td><code class="inl">__call__</code></td><td>callable instances</td><td><code class="inl">x(args)</code></td></tr>
+    <tr><td><code class="inl">__getattr__</code></td><td>dynamic attribute fallback</td><td><code class="inl">x.anything</code></td></tr>
+  </table>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — defining <code class="inl">__eq__</code> without <code class="inl">__hash__</code></div>
+  <p>If you define <code class="inl">__eq__</code> but not <code class="inl">__hash__</code>, Python sets <code class="inl">__hash__ = None</code> and your object becomes <strong>unhashable</strong> — it can't go in a set or be a dict key. Define both together, or use <code class="inl">@dataclass(frozen=True)</code> which does it correctly for you.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — <code class="inl">__getattr__</code> vs <code class="inl">__getattribute__</code></div>
+  <p><code class="inl">__getattr__</code> is a <em>fallback</em>, called only when normal lookup <strong>fails</strong> — safe and common. <code class="inl">__getattribute__</code> intercepts <strong>every</strong> access and is easy to send into infinite recursion. Reach for <code class="inl">__getattr__</code> unless you truly need to intercept everything.</p></div>
+
+  <div class="qa"><div class="q">Q · Explain <code class="inl">__repr__</code> vs <code class="inl">__str__</code>.</div>
+  <p><code class="inl">__repr__</code> is the unambiguous, developer-facing string (ideally <code class="inl">eval</code>-able), shown in the REPL and debuggers; <code class="inl">__str__</code> is the readable, user-facing one used by <code class="inl">print()</code>. If you define only one, define <code class="inl">__repr__</code> — <code class="inl">str()</code> falls back to it.</p></div>
+
+  <div class="qa"><div class="q">Q · What's the <code class="inl">__eq__</code>/<code class="inl">__hash__</code> contract?</div>
+  <p>Equal objects must have equal hashes (the reverse isn't required). Hashes should also be stable for the object's lifetime, which is why hashable objects are typically immutable. Violating this makes objects "disappear" from sets/dicts.</p></div>
+
+  <!-- ===================== 9 : DESCRIPTORS/SLOTS/META ===================== -->
+  <h2 class="sec" id="s9">9 · Descriptors, __slots__ &amp; Metaclasses</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Three "how classes really work" features. A <em class="term">descriptor</em> is an object with <code class="inl">__get__</code>/<code class="inl">__set__</code> that controls attribute access — the machinery behind <code class="inl">@property</code>, methods, and ORM fields. <code class="inl">__slots__</code> replaces an instance's <code class="inl">__dict__</code> with a fixed set of fields. A <em class="term">metaclass</em> is a class whose instances are <em>classes</em> — it customizes class <strong>creation</strong>.</p></div>
+
+  <div class="def why"><span class="lab">Why</span><p>Because they're how frameworks work. Descriptors let one <code class="inl">Positive()</code> validate every numeric field (DRY validation). <code class="inl">__slots__</code> cuts memory and blocks attribute typos at scale. Metaclasses power auto-registration (plugins), ORMs (Django models), and ABCs. Interviewers use them to see if you understand the object model beneath the syntax.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 165" role="img" aria-label="Attribute lookup and descriptors">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">obj.price — how Python resolves an attribute</text>
+        <rect x="40"  y="55" width="180" height="44" rx="8" fill="#f3e8ff" stroke="#7c3aed"/><text x="130" y="74" text-anchor="middle" font-size="9.5" fill="#4c1d95">1 · data descriptor</text><text x="130" y="90" text-anchor="middle" font-size="8" fill="#4c1d95">on the class (has __set__)</text>
+        <rect x="255" y="55" width="180" height="44" rx="8" fill="#e0f2fe" stroke="#0284c7"/><text x="345" y="74" text-anchor="middle" font-size="9.5" fill="#0c4a6e">2 · instance __dict__</text><text x="345" y="90" text-anchor="middle" font-size="8" fill="#0c4a6e">obj's own attributes</text>
+        <rect x="470" y="55" width="180" height="44" rx="8" fill="#f0fbfa" stroke="#0ea5a4"/><text x="560" y="74" text-anchor="middle" font-size="9.5" fill="#0b7d7c">3 · non-data descriptor</text><text x="560" y="90" text-anchor="middle" font-size="8" fill="#0b7d7c">/ class attribute</text>
+        <rect x="685" y="55" width="175" height="44" rx="8" fill="#fee2e2" stroke="#dc2626"/><text x="772" y="74" text-anchor="middle" font-size="9.5" fill="#7f1d1d">4 · __getattr__</text><text x="772" y="90" text-anchor="middle" font-size="8" fill="#7f1d1d">fallback, else AttributeError</text>
+        <path d="M220,77 L253,77" stroke="#64748b" stroke-width="2" marker-end="url(#ard)"/>
+        <path d="M435,77 L468,77" stroke="#64748b" stroke-width="2" marker-end="url(#ard)"/>
+        <path d="M650,77 L683,77" stroke="#64748b" stroke-width="2" marker-end="url(#ard)"/>
+        <text x="450" y="135" text-anchor="middle" font-size="9" fill="#5b6b7b">Data descriptors win over instance dict — that's why @property can't be shadowed by an instance attribute</text>
+        <defs><marker id="ard" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 9.1 — Attribute lookup order. Data descriptors (with <code>__set__</code>) take priority over the instance dict — the reason a <code>@property</code> always runs its getter instead of being overwritten by an instance attribute.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — a validating descriptor</span></div>
+<pre><span class="k">class</span> <span class="f">Positive</span>:                      <span class="c"># reusable managed attribute</span>
+    <span class="k">def</span> <span class="f">__set_name__</span>(self, owner, name): self._name = <span class="s">"_"</span> + name
+    <span class="k">def</span> <span class="f">__get__</span>(self, obj, t=<span class="k">None</span>):     <span class="k">return</span> getattr(obj, self._name)
+    <span class="k">def</span> <span class="f">__set__</span>(self, obj, value):
+        <span class="k">if</span> value &lt;= <span class="n">0</span>: <span class="k">raise</span> ValueError(<span class="s">"must be positive"</span>)
+        setattr(obj, self._name, value)
+
+<span class="k">class</span> <span class="f">Product</span>:
+    price = Positive()                   <span class="c"># one descriptor validates the field</span>
+    quantity = Positive()
+
+<span class="c"># METACLASS: auto-register every subclass (the plugin pattern)</span>
+<span class="k">class</span> <span class="f">PluginRegistry</span>(<span class="k">type</span>):
+    registry = {}
+    <span class="k">def</span> <span class="f">__new__</span>(mcs, name, bases, ns):
+        cls = <span class="f">super</span>().__new__(mcs, name, bases, ns)
+        <span class="k">if</span> bases: PluginRegistry.registry[name.lower()] = cls
+        <span class="k">return</span> cls</pre>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — <code class="inl">__slots__</code> and inheritance</div>
+  <p><code class="inl">__slots__</code> saves memory and blocks typos, but a subclass that doesn't <em>also</em> define <code class="inl">__slots__</code> quietly regains a <code class="inl">__dict__</code>, undoing the benefit. And slotted classes can't have arbitrary attributes set — which is the point, but surprises people who expected duck-typing flexibility.</p></div>
+
+  <div class="box analogy"><span class="ic">🧠</span><div class="h">"Classes are objects too"</div>
+  <p>In Python a class is an instance of <code class="inl">type</code>. A metaclass is just "the class of a class." <code class="inl">class Foo: ...</code> is roughly <code class="inl">Foo = type("Foo", (), {...})</code>. Metaclasses hook that construction — so you rarely need them, but knowing they exist demystifies ORMs and ABCs.</p></div>
+
+  <div class="qa"><div class="q">Q · What is a descriptor, and where is it used?</div>
+  <p>An object implementing <code class="inl">__get__</code>/<code class="inl">__set__</code>/<code class="inl">__delete__</code> that controls attribute access on the owning class. It's the mechanism behind <code class="inl">@property</code>, bound methods, <code class="inl">classmethod</code>/<code class="inl">staticmethod</code>, and ORM/serializer fields. Use one to centralize validation or computed access across many fields.</p></div>
+
+  <div class="qa"><div class="q">Q · When would you actually use a metaclass?</div>
+  <p>Rarely — most needs are met by <code class="inl">__init_subclass__</code>, class decorators, or descriptors. Reach for a metaclass when you must customize class <em>creation</em> for a whole hierarchy: auto-registration, enforcing interface rules at definition time, or building a declarative API (like an ORM). "If you're not sure you need one, you don't."</p></div>
+
+  <div class="qa"><div class="q">Q · What does <code class="inl">__slots__</code> buy you, and what's the cost?</div>
+  <p>It removes the per-instance <code class="inl">__dict__</code>, cutting memory (big at millions of instances) and speeding attribute access, while forbidding new attributes (catches typos). Costs: no dynamic attributes, extra care with inheritance and with features that expect <code class="inl">__dict__</code> (some pickling/weakref cases).</p></div>
+
+  <!-- ===================== 10 : TYPING/CTX/MEMORY ===================== -->
+  <h2 class="sec" id="s10">10 · Typing, Context Managers &amp; the Memory Model</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Three pieces of senior polish. <em class="term">Type hints</em> don't change runtime behavior but power tooling, self-document, and enable generics/Protocols. The <code class="inl">@contextmanager</code> decorator writes a <code class="inl">with</code>-block guard concisely. The <em class="term">memory model</em> — reference counting plus a cyclic garbage collector — is how CPython reclaims objects.</p></div>
+
+  <div class="def why"><span class="lab">Why</span><p>Types catch bugs before runtime and make large codebases navigable. Context managers guarantee cleanup. And understanding memory explains real production issues: why a cache leaks, why cycles need <code class="inl">gc</code>, and when to reach for <code class="inl">weakref</code>.</p></div>
+
+  <div class="def how"><span class="lab">How — generics &amp; Protocols (structural typing)</span></div>
+<pre><span class="k">from</span> typing <span class="k">import</span> Generic, Protocol, TypeVar
+T = TypeVar(<span class="s">"T"</span>)
+
+<span class="k">class</span> <span class="f">Stack</span>(Generic[T]):           <span class="c"># Stack[int] vs Stack[str] are distinct to a checker</span>
+    <span class="k">def</span> <span class="f">push</span>(self, item: T) -&gt; <span class="k">None</span>: ...
+    <span class="k">def</span> <span class="f">pop</span>(self) -&gt; T: ...
+
+<span class="k">class</span> <span class="f">SupportsArea</span>(Protocol):     <span class="c"># structural: ANY object with .area() qualifies</span>
+    <span class="k">def</span> <span class="f">area</span>(self) -&gt; <span class="k">float</span>: ...
+
+<span class="k">def</span> <span class="f">total</span>(shapes: <span class="f">list</span>[SupportsArea]) -&gt; <span class="k">float</span>:   <span class="c"># Circle & Square need no shared base</span>
+    <span class="k">return</span> <span class="f">sum</span>(s.area() <span class="k">for</span> s <span class="k">in</span> shapes)</pre>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 175" role="img" aria-label="Reference counting and cyclic GC">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="230" y="22" text-anchor="middle" font-size="11.5" font-weight="800" fill="#14532d">REFCOUNT — freed instantly at 0</text>
+        <text x="675" y="22" text-anchor="middle" font-size="11.5" font-weight="800" fill="#7f1d1d">CYCLE — refcount never hits 0</text>
+        <!-- refcount -->
+        <rect x="60" y="55" width="60" height="28" rx="6" fill="#e0f2fe"/><text x="90" y="74" text-anchor="middle" font-size="10" fill="#0c4a6e">a</text>
+        <rect x="60" y="100" width="60" height="28" rx="6" fill="#e0f2fe"/><text x="90" y="119" text-anchor="middle" font-size="10" fill="#0c4a6e">b</text>
+        <rect x="230" y="78" width="130" height="30" rx="8" fill="#f0fdf4" stroke="#16a34a"/><text x="295" y="98" text-anchor="middle" font-size="10" fill="#14532d">obj · refs = 2</text>
+        <path d="M120,69 L228,88" stroke="#16a34a" stroke-width="2" marker-end="url(#arm)"/>
+        <path d="M120,114 L228,98" stroke="#16a34a" stroke-width="2" marker-end="url(#arm)"/>
+        <text x="230" y="145" text-anchor="middle" font-size="9" fill="#14532d">del a, del b → refs 0 → freed immediately</text>
+        <!-- cycle -->
+        <circle cx="560" cy="95" r="34" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/><text x="560" y="99" text-anchor="middle" font-size="10" fill="#7f1d1d">X</text>
+        <circle cx="760" cy="95" r="34" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/><text x="760" y="99" text-anchor="middle" font-size="10" fill="#7f1d1d">Y</text>
+        <path d="M594,85 C650,65 670,65 726,85" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arm)"/>
+        <path d="M726,105 C670,125 650,125 594,105" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arm)"/>
+        <text x="660" y="150" text-anchor="middle" font-size="9" fill="#7f1d1d">X↔Y keep each other alive → only gc.collect() reclaims them</text>
+        <defs><marker id="arm" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 10.1 — CPython frees most objects instantly via reference counting. Reference <em>cycles</em> (X↔Y) keep counts above zero forever, so a separate cyclic collector (<code>gc</code>) is needed to reclaim them. <code>weakref</code> lets you observe an object without adding to its count.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — @contextmanager &amp; weakref</span></div>
+<pre><span class="k">from</span> contextlib <span class="k">import</span> contextmanager
+<span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="f">timing</span>(log):
+    log.append(<span class="s">"enter"</span>)
+    <span class="k">try</span>:
+        <span class="k">yield</span>                 <span class="c"># everything before = setup, after = teardown</span>
+    <span class="k">finally</span>:
+        log.append(<span class="s">"exit"</span>)   <span class="c"># always runs, even on exception</span>
+
+<span class="k">import</span> weakref
+cache = weakref.WeakValueDictionary()   <span class="c"># entries vanish when the value is GC'd</span>
+cache[<span class="s">"k"</span>] = obj                       <span class="c"># does NOT keep obj alive → leak-free cache</span></pre>
+
+  <div class="def when"><span class="lab">When</span><p>Add type hints on public interfaces and anything non-obvious (they pay off most at scale). Use a <code class="inl">@contextmanager</code> for simple setup/teardown; a class with <code class="inl">__enter__</code>/<code class="inl">__exit__</code> when it holds state. Reach for <code class="inl">weakref</code> for caches and back-references that must not prevent collection; call <code class="inl">gc</code> explicitly only in special cases (it runs automatically).</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — type hints are not enforced at runtime</div>
+  <p>Python does <strong>not</strong> check types at runtime — <code class="inl">def f(x: int)</code> happily accepts a string. Hints are for you, your teammates, and static checkers (mypy/Pylance). If you need runtime validation, use explicit checks or a library like <code class="inl">pydantic</code> (which FastAPI uses).</p></div>
+
+  <div class="qa"><div class="q">Q · How does Python manage memory?</div>
+  <p>Primarily by reference counting: every object tracks how many references point at it, and it's freed the instant that count hits zero. A supplementary cyclic garbage collector periodically finds and frees reference cycles that counting alone can't. Memory pools (pymalloc) handle small-object allocation efficiently.</p></div>
+
+  <div class="qa"><div class="q">Q · What is a Protocol, and how is it different from an ABC?</div>
+  <p>A <code class="inl">Protocol</code> is structural typing — any object with the right methods satisfies it, no inheritance needed ("duck typing you can statically check"). An ABC is nominal — a class must explicitly inherit it. Protocols decouple your code from a class hierarchy; ABCs enforce an explicit contract.</p></div>
+
+  <div class="qa"><div class="q">Q · When would you use <code class="inl">weakref</code>?</div>
+  <p>When you need to reference an object without keeping it alive — caches (<code class="inl">WeakValueDictionary</code>), observer back-references, and breaking cycles. As soon as the last <em>strong</em> reference goes away, the object is collected and the weak reference reads <code class="inl">None</code>, so you never leak.</p></div>
+
+  <div class="takeaway"><span class="h">🎯 Key takeaways</span>
+  <ul class="tick" style="margin-top:6px">
+    <li><strong>Names point at objects.</strong> Aliasing shares mutable edits; immutability enables hashing and safe sharing.</li>
+    <li><strong>Know the four collections' Big-O cold</strong> — dict/set are O(1) lookup; list/tuple are ordered sequences.</li>
+    <li><strong>Generators stream lazily</strong>; <strong>decorators</strong> add behavior via <code class="inl">fn = deco(fn)</code>.</li>
+    <li><strong>Dunder methods</strong> make objects native; honor the <code class="inl">__eq__</code>/<code class="inl">__hash__</code> contract.</li>
+    <li><strong>Descriptors</strong> power <code class="inl">@property</code> &amp; ORMs; <strong>__slots__</strong> saves memory; <strong>metaclasses</strong> customize class creation (rarely needed).</li>
+    <li><strong>Type hints</strong> are static-only; <strong>reference counting + cyclic GC</strong> manage memory; <strong>weakref</strong> gives leak-free caches.</li>
+    <li>Every idea is runnable in <code class="inl">00-python-foundations/</code> — run it, break it, fix it.</li>
+  </ul></div>
+</section>
+
+</body>
+</html>

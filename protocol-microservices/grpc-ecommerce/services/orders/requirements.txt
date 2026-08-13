@@ -1,0 +1,11 @@
+# Pins target the Docker image (python:3.12-slim). Local venvs use unpinned latest.
+grpcio==1.68.1
+grpcio-tools==1.68.1
+grpcio-health-checking==1.68.1
+protobuf==5.29.1
+sqlalchemy[asyncio]==2.0.36
+alembic==1.14.0
+asyncpg==0.30.0
+aiosqlite==0.20.0
+pydantic-settings==2.7.0
+prometheus-client==0.21.1

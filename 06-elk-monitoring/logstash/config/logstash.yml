@@ -1,0 +1,15 @@
+# Logstash node settings.
+http.host: "0.0.0.0"
+
+# --- Persistent Queue: the backpressure / durability control ----------------
+# With a memory queue, an Elasticsearch outage or a traffic burst can drop
+# events. A PERSISTENT queue spools to disk, absorbing bursts and surviving
+# restarts. `max_bytes` bounds disk use; when full, Logstash applies
+# backpressure UP the chain to Filebeat (which then buffers on its own disk).
+queue.type: persisted
+queue.max_bytes: 2gb
+queue.checkpoint.writes: 1024
+
+# Batch tuning: larger batches = higher throughput, more latency/memory.
+pipeline.batch.size: 250
+pipeline.batch.delay: 50

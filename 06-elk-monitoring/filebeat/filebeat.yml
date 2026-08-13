@@ -1,0 +1,50 @@
+# =============================================================================
+# Filebeat: collect container stdout logs and ship to Logstash
+# =============================================================================
+# Filebeat auto-discovers Docker containers and reads their JSON-file logs.
+# It maintains a registry (what has been read) and an internal queue that
+# provides the FIRST layer of backpressure/buffering if Logstash is down.
+
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      templates:
+        - condition:
+            # Only ship logs from our application containers (label-based).
+            contains:
+              docker.container.labels.logging: "fastapi"
+          config:
+            - type: container
+              paths:
+                - /var/lib/docker/containers/${data.docker.container.id}/*.log
+
+# Add container/host metadata so logs are attributable in Kibana.
+processors:
+  - add_docker_metadata: ~
+  - add_host_metadata: ~
+  # Decode the JSON the app writes to stdout (also decoded again in Logstash;
+  # doing it here lets Filebeat drop malformed lines early).
+  - decode_json_fields:
+      fields: ["message"]
+      target: "app"
+      overwrite_keys: true
+      add_error_key: true
+
+# --- Internal queue: backpressure buffer ------------------------------------
+queue.mem:
+  events: 8192
+  flush.min_events: 512
+  flush.timeout: 1s
+
+# If Logstash is unreachable, Filebeat retries with backoff and keeps its
+# read position in the registry, so NO logs are lost for transient outages.
+output.logstash:
+  hosts: ["logstash:5044"]
+  # bulk_max_size controls per-request batch size to Logstash.
+  bulk_max_size: 2048
+  # Exponential backoff on failure (retries indefinitely; back-pressures reads).
+  backoff.init: 1s
+  backoff.max: 60s
+
+logging.level: warning

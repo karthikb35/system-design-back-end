@@ -1,0 +1,17 @@
+grpcio==1.68.1
+grpcio-tools==1.68.1
+grpcio-health-checking==1.68.1
+sqlalchemy[asyncio]==2.0.36
+alembic==1.14.0
+asyncpg==0.30.0
+pydantic==2.10.4
+pydantic[email]==2.10.4
+pydantic-settings==2.7.1
+bcrypt==4.2.1
+python-jose[cryptography]==3.3.0
+prometheus-client==0.21.1
+
+# --- test-only ---
+pytest==8.3.4
+pytest-asyncio==0.25.2
+aiosqlite==0.20.0

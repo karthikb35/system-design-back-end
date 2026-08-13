@@ -1,0 +1,24 @@
+# syntax=docker/dockerfile:1
+# -----------------------------------------------------------------------------
+# Orders service image. Slim base, non-root user, dependency layer cached
+# separately from source so code changes don't reinstall packages.
+# -----------------------------------------------------------------------------
+FROM python:3.12-slim AS base
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app ./app
+
+RUN useradd --create-home --uid 1001 appuser
+USER appuser
+
+EXPOSE 8003
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8003"]

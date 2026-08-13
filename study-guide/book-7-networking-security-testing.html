@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Networking, Security &amp; Testing — The Architect's Path, Book VII</title>
+<link rel="stylesheet" href="architects-path.css">
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <div>
+    <div class="kicker">The Architect's Path · Book VII · Edition 2026 · Finale</div>
+    <h1>Networking,<br>Security &amp; Testing</h1>
+    <div class="sub">The three disciplines that separate code that <strong style="color:#8ff4ee">works</strong> from code that's <strong style="color:#8ff4ee">trustworthy</strong>: how bytes actually move across the wire, how attackers think and how you stop them, and how you prove your system is correct — automatically, forever.</div>
+    <div class="stackrow">🌐 Networking · 🔒 Security · 🧪 Testing · 🚦 CI/CD</div>
+    <div class="badges">
+      <span class="badge">🌐 TCP/IP &amp; HTTP</span>
+      <span class="badge">🔐 TLS &amp; DNS</span>
+      <span class="badge">🛡️ OWASP Top 10</span>
+      <span class="badge">🎫 Auth &amp; JWT</span>
+      <span class="badge">🧪 The test pyramid</span>
+      <span class="badge">🎭 Mocks &amp; fixtures</span>
+      <span class="badge">🚦 CI/CD gates</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div><strong style="color:#eaf2fb">The capstone of the series.</strong><br>Runnable code in <code style="color:#cfe0d6">10-networking-security-testing/</code>.</div>
+    <div style="text-align:right">Attack → Defense · Anti-pattern → Refactor<br>Diagrams · Gotchas · Interview Q&amp;A</div>
+  </div>
+</section>
+
+<!-- ============================ TOC ============================ -->
+<section class="toc">
+  <h2>Table of Contents</h2>
+  <div class="rule"></div>
+  <p class="small">Book VII closes the series. Networking explains the pipes everything else runs through; security is the adversarial mindset that assumes someone is trying to break in; testing is how you keep all seven books' worth of behavior correct as the code changes. Each section pairs the <strong>attack or pathology</strong> with the <strong>defense or refactor</strong>, then code, gotchas, and interview questions.</p>
+  <ol>
+    <li><span class="n">1</span><div><div class="tt"><a href="#s1">The Network Stack</a></div><div class="dd">OSI/TCP-IP layers · TCP vs UDP · ports &amp; sockets</div></div><span class="ic">🌐</span></li>
+    <li><span class="n">2</span><div><div class="tt"><a href="#s2">HTTP &amp; the Web</a></div><div class="dd">request/response · methods &amp; status · HTTP/1.1 → 2 → 3</div></div><span class="ic">📡</span></li>
+    <li><span class="n">3</span><div><div class="tt"><a href="#s3">DNS &amp; TLS</a></div><div class="dd">name resolution · the TLS handshake · certificates &amp; trust</div></div><span class="ic">🔐</span></li>
+    <li><span class="n">4</span><div><div class="tt"><a href="#s4">API Protocols</a></div><div class="dd">REST · gRPC · GraphQL · WebSockets — choosing wisely</div></div><span class="ic">🔌</span></li>
+    <li><span class="n">5</span><div><div class="tt"><a href="#s5">The Security Mindset &amp; OWASP Top 10</a></div><div class="dd">threat modeling · injection · the big ten risks</div></div><span class="ic">🛡️</span></li>
+    <li><span class="n">6</span><div><div class="tt"><a href="#s6">Authentication &amp; Authorization</a></div><div class="dd">authn vs authz · sessions vs JWT · OAuth2 · RBAC</div></div><span class="ic">🎫</span></li>
+    <li><span class="n">7</span><div><div class="tt"><a href="#s7">Storing Secrets &amp; Credentials</a></div><div class="dd">password hashing · secrets management · encryption at rest/in transit</div></div><span class="ic">🔑</span></li>
+    <li><span class="n">8</span><div><div class="tt"><a href="#s8">Testing Strategy &amp; the Pyramid</a></div><div class="dd">unit/integration/e2e · TDD · property-based · coverage</div></div><span class="ic">🧪</span></li>
+    <li><span class="n">9</span><div><div class="tt"><a href="#s9">Test Doubles &amp; Writing Good Tests</a></div><div class="dd">stubs · mocks · fakes · fixtures · flakiness</div></div><span class="ic">🎭</span></li>
+    <li><span class="n">10</span><div><div class="tt"><a href="#s10">CI/CD &amp; Shipping With Confidence</a></div><div class="dd">pipelines · quality gates · shift-left security · the path ahead</div></div><span class="ic">🚦</span></li>
+  </ol>
+  <div class="subitems">Runnable code: <code>http_parsing.py</code> · <code>jwt_auth.py</code> · <code>password_hashing.py</code> · <code>sql_injection.py</code> · <code>test_doubles.py</code></div>
+</section>
+
+<!-- ============================ CHAPTER SHELL ============================ -->
+<section class="chapter" id="s0">
+  <div class="ch-head">
+    <div class="num">🛡️</div>
+    <div><div class="t">Networking, Security &amp; Testing</div>
+    <div class="s">The pipes, the adversary, and the proof — the capstone of The Architect's Path</div></div>
+    <div class="ico">🛡️</div>
+  </div>
+
+  <p class="lead">This is the final book, and it's about the three things that quietly decide whether a system is <em>professional</em>. <strong>Networking</strong> is the substrate — every API call, database query, and event is bytes crossing a wire, and understanding that wire turns "it's slow" and "it's broken" from mysteries into diagnoses. <strong>Security</strong> is a mindset shift: assume an adversary is actively trying to abuse every input, and design so they can't. <strong>Testing</strong> is how you make correctness durable — so the code from Books I–VI keeps working as it changes. Together they're what stands between a demo and a system you'd trust with real users and real money.</p>
+
+  <div class="coderef"><div class="h">📂 Runnable code in the repo</div><p style="margin:0 0 3px">Each core idea here is a working, self-testing script — run with <span class="path">python &lt;file&gt;</span>:</p>
+  <ul>
+    <li><span class="path">10-networking-security-testing/examples/http_parsing.py</span> — parse an HTTP/1.1 request &amp; build a response by hand</li>
+    <li><span class="path">10-networking-security-testing/examples/jwt_auth.py</span> — sign/verify a JWT from scratch; tamper &amp; expiry checks</li>
+    <li><span class="path">10-networking-security-testing/examples/password_hashing.py</span> — salted, slow PBKDF2 + constant-time verify</li>
+    <li><span class="path">10-networking-security-testing/examples/sql_injection.py</span> — injection vs parameterized queries</li>
+    <li><span class="path">10-networking-security-testing/examples/test_doubles.py</span> — the test pyramid: stub, mock, integration, property-based</li>
+  </ul></div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">Attack → defense, and proof</div>
+  <p>Books I–VI mostly asked "how do I build this correctly?" This book adds two adversarial questions and one durability question: <strong>How does this move across an unreliable, hostile network?</strong> <strong>How would an attacker abuse it — and how do I stop them?</strong> And <strong>how do I prove, automatically and forever, that it still works?</strong> Answer those three and you've crossed from "can code" to "can be trusted to ship."</p></div>
+
+  <!-- ===================== 1 : NETWORK STACK ===================== -->
+  <h2 class="sec" id="s1">1 · The Network Stack</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Networking is organized in <em class="term">layers</em>, each building on the one below. The practical model is TCP/IP: <em>link</em> (Ethernet/Wi-Fi) → <em>internet</em> (IP — addressing &amp; routing) → <em>transport</em> (<em class="term">TCP</em> reliable streams, <em class="term">UDP</em> fast datagrams) → <em>application</em> (HTTP, DNS, gRPC). A <em class="term">socket</em> is the programming endpoint: an IP address + a <em class="term">port</em>.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because layering is <em>why</em> the internet works — each layer solves one problem and hides it from the layer above, so HTTP doesn't care whether it's on fiber or Wi-Fi. And the TCP-vs-UDP choice is a real engineering decision: TCP guarantees ordered, reliable delivery (web, APIs, databases); UDP trades reliability for latency (video calls, gaming, DNS). Knowing which layer a problem lives in is half of debugging it.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 200" role="img" aria-label="The TCP/IP layer stack">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">Each layer adds a header, uses the one below, hides its details</text>
+        <rect x="180" y="34" width="540" height="30" rx="6" fill="#eef6ff" stroke="#0284c7"/><text x="200" y="54" font-size="10" font-weight="700" fill="#0c4a6e">Application</text><text x="710" y="54" text-anchor="end" font-size="8.5" fill="#0c4a6e">HTTP · DNS · gRPC · TLS</text>
+        <rect x="180" y="70" width="540" height="30" rx="6" fill="#f0fdf4" stroke="#16a34a"/><text x="200" y="90" font-size="10" font-weight="700" fill="#14532d">Transport</text><text x="710" y="90" text-anchor="end" font-size="8.5" fill="#14532d">TCP (reliable) · UDP (fast) · ports</text>
+        <rect x="180" y="106" width="540" height="30" rx="6" fill="#fef3c7" stroke="#d97706"/><text x="200" y="126" font-size="10" font-weight="700" fill="#b45309">Internet</text><text x="710" y="126" text-anchor="end" font-size="8.5" fill="#b45309">IP addressing · routing</text>
+        <rect x="180" y="142" width="540" height="30" rx="6" fill="#f1f5f9" stroke="#64748b"/><text x="200" y="162" font-size="10" font-weight="700" fill="#334155">Link</text><text x="710" y="162" text-anchor="end" font-size="8.5" fill="#334155">Ethernet · Wi-Fi · MAC</text>
+        <path d="M150,49 L150,157" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#al)"/><text x="140" y="105" text-anchor="middle" font-size="8" fill="#475569" transform="rotate(-90 140 105)">send (encapsulate)</text>
+        <path d="M750,157 L750,49" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#al)"/><text x="762" y="105" text-anchor="middle" font-size="8" fill="#475569" transform="rotate(90 762 105)">receive (decapsulate)</text>
+        <defs><marker id="al" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 7.1 — The TCP/IP stack. A message is wrapped by each layer on the way down (encapsulation) and unwrapped on the way up. The application layer (HTTP) rides on the transport layer (TCP/UDP), which rides on IP, which rides on the physical link — each hiding the layer below so higher layers stay simple.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th>Property</th><th>TCP</th><th>UDP</th></tr>
+    <tr><td>Delivery</td><td>reliable, ordered, retransmitted</td><td>best-effort, may drop/reorder</td></tr>
+    <tr><td>Connection</td><td>handshake (3-way), stateful</td><td>connectionless</td></tr>
+    <tr><td>Overhead / latency</td><td>higher</td><td>lower</td></tr>
+    <tr><td>Used by</td><td>HTTP, DB, SSH, email</td><td>DNS, video/voice, gaming, QUIC/HTTP3</td></tr>
+  </table>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">The TCP 3-way handshake</div>
+  <p>Before any data flows, TCP establishes a connection: <strong>SYN</strong> (client: "let's talk, my sequence is X") → <strong>SYN-ACK</strong> (server: "ok, and mine is Y") → <strong>ACK</strong> (client: "got it"). That's one full round trip of latency <em>before</em> your request even starts — which is exactly why connection reuse (keep-alive, pooling) and lower-latency transports (QUIC) matter so much.</p></div>
+
+  <div class="qa"><div class="q">Q · TCP vs UDP — when do you choose each?</div>
+  <p>TCP when correctness and order matter more than latency: web/APIs, databases, file transfer — it guarantees every byte arrives in order, retransmitting losses. UDP when low latency beats occasional loss: live video/voice, gaming, and DNS — a dropped packet is better than a late one. Newer stacks (QUIC/HTTP-3) build reliability on top of UDP to get the best of both.</p></div>
+
+  <div class="qa"><div class="q">Q · Why does the layered model matter in practice?</div>
+  <p>Because each layer has a single responsibility and hides its details from the layer above, letting you reason about (and debug) one concern at a time — an HTTP problem is different from an IP routing problem or a TLS problem. It also enables independent evolution: HTTP/3 could switch the transport to QUIC without applications rewriting their request logic.</p></div>
+
+  <!-- ===================== 2 : HTTP ===================== -->
+  <h2 class="sec" id="s2">2 · HTTP &amp; the Web</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">HTTP</em> is a text-based request/response protocol on top of TCP (or QUIC for HTTP/3). A request has a <em>method</em> (GET/POST/PUT/DELETE…), a <em>target</em> path, <em>headers</em>, and an optional <em>body</em>; a response has a <em>status code</em>, headers, and a body. It's <em class="term">stateless</em> — each request stands alone — with state layered on via cookies/tokens.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because HTTP is the lingua franca of the web and virtually every API. Its semantics carry real weight: methods signal <em>idempotency</em> and <em>safety</em> (a GET must not mutate; a PUT must be idempotent); status codes tell clients (and load balancers, caches, retries) exactly what happened. Getting them right is the difference between an API that composes cleanly and one that surprises everyone.</p></div>
+
+  <div class="def how"><span class="lab">How — the wire format</span></div>
+<pre><span class="c"># request: line, headers (CRLF-separated), blank line, body</span>
+POST /orders?debug=1 HTTP/1.1
+Host: api.example.com
+Content-Type: application/json
+Content-Length: 13
+
+{<span class="s">"total"</span>:42}
+<span class="c"># response: status line, headers, blank line, body</span>
+HTTP/1.1 201 Created
+Content-Type: application/json
+Content-Length: 11
+
+{<span class="s">"id"</span>:<span class="s">"o1"</span>}</pre>
+
+  <div class="coderef"><div class="h">📂 Parse it yourself</div>
+  <ul><li><span class="path">10-networking-security-testing/examples/http_parsing.py</span> — parses a raw request (method, target, case-insensitive headers, body), builds a framed response, and classifies status codes by leading digit.</li></ul></div>
+
+  <table>
+    <tr><th>Status class</th><th>Meaning</th><th>Examples</th></tr>
+    <tr><td>2xx</td><td>success</td><td>200 OK · 201 Created · 204 No Content</td></tr>
+    <tr><td>3xx</td><td>redirection</td><td>301 Moved · 304 Not Modified</td></tr>
+    <tr><td>4xx</td><td>client error</td><td>400 · 401 · 403 · 404 · 429</td></tr>
+    <tr><td>5xx</td><td>server error</td><td>500 · 502 · 503 · 504</td></tr>
+  </table>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">HTTP/1.1 → HTTP/2 → HTTP/3</div>
+  <p><strong>1.1</strong>: one request at a time per connection (head-of-line blocking); many connections needed. <strong>2</strong>: multiplexes many streams over one TCP connection with header compression. <strong>3</strong>: moves onto QUIC (over UDP) to eliminate TCP-level head-of-line blocking and cut connection setup to ~1 round trip. Each step is chiefly about reducing latency and blocking, not changing the request/response semantics you write against.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — using the wrong method breaks caching &amp; retries</div>
+  <p>Infrastructure trusts HTTP semantics. A GET that mutates state can be cached, prefetched, or retried by proxies — silently repeating your side effect. Use safe methods (GET/HEAD) for reads only, idempotent methods (PUT/DELETE) so retries are harmless, and POST for non-idempotent creates (paired with an idempotency key). The method is a contract, not decoration.</p></div>
+
+  <div class="qa"><div class="q">Q · What does "HTTP is stateless" mean, and how is state added?</div>
+  <p>Each request is independent — the server keeps no memory of prior requests from that client by default. State is layered on top: a cookie or bearer token sent with each request identifies the client/session, and the server looks up or reconstructs context from it. Statelessness is what lets any server behind a load balancer handle any request, enabling horizontal scale.</p></div>
+
+  <div class="qa"><div class="q">Q · Which HTTP methods are safe and which are idempotent?</div>
+  <p>Safe (no state change): GET, HEAD, OPTIONS. Idempotent (repeating has the same effect as once): GET, HEAD, PUT, DELETE, OPTIONS. POST is neither — it's for non-idempotent operations like creating a resource, which is why POST retries need an idempotency key. Honoring these lets caches, proxies, and retry logic behave correctly.</p></div>
+
+  <!-- ===================== 3 : DNS & TLS ===================== -->
+  <h2 class="sec" id="s3">3 · DNS &amp; TLS</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">DNS</em> (Domain Name System) is the internet's phone book — it resolves a human name (<code class="inl">api.example.com</code>) to an IP address via a hierarchy of resolvers. <em class="term">TLS</em> (Transport Layer Security, the "S" in HTTPS) wraps a connection to give <em>encryption</em> (privacy), <em>integrity</em> (no tampering), and <em>authentication</em> (you're really talking to that server, proven by a <em class="term">certificate</em>).</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because these two run before your first byte of application data and are behind a huge share of outages and vulnerabilities: an expired certificate takes a site down instantly; a DNS misconfiguration makes a healthy service unreachable; a missing/weak TLS setup exposes users to eavesdropping and man-in-the-middle attacks. "It's always DNS" is a debugging meme because it's so often true.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 175" role="img" aria-label="The TLS handshake">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">TLS handshake — agree on keys &amp; verify identity before any data</text>
+        <rect x="70" y="40" width="90" height="28" rx="6" fill="#eef6ff" stroke="#0284c7"/><text x="115" y="59" text-anchor="middle" font-size="9" fill="#0c4a6e">client</text>
+        <rect x="740" y="40" width="90" height="28" rx="6" fill="#f0fdf4" stroke="#16a34a"/><text x="785" y="59" text-anchor="middle" font-size="9" fill="#14532d">server</text>
+        <line x1="115" y1="68" x2="115" y2="165" stroke="#cbd5e1"/><line x1="785" y1="68" x2="785" y2="165" stroke="#cbd5e1"/>
+        <path d="M120,86 L780,86" stroke="#64748b" stroke-width="1.4" marker-end="url(#at)"/><text x="450" y="81" text-anchor="middle" font-size="8" fill="#475569">ClientHello (ciphers, random)</text>
+        <path d="M780,106 L120,106" stroke="#64748b" stroke-width="1.4" marker-end="url(#at)"/><text x="450" y="101" text-anchor="middle" font-size="8" fill="#475569">ServerHello + certificate (public key)</text>
+        <text x="115" y="126" text-anchor="middle" font-size="7.5" fill="#0c4a6e">verify cert against trusted CA</text>
+        <path d="M120,144 L780,144" stroke="#64748b" stroke-width="1.4" marker-end="url(#at)"/><text x="450" y="139" text-anchor="middle" font-size="8" fill="#475569">key exchange → shared session key</text>
+        <text x="450" y="165" text-anchor="middle" font-size="8.5" font-weight="700" fill="#14532d">🔒 encrypted application data flows</text>
+        <defs><marker id="at" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 7.2 — The TLS handshake. The client and server negotiate ciphers, the server proves its identity with a certificate signed by a trusted authority, and they derive a shared symmetric key — all before any application data. Asymmetric crypto bootstraps trust; fast symmetric crypto then encrypts the session.</figcaption>
+  </figure>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">How certificates create trust</div>
+  <p>Anyone can generate a key pair, so how do you know a public key belongs to <code class="inl">example.com</code>? A <em>Certificate Authority</em> (CA) your device already trusts signs the server's certificate, vouching for the name→key binding. Your browser verifies that signature chain up to a trusted root. This is a chain of trust — which is why a self-signed or expired cert triggers a warning: the binding can't be verified.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the expired certificate outage</div>
+  <p>TLS certificates expire, and an expired one makes every client reject the connection instantly — a total outage with no code change. It's one of the most common self-inflicted incidents. Automate renewal (ACME/Let's Encrypt, cert-manager), monitor expiry dates with alerts weeks ahead, and never rely on a human to remember.</p></div>
+
+  <div class="qa"><div class="q">Q · Walk through what happens when you type a URL and press Enter.</div>
+  <p>The browser resolves the hostname to an IP via DNS (checking caches, then recursive resolvers up the hierarchy), opens a TCP connection (3-way handshake) to that IP, performs a TLS handshake to encrypt and verify the server's certificate, then sends an HTTP request. The server responds (often via load balancers, caches, app servers, and a database), and the browser renders the result — following redirects and fetching sub-resources as needed.</p></div>
+
+  <div class="qa"><div class="q">Q · What three guarantees does TLS provide?</div>
+  <p>Confidentiality (the traffic is encrypted, so eavesdroppers can't read it), integrity (tampering is detected via message authentication), and authentication (the server proves its identity with a CA-signed certificate, preventing man-in-the-middle impersonation). It bootstraps a shared symmetric key using asymmetric crypto, then uses the fast symmetric key for the session.</p></div>
+
+  <!-- ===================== 4 : API PROTOCOLS ===================== -->
+  <h2 class="sec" id="s4">4 · API Protocols</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The styles services use to talk: <em class="term">REST</em> (resources over HTTP with JSON), <em class="term">gRPC</em> (binary Protobuf over HTTP/2, strongly typed, great for service-to-service), <em class="term">GraphQL</em> (a query language letting clients ask for exactly the fields they need), and <em class="term">WebSockets</em> (a persistent, bidirectional connection for real-time push).</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because there's no single best protocol — each optimizes for different constraints. REST is simple, cacheable, and universal; gRPC is fast and type-safe for internal microservices; GraphQL kills over-/under-fetching for rich clients; WebSockets enable chat, live dashboards, and notifications that request/response can't. Choosing well is a senior signal; forcing one everywhere is a junior one.</p></div>
+
+  <table>
+    <tr><th>Protocol</th><th>Best for</th><th>Trade-off</th></tr>
+    <tr><td>REST/JSON</td><td>public APIs, CRUD, broad compatibility</td><td>over/under-fetching; chatty</td></tr>
+    <tr><td>gRPC</td><td>internal service-to-service, low latency</td><td>binary (harder to debug); needs HTTP/2</td></tr>
+    <tr><td>GraphQL</td><td>rich clients with varied data needs</td><td>caching &amp; query-cost complexity</td></tr>
+    <tr><td>WebSockets</td><td>real-time, bidirectional push</td><td>stateful connections; scaling fan-out</td></tr>
+  </table>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — WebSockets are stateful, and that changes everything</div>
+  <p>Unlike stateless HTTP, a WebSocket is a long-lived connection pinned to one server, so you can't just add servers behind a round-robin balancer and expect broadcast to work — a message published on server A must reach clients connected to server B. You need sticky routing plus a shared pub/sub backplane (e.g., Redis) to fan messages out across instances. Plan for it before you scale.</p></div>
+
+  <div class="qa"><div class="q">Q · REST vs gRPC — when would you pick gRPC?</div>
+  <p>For internal, high-throughput, low-latency service-to-service communication where you control both ends: gRPC's binary Protobuf is compact and fast, it's strongly typed with generated clients, and it supports streaming over HTTP/2. Prefer REST for public-facing APIs, broad client compatibility, human-debuggability, and HTTP caching. Many systems use REST at the edge and gRPC internally.</p></div>
+
+  <div class="qa"><div class="q">Q · What problem does GraphQL solve, and what does it cost?</div>
+  <p>It solves over-fetching and under-fetching: clients request exactly the fields they need in one round trip, instead of multiple fixed REST endpoints. The costs are harder HTTP caching (usually one POST endpoint), the risk of expensive/deeply-nested queries (needing query-cost limits), and more server-side complexity. It shines when diverse clients need different slices of the same graph of data.</p></div>
+
+  <!-- ===================== 5 : OWASP ===================== -->
+  <h2 class="sec" id="s5">5 · The Security Mindset &amp; OWASP Top 10</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Security engineering starts with a mindset: <strong>never trust input</strong>, assume an adversary is probing every entry point, and design defenses in depth. <em class="term">Threat modeling</em> asks "what can go wrong, and how would someone abuse this?" The <em class="term">OWASP Top 10</em> is the industry's canonical list of the most critical web risks — injection, broken access control, cryptographic failures, and more.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because a single security flaw can undo everything else — a fast, scalable, well-tested system that leaks its user database is a catastrophe, not a success. Most breaches exploit a small set of well-known, preventable mistakes. Knowing the Top 10 isn't optional trivia; it's the baseline checklist every backend engineer is expected to defend against by default.</p></div>
+
+  <table>
+    <tr><th>OWASP risk</th><th>Example</th><th>Defense</th></tr>
+    <tr><td>Broken access control</td><td>changing an id in the URL to see others' data (IDOR)</td><td>authorize every request server-side, per resource</td></tr>
+    <tr><td>Injection (SQL/cmd)</td><td>input alters a query's structure</td><td>parameterized queries; never concatenate input</td></tr>
+    <tr><td>Cryptographic failures</td><td>plaintext/weakly-hashed passwords, no TLS</td><td>salted slow hashing; TLS everywhere</td></tr>
+    <tr><td>Security misconfiguration</td><td>debug on, default creds, verbose errors</td><td>hardened defaults, least privilege, no secrets in errors</td></tr>
+    <tr><td>Vulnerable dependencies</td><td>an outdated library with a known CVE</td><td>scan &amp; patch (SCA); pin &amp; update deliberately</td></tr>
+  </table>
+
+  <div class="def how"><span class="lab">How — injection: the fix is structural</span></div>
+<pre><span class="c"># ❌ input can change the query STRUCTURE -> "' OR '1'='1" returns all rows</span>
+sql = <span class="s">f"SELECT * FROM users WHERE name = '{user_input}'"</span>
+
+<span class="c"># ✅ parameterized: SQL and DATA travel separately -> input is ALWAYS data</span>
+cur.execute(<span class="s">"SELECT * FROM users WHERE name = ?"</span>, (user_input,))</pre>
+
+  <div class="coderef"><div class="h">📂 See the attack &amp; the fix</div>
+  <ul><li><span class="path">10-networking-security-testing/examples/sql_injection.py</span> — the <code class="inl">' OR '1'='1</code> payload leaks the whole table via string concatenation; the same payload returns zero rows through a parameterized query.</li></ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — XSS and CSRF, the browser-side twins</div>
+  <p><strong>XSS</strong> (cross-site scripting): unescaped user content is rendered as HTML/JS and runs in other users' browsers — steal sessions, deface pages. Defense: escape/encode output by context and use a Content-Security-Policy. <strong>CSRF</strong> (cross-site request forgery): a malicious site tricks a logged-in user's browser into making a state-changing request. Defense: anti-CSRF tokens and <code class="inl">SameSite</code> cookies. Both exploit misplaced trust in the browser.</p></div>
+
+  <div class="qa"><div class="q">Q · What's the root cause of injection, and the general fix?</div>
+  <p>Mixing untrusted data with code/commands so the data can change the interpretation — SQL, OS commands, LDAP, etc. The universal fix is separation: use parameterized queries / prepared statements (or safe APIs) so input is always treated as data, plus input validation and least-privilege accounts. Never build executable strings by concatenating user input.</p></div>
+
+  <div class="qa"><div class="q">Q · What is broken access control (IDOR) and how do you prevent it?</div>
+  <p>When the server relies on the client not to access resources it shouldn't — e.g., <code class="inl">/orders/1234</code> where changing the id reveals another user's order (Insecure Direct Object Reference). Prevent it by enforcing authorization on the server for every request against the authenticated user (deny by default), never trusting client-supplied identifiers or hidden fields to grant access.</p></div>
+
+  <!-- ===================== 6 : AUTHN/AUTHZ ===================== -->
+  <h2 class="sec" id="s6">6 · Authentication &amp; Authorization</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Two distinct questions. <em class="term">Authentication</em> (authn): <strong>who are you?</strong> — verifying identity (password, token, MFA). <em class="term">Authorization</em> (authz): <strong>what are you allowed to do?</strong> — checking permissions (roles/scopes). Sessions and <em class="term">JWTs</em> carry identity between requests; <em class="term">OAuth2</em> delegates access; <em class="term">RBAC</em> models permissions by role.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because confusing the two, or doing either sloppily, is behind a huge share of breaches. Authenticating a user but failing to authorize each action leads straight to broken access control. And the session-vs-token choice has real consequences for scale, revocation, and security that you have to reason about deliberately.</p></div>
+
+  <table>
+    <tr><th></th><th>Server sessions</th><th>JWT (stateless tokens)</th></tr>
+    <tr><td>State</td><td>server stores session; cookie holds an id</td><td>token itself carries claims; server stores nothing</td></tr>
+    <tr><td>Scale</td><td>needs shared session store</td><td>scales freely (self-contained)</td></tr>
+    <tr><td>Revocation</td><td>easy — delete the session</td><td>hard — valid until expiry (needs denylist)</td></tr>
+  </table>
+
+  <div class="coderef"><div class="h">📂 A JWT, from scratch</div>
+  <ul><li><span class="path">10-networking-security-testing/examples/jwt_auth.py</span> — builds the <code class="inl">header.payload.signature</code> structure, verifies with constant-time HMAC comparison, and rejects tampered, wrong-key, and expired tokens.</li></ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — a JWT is signed, not encrypted</div>
+  <p>A common and dangerous misconception: the JWT payload is only base64-<em>encoded</em>, so <strong>anyone can read it</strong>. The signature proves integrity (it wasn't altered) and authenticity (it came from someone with the key) — <em>not</em> secrecy. Never put passwords, PII, or secrets in a JWT payload, and always verify the signature (and reject <code class="inl">alg: none</code>) on every request.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">OAuth2 delegates access without sharing passwords</div>
+  <p>OAuth2 lets a user grant an app limited access to their data on another service <em>without</em> handing over their password — "Sign in with Google" issues the app a scoped, revocable access token instead. It separates the resource owner (user), the client (app), and the authorization server. Note: OAuth2 is about <em>authorization/delegation</em>; OpenID Connect layers <em>authentication</em> (identity) on top of it.</p></div>
+
+  <div class="qa"><div class="q">Q · Authentication vs authorization — one-line each, with the failure mode.</div>
+  <p>Authentication verifies <em>who</em> you are (login, token, MFA); authorization decides <em>what</em> you may do (roles/permissions). The classic failure is authenticating a user then trusting the client for authorization — so a logged-in user can access another user's resources. Authorize every action server-side against the authenticated identity.</p></div>
+
+  <div class="qa"><div class="q">Q · Sessions vs JWTs — trade-offs?</div>
+  <p>Server sessions are easy to revoke (delete the session) but need shared state across servers. JWTs are stateless and scale effortlessly since the token carries its claims, but are hard to revoke before expiry (mitigated with short lifetimes + refresh tokens and a denylist). Choose sessions when instant revocation matters; JWTs when stateless horizontal scale matters — many systems combine short JWTs with refresh tokens.</p></div>
+
+  <!-- ===================== 7 : SECRETS ===================== -->
+  <h2 class="sec" id="s7">7 · Storing Secrets &amp; Credentials</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Handling the crown jewels: user <em class="term">passwords</em> (never stored recoverably — hashed with a <em>salted, slow</em> function), application <em class="term">secrets</em> (API keys, DB passwords — kept out of code, injected at runtime), and data <em class="term">encryption</em> at rest and in transit.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because how you store credentials determines whether a breach is a headline or a shrug. Plaintext or fast-hashed passwords are cracked in minutes when a database leaks; secrets committed to git are permanent and scraped by bots within minutes of a push. This is the highest-blast-radius area in the whole book.</p></div>
+
+  <div class="def how"><span class="lab">How — salted, slow hashing + constant-time verify</span></div>
+<pre><span class="c"># store: unique random salt + a DELIBERATELY slow KDF (pbkdf2/bcrypt/argon2)</span>
+salt = secrets.token_bytes(<span class="n">16</span>)
+dk = hashlib.pbkdf2_hmac(<span class="s">"sha256"</span>, password.encode(), salt, <span class="n">200_000</span>)
+
+<span class="c"># verify: recompute, compare in CONSTANT time (no early-exit timing leak)</span>
+hmac.compare_digest(dk, stored_hash)</pre>
+
+  <div class="coderef"><div class="h">📂 Runnable in the repo</div>
+  <ul><li><span class="path">10-networking-security-testing/examples/password_hashing.py</span> — salted PBKDF2, constant-time verify; shows the same password produces different stored hashes (unique salts) and that plaintext is never stored.</li></ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — a fast hash (md5/sha256) is not password storage</div>
+  <p>General-purpose hashes are designed to be <em>fast</em>, which is exactly wrong for passwords: an attacker with a leaked table can try billions of guesses per second on a GPU, and unsalted hashes fall to precomputed rainbow tables. Use a purpose-built, <em>slow</em>, salted KDF — bcrypt, scrypt, or Argon2 (PBKDF2 at minimum) — with a per-user salt and a high work factor you raise over time.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — secrets in git are forever</div>
+  <p>Committing an API key and then "removing" it in a later commit doesn't help — it's still in history and was likely scraped seconds after pushing. Keep secrets out of the repo entirely (environment variables, a secrets manager/vault), commit only a <code class="inl">.env.example</code> template, add real secret files to <code class="inl">.gitignore</code>, scan for leaked secrets in CI, and <em>rotate</em> anything that ever touched a repo.</p></div>
+
+  <div class="qa"><div class="q">Q · How should passwords be stored, and why not sha256?</div>
+  <p>With a salted, slow, purpose-built KDF — bcrypt, scrypt, or Argon2 (PBKDF2 acceptable) — using a unique per-user salt and a tunable work factor, then compared in constant time. Plain sha256/md5 are far too fast, so leaked hashes are brute-forced at billions/sec, and without salts identical passwords share a hash and fall to rainbow tables. Slowness and salting are the whole point.</p></div>
+
+  <div class="qa"><div class="q">Q · Why constant-time comparison for secrets?</div>
+  <p>A normal comparison returns as soon as it finds a differing byte, so the time it takes leaks how many leading bytes matched — an attacker can measure this to reconstruct a token/hash byte by byte (a timing attack). Constant-time comparison (e.g., <code class="inl">hmac.compare_digest</code>) always examines the full length, removing the timing signal.</p></div>
+
+  <!-- ===================== 8 : TESTING PYRAMID ===================== -->
+  <h2 class="sec" id="s8">8 · Testing Strategy &amp; the Pyramid</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A strategy for automated tests organized as a <em class="term">pyramid</em>: many fast <em class="term">unit</em> tests (one function/class, no I/O) at the base, fewer <em class="term">integration</em> tests (components together — DB, HTTP) in the middle, and a few slow <em class="term">end-to-end</em> tests (the whole system) at the top. <em class="term">TDD</em> writes the test first; <em class="term">property-based</em> testing asserts invariants over many generated inputs.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because tests are how correctness survives change — they let you refactor and ship the code from Books I–VI without fear. The pyramid shape is deliberate: unit tests are fast, deterministic, and pinpoint failures precisely, so you want lots of them; e2e tests are realistic but slow and flaky, so you want few. Inverting the pyramid (mostly e2e) gives slow, brittle suites nobody trusts.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 185" role="img" aria-label="The test pyramid">
+      <g font-family="Segoe UI,sans-serif">
+        <polygon points="450,30 560,80 340,80" fill="#fee2e2" stroke="#dc2626"/><text x="450" y="66" text-anchor="middle" font-size="9" font-weight="700" fill="#7f1d1d">E2E</text>
+        <polygon points="340,82 560,82 620,128 280,128" fill="#fef3c7" stroke="#d97706"/><text x="450" y="112" text-anchor="middle" font-size="9" font-weight="700" fill="#b45309">Integration</text>
+        <polygon points="280,130 620,130 690,178 210,178" fill="#dcfce7" stroke="#16a34a"/><text x="450" y="160" text-anchor="middle" font-size="9" font-weight="700" fill="#14532d">Unit</text>
+        <text x="705" y="55" font-size="8.5" fill="#7f1d1d">few · slow · realistic · flaky</text>
+        <text x="705" y="110" font-size="8.5" fill="#b45309">some · components together</text>
+        <text x="705" y="160" font-size="8.5" fill="#14532d">many · fast · isolated · precise</text>
+        <path d="M180,178 L180,30" stroke="#94a3b8" stroke-width="1.3" marker-end="url(#ap)"/>
+        <text x="168" y="105" text-anchor="middle" font-size="8" fill="#475569" transform="rotate(-90 168 105)">fewer, slower ↑</text>
+        <defs><marker id="ap" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 7.3 — The test pyramid. A broad base of fast, isolated unit tests; a middle band of integration tests that exercise components together; and a small cap of slow, realistic end-to-end tests. The shape optimizes for fast feedback and precise failures while still validating the whole system. Built out in <code>test_doubles.py</code>.</figcaption>
+  </figure>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">TDD: red → green → refactor</div>
+  <p>Test-driven development inverts the usual order: write a <em>failing</em> test that specifies the desired behavior (red), write the minimum code to pass it (green), then improve the design with the test as a safety net (refactor). It keeps code testable by construction, documents intent, and prevents over-engineering — you only build what a test demands.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Property-based testing finds edge cases you didn't imagine</div>
+  <p>Instead of hand-picking examples, you assert an <em>invariant</em> ("decoding an encoded value returns the original") and let the framework generate hundreds of random inputs to try to break it — then shrink any failure to the minimal reproducing case. It routinely surfaces bugs example-based tests miss (empty inputs, huge values, unicode). The <code class="inl">test_doubles.py</code> demo checks an invariant over 500 random orders.</p></div>
+
+  <div class="qa"><div class="q">Q · Why is the test pyramid shaped that way?</div>
+  <p>Because unit tests are fast, deterministic, and pinpoint the exact broken unit, so you can afford thousands and run them constantly; e2e tests are realistic but slow, flaky, and vague about <em>where</em> a failure is, so you keep only a few for critical flows. The shape maximizes fast, reliable feedback while still covering real integration. An inverted pyramid (mostly e2e) is slow and brittle.</p></div>
+
+  <div class="qa"><div class="q">Q · Is 100% code coverage the goal?</div>
+  <p>No — coverage measures which lines <em>ran</em> during tests, not whether behavior is <em>correct</em>; you can have 100% coverage with weak assertions and still ship bugs. Use coverage to find untested areas, not as a target to game. Aim for meaningful tests of important behavior and edge cases; chasing the last few percent often adds brittle tests with little value.</p></div>
+
+  <!-- ===================== 9 : TEST DOUBLES ===================== -->
+  <h2 class="sec" id="s9">9 · Test Doubles &amp; Writing Good Tests</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Test doubles</em> stand in for real dependencies so tests stay fast and isolated: a <em class="term">stub</em> returns canned answers, a <em class="term">fake</em> is a lightweight working implementation (in-memory DB), a <em class="term">mock</em> records interactions so you can verify <em>how</em> a collaborator was called, and a <em class="term">spy</em> wraps a real object to observe it. <em class="term">Fixtures</em> set up and tear down test state.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because testing a unit in isolation requires substituting its collaborators — you don't want a unit test hitting a real payment gateway or database. Doubles make tests deterministic and fast, and let you drive hard-to-reach paths (errors, timeouts). But they cut both ways: over-mocking couples tests to implementation and tests the mock instead of the code.</p></div>
+
+  <div class="def how"><span class="lab">How — inject the dependency, swap the double</span></div>
+<pre><span class="k">class</span> <span class="f">StubGateway</span>:                 <span class="c"># canned data -> fast, deterministic unit test</span>
+    <span class="k">def</span> <span class="f">charge</span>(self, c, amt): <span class="k">return</span> <span class="s">f"receipt-{c}-{amt}"</span>
+
+<span class="k">class</span> <span class="f">MockGateway</span>:                 <span class="c"># records calls -> verify the INTERACTION</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self): self.calls = []
+    <span class="k">def</span> <span class="f">charge</span>(self, c, amt): self.calls.append((c, amt)); <span class="k">return</span> <span class="s">"ok"</span>
+
+svc = OrderService(StubGateway())    <span class="c"># dependency injection makes it swappable</span></pre>
+
+  <div class="coderef"><div class="h">📂 All four doubles, runnable</div>
+  <ul><li><span class="path">10-networking-security-testing/examples/test_doubles.py</span> — one <code class="inl">OrderService</code> tested with a stub (unit), a mock (verify calls), a real in-memory fake (integration), and a property-based invariant — plus a flaky-vs-deterministic demo.</li></ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — over-mocking &amp; testing the mock</div>
+  <p>Mock everything and your test asserts that your code called your mocks the way you told your mocks to be called — it passes even when the real integration is broken, and it shatters on every refactor. Prefer real objects and fakes where cheap; mock at true boundaries (network, time, external services); assert on <em>outcomes/state</em> more than on <em>interactions</em>. A test coupled to implementation details is a liability.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — flaky tests destroy trust</div>
+  <p>A test that passes and fails without code changes (from real time, randomness, network, or shared state/ordering) trains the team to ignore failures — including real ones. Kill flakiness at the source: inject a fake clock, seed randomness, isolate state between tests, and avoid inter-test dependencies. The <code class="inl">test_doubles.py</code> demo shows seeding turn a coin-flip into a reproducible result.</p></div>
+
+  <div class="qa"><div class="q">Q · Mock vs stub vs fake — what's the difference?</div>
+  <p>A stub returns preset responses (state you feed in). A fake is a real but lightweight implementation (e.g., an in-memory repository). A mock additionally records and lets you assert on interactions — <em>that</em> and <em>how</em> it was called. Rule of thumb: use stubs/fakes to provide inputs and assert on resulting state; use mocks sparingly to verify behavior at genuine boundaries.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you fix a flaky test?</div>
+  <p>Find the source of nondeterminism and remove it: inject a controllable clock instead of real time, seed random generators, stub network/external calls, and ensure each test sets up and tears down its own isolated state so order doesn't matter. Never "fix" flakiness by adding sleeps or retries — that hides the bug and slows the suite.</p></div>
+
+  <!-- ===================== 10 : CI/CD ===================== -->
+  <h2 class="sec" id="s10">10 · CI/CD &amp; Shipping With Confidence</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Continuous Integration</em> (CI) automatically builds and tests every change; <em class="term">Continuous Delivery/Deployment</em> (CD) automatically ships changes that pass. The <em class="term">pipeline</em> is a series of gates — lint, type-check, unit &amp; integration tests, security scans, build — that a change must clear before it can merge or deploy.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because CI/CD is what turns all the practices in this series into a habit the machine enforces. It catches bugs, style violations, type errors, and known vulnerabilities <em>before</em> they reach production, on every commit, without relying on human discipline. It's the mechanism that makes "we test, we lint, we scan" true rather than aspirational.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 130" role="img" aria-label="A CI/CD pipeline">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">Every commit runs the gauntlet — merge/deploy only if all gates pass</text>
+        <g font-size="8.5">
+          <rect x="30" y="45" width="90" height="40" rx="7" fill="#eef6ff" stroke="#0284c7"/><text x="75" y="63" text-anchor="middle" fill="#0c4a6e">commit</text><text x="75" y="76" text-anchor="middle" fill="#0c4a6e">/ PR</text>
+          <rect x="150" y="45" width="90" height="40" rx="7" fill="#f0fdf4" stroke="#16a34a"/><text x="195" y="63" text-anchor="middle" fill="#14532d">lint +</text><text x="195" y="76" text-anchor="middle" fill="#14532d">type-check</text>
+          <rect x="270" y="45" width="90" height="40" rx="7" fill="#f0fdf4" stroke="#16a34a"/><text x="315" y="63" text-anchor="middle" fill="#14532d">unit +</text><text x="315" y="76" text-anchor="middle" fill="#14532d">integ tests</text>
+          <rect x="390" y="45" width="90" height="40" rx="7" fill="#fef3c7" stroke="#d97706"/><text x="435" y="63" text-anchor="middle" fill="#b45309">security</text><text x="435" y="76" text-anchor="middle" fill="#b45309">scan (SCA)</text>
+          <rect x="510" y="45" width="90" height="40" rx="7" fill="#eef6ff" stroke="#0284c7"/><text x="555" y="63" text-anchor="middle" fill="#0c4a6e">build</text><text x="555" y="76" text-anchor="middle" fill="#0c4a6e">image</text>
+          <rect x="630" y="45" width="90" height="40" rx="7" fill="#eef6ff" stroke="#0284c7"/><text x="675" y="63" text-anchor="middle" fill="#0c4a6e">deploy</text><text x="675" y="76" text-anchor="middle" fill="#0c4a6e">staging</text>
+          <rect x="750" y="45" width="120" height="40" rx="7" fill="#dcfce7" stroke="#16a34a"/><text x="810" y="63" text-anchor="middle" fill="#14532d">canary →</text><text x="810" y="76" text-anchor="middle" fill="#14532d">production</text>
+        </g>
+        <g stroke="#94a3b8" stroke-width="1.4">
+          <path d="M120,65 L148,65" marker-end="url(#aq)"/><path d="M240,65 L268,65" marker-end="url(#aq)"/><path d="M360,65 L388,65" marker-end="url(#aq)"/><path d="M480,65 L508,65" marker-end="url(#aq)"/><path d="M600,65 L628,65" marker-end="url(#aq)"/><path d="M720,65 L748,65" marker-end="url(#aq)"/>
+        </g>
+        <text x="450" y="108" text-anchor="middle" font-size="8.5" fill="#7f1d1d">any gate fails → pipeline stops, change is blocked</text>
+        <defs><marker id="aq" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 7.4 — A CI/CD pipeline as a series of quality gates. Each commit is linted, type-checked, tested, security-scanned, built, and progressively deployed; a failure at any gate blocks the change. This is where the whole series' practices become automatic and enforced on every push.</figcaption>
+  </figure>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Shift left — find problems early, where they're cheap</div>
+  <p>"Shifting left" means moving quality and security checks earlier in the lifecycle — into the developer's editor and the pull request — rather than discovering them in production. A type error caught by a pre-commit hook costs seconds; the same bug caught by a customer costs an incident. Static analysis, dependency scanning (SCA), and secret detection all belong in CI, gating every change.</p></div>
+
+  <div class="box analogy"><span class="ic">🧠</span><div class="h">The path ahead — you've walked the Architect's Path</div>
+  <p>Seven books: the language (I), data structures &amp; algorithms (II), concurrency (III), clean code &amp; design (IV), system design (V), backend in production (VI), and now the network, the adversary, and the proof (VII). The journey from junior to principal isn't memorizing all of this — it's internalizing the recurring move behind every chapter: <strong>name the trade-off, choose deliberately, and be able to prove you were right.</strong> Keep the repo's scripts nearby; run them, break them, extend them. That's how the knowledge becomes yours.</p></div>
+
+  <div class="qa"><div class="q">Q · What belongs in a CI pipeline, and why gate on it?</div>
+  <p>Formatting/lint, type-checking, unit and integration tests, dependency/security scans (SCA + secret detection), and a build — run automatically on every commit/PR. Gating means a change can't merge or deploy unless all pass, so defects, style drift, type errors, and known CVEs are caught before production on every change, without relying on anyone to remember. It makes quality a property of the process, not of individual diligence.</p></div>
+
+  <div class="qa"><div class="q">Q · What does "shift left" mean in security and testing?</div>
+  <p>Moving checks earlier — into development and CI — instead of finding issues late in staging or production. Practically: static analysis and type-checking in the editor/pre-commit, tests and dependency/secret scanning in the PR pipeline, threat modeling during design. The earlier a defect is caught, the cheaper and safer it is to fix, and the less it can reach users.</p></div>
+
+  <div class="box takeaway"><span class="h">🎯 Key takeaways</span>
+  <ul class="tick" style="margin-top:6px">
+    <li><strong>Networking is layered</strong> — know where a problem lives (TCP vs UDP, IP, TLS) to debug it; connection setup costs round trips.</li>
+    <li><strong>HTTP semantics are a contract</strong> — methods signal safety/idempotency; status codes drive caches, retries, and clients.</li>
+    <li><strong>DNS &amp; TLS run before your first byte</strong> — automate cert renewal; "it's always DNS."</li>
+    <li><strong>Pick the protocol for the job</strong> — REST at the edge, gRPC internal, GraphQL for rich clients, WebSockets for real-time.</li>
+    <li><strong>Never trust input</strong> — the OWASP Top 10 is preventable; parameterize queries, authorize every request server-side.</li>
+    <li><strong>Authn ≠ authz</strong>; a JWT is signed, not encrypted — verify it, don't put secrets in it.</li>
+    <li><strong>Hash passwords salted &amp; slow</strong> (bcrypt/scrypt/argon2), compare in constant time; keep secrets out of git.</li>
+    <li><strong>Build a test pyramid</strong> — many fast unit tests, some integration, few e2e; coverage is a hint, not a goal.</li>
+    <li><strong>Use test doubles wisely</strong> — inject dependencies, avoid over-mocking, and kill flakiness at its source.</li>
+    <li><strong>CI/CD enforces it all</strong> — gate every commit on lint, types, tests, and security scans; shift left.</li>
+    <li>Every idea here is runnable in <code class="inl">10-networking-security-testing/</code> — and that completes The Architect's Path.</li>
+  </ul></div>
+</section>
+
+</body>
+</html>

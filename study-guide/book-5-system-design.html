@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>System Design &amp; Architecture Styles — The Architect's Path, Book V</title>
+<link rel="stylesheet" href="architects-path.css">
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="cover">
+  <div>
+    <div class="kicker">The Architect's Path · Book V · Edition 2026</div>
+    <h1>System Design<br>&amp; Architecture</h1>
+    <div class="sub">Designing systems that <strong style="color:#8ff4ee">scale, stay up, and stay changeable</strong>. The distributed-systems theory and the architecture-style catalog — each with the <strong style="color:#8ff4ee">What</strong>, <strong style="color:#8ff4ee">Why</strong>, <strong style="color:#8ff4ee">How</strong>, and <strong style="color:#8ff4ee">When</strong>, and runnable building blocks.</div>
+    <div class="stackrow">📈 Scale · 🧭 CAP · ⚖️ Load balancing · 🗄️ Caching · 🏗️ Architecture styles</div>
+    <div class="badges">
+      <span class="badge">📈 Horizontal scale</span>
+      <span class="badge">🧭 CAP &amp; consistency</span>
+      <span class="badge">🔗 Consistent hashing</span>
+      <span class="badge">🗄️ Caching &amp; CDNs</span>
+      <span class="badge">🧱 Sharding &amp; replication</span>
+      <span class="badge">🏛️ Hexagonal · Clean · DDD</span>
+      <span class="badge">📣 Event-driven &amp; CQRS</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div><strong style="color:#eaf2fb">Every primitive is a script you can run.</strong><br>Companion code in <code style="color:#cfe0d6">04-system-design/</code>.</div>
+    <div style="text-align:right">What → Why → How → When<br>Diagrams · Gotchas · Interview Q&amp;A</div>
+  </div>
+</section>
+
+<!-- ============================ TOC ============================ -->
+<section class="toc">
+  <h2>Table of Contents</h2>
+  <div class="rule"></div>
+  <p class="small">Book V of the series — where the earlier books converge into whole systems. Part&nbsp;A is the distributed-systems theory (scale, CAP, load balancing, caching, data, reliability); Part&nbsp;B is the architecture-style catalog. Every section is <strong>What → Why → How → When</strong>, then code, gotchas, and interview questions.</p>
+  <ol>
+    <li><span class="n">1</span><div><div class="tt"><a href="#s1">Thinking About Scale</a></div><div class="dd">Vertical vs horizontal · latency numbers · back-of-envelope</div></div><span class="ic">📈</span></li>
+    <li><span class="n">2</span><div><div class="tt"><a href="#s2">CAP &amp; Consistency Models</a></div><div class="dd">CAP · PACELC · strong vs eventual · quorums</div></div><span class="ic">🧭</span></li>
+    <li><span class="n">3</span><div><div class="tt"><a href="#s3">Load Balancing &amp; Consistent Hashing</a></div><div class="dd">Strategies · the hash ring · why <code>%N</code> fails</div></div><span class="ic">⚖️</span></li>
+    <li><span class="n">4</span><div><div class="tt"><a href="#s4">Caching &amp; Content Delivery</a></div><div class="dd">Layers · cache-aside/write-through · eviction · invalidation · stampede</div></div><span class="ic">🗄️</span></li>
+    <li><span class="n">5</span><div><div class="tt"><a href="#s5">Data Partitioning &amp; Replication</a></div><div class="dd">Sharding · leader-follower · replication lag · rebalancing</div></div><span class="ic">🧱</span></li>
+    <li><span class="n">6</span><div><div class="tt"><a href="#s6">Reliability Patterns</a></div><div class="dd">Rate limiting · circuit breaker · idempotency · back-pressure · bulkhead</div></div><span class="ic">🛡️</span></li>
+    <li><span class="n">7</span><div><div class="tt"><a href="#s7">Monolith → Microservices</a></div><div class="dd">The spectrum · when to split · the distributed-monolith trap</div></div><span class="ic">🧩</span></li>
+    <li><span class="n">8</span><div><div class="tt"><a href="#s8">Layered, Hexagonal &amp; Clean</a></div><div class="dd">Ports &amp; adapters · the dependency rule · testable cores</div></div><span class="ic">🏛️</span></li>
+    <li><span class="n">9</span><div><div class="tt"><a href="#s9">Domain-Driven Design</a></div><div class="dd">Bounded contexts · aggregates · ubiquitous language</div></div><span class="ic">🗺️</span></li>
+    <li><span class="n">10</span><div><div class="tt"><a href="#s10">Event-Driven, CQRS &amp; Event Sourcing</a></div><div class="dd">Async messaging · read/write split · the log as source of truth</div></div><span class="ic">📣</span></li>
+    <li><span class="n">11</span><div><div class="tt"><a href="#s11">Other Styles &amp; Choosing Wisely</a></div><div class="dd">SOA · serverless · space-based · BFF · strangler fig</div></div><span class="ic">🧠</span></li>
+  </ol>
+  <div class="subitems">Runnable code: <code>consistent_hashing.py</code> · <code>load_balancing.py</code> · <code>caching_strategies.py</code> · <code>rate_limiting.py</code> · <code>bloom_filter.py</code> · <code>event_sourcing_cqrs.py</code> · <code>saga.py</code></div>
+</section>
+
+<!-- ============================ CHAPTER SHELL ============================ -->
+<section class="chapter" id="s0">
+  <div class="ch-head">
+    <div class="num">🏗️</div>
+    <div><div class="t">System Design &amp; Architecture Styles</div>
+    <div class="s">From one server to a resilient distributed system — and how to shape it</div></div>
+    <div class="ico">🏗️</div>
+  </div>
+
+  <p class="lead">Everything so far — the language, the data structures, the patterns — has prepared you to answer the real question: <strong>how do you build a system that serves millions of users, survives failures, and can still be changed next quarter?</strong> This book is in two halves. Part&nbsp;A is the distributed-systems theory: the laws (CAP), the numbers (latency), and the primitives (load balancing, caching, sharding, reliability). Part&nbsp;B is the architecture catalog: how to <em>structure</em> the code and services — monolith to microservices, hexagonal, clean, DDD, event-driven. There are no perfect answers here, only <strong>trade-offs you make deliberately</strong>.</p>
+
+  <div class="coderef"><div class="h">📂 Runnable code in the repo</div><p style="margin:0 0 3px">The core scalability primitives are working, self-testing scripts — run each with <span class="path">python &lt;file&gt;</span>:</p>
+  <ul>
+    <li><span class="path">04-system-design/examples/consistent_hashing.py</span> — a hash ring; proves scaling moves ~1/N keys, not all</li>
+    <li><span class="path">04-system-design/examples/load_balancing.py</span> — round-robin, weighted, least-connections, key-hash</li>
+    <li><span class="path">04-system-design/examples/caching_strategies.py</span> — LRU/LFU eviction + the cache-aside read path</li>
+    <li><span class="path">04-system-design/examples/rate_limiting.py</span> — fixed/sliding window, token bucket (fake clock)</li>
+    <li><span class="path">04-system-design/examples/bloom_filter.py</span> — probabilistic membership; no false negatives</li>
+    <li><span class="path">04-system-design/production_code.py</span> — idempotency keys + background offload (FastAPI)</li>
+    <li><span class="path">08-event-driven-systems/examples/event_sourcing_cqrs.py</span> · <span class="path">saga.py</span> — event-driven building blocks</li>
+  </ul></div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">Part A — Distributed theory · Part B — Architecture styles</div>
+  <p>Chapters 1–6 are the physics of distributed systems: you can't beat the speed of light, you can't have consistency <em>and</em> availability during a partition, and every cache must eventually be invalidated. Chapters 7–11 are how you organize code and services to live within those constraints. The recurring lesson: <strong>name the trade-off, then choose on purpose.</strong></p></div>
+
+  <!-- ===================== 1 : SCALE ===================== -->
+  <h2 class="sec" id="s1">1 · Thinking About Scale</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Scaling is meeting growing load without falling over. Two directions: <em class="term">vertical</em> (a bigger machine — more CPU/RAM) and <em class="term">horizontal</em> (more machines behind a load balancer). Estimating whether a design can cope is <em class="term">back-of-the-envelope</em> math on requests/sec, data size, and latency.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because vertical scaling hits a hard ceiling (and a single point of failure), while horizontal scaling is effectively unbounded but forces you to confront distribution — state, consistency, and partial failure. Knowing the <em>numbers</em> (a memory read is ~100ns; a cross-region round trip is ~150ms — a millionfold gap) is what lets you reason about a design before building it.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 190" role="img" aria-label="Vertical versus horizontal scaling">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="220" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#b45309">VERTICAL — one bigger box (scale up)</text>
+        <text x="680" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">HORIZONTAL — more boxes (scale out)</text>
+        <rect x="180" y="70" width="80" height="40" rx="6" fill="#fef3c7" stroke="#d97706"/><text x="220" y="95" text-anchor="middle" font-size="10" fill="#b45309">4 CPU</text>
+        <rect x="170" y="55" width="100" height="70" rx="6" fill="none" stroke="#d97706" stroke-dasharray="4"/>
+        <text x="220" y="145" text-anchor="middle" font-size="9" fill="#b45309">simple, but a ceiling + single point of failure</text>
+        <path d="M290,90 L330,90" stroke="#94a3b8" stroke-width="2" marker-end="url(#av)"/>
+        <text x="360" y="94" font-size="16" fill="#d97706">💥</text>
+        <g fill="#dcfce7" stroke="#16a34a">
+          <rect x="560" y="75" width="55" height="35" rx="5"/><rect x="625" y="75" width="55" height="35" rx="5"/>
+          <rect x="690" y="75" width="55" height="35" rx="5"/><rect x="755" y="75" width="55" height="35" rx="5"/>
+        </g>
+        <rect x="620" y="40" width="130" height="24" rx="6" fill="#eef6ff" stroke="#0284c7"/><text x="685" y="56" text-anchor="middle" font-size="9" fill="#0c4a6e">load balancer</text>
+        <path d="M685,64 L595,73" stroke="#0284c7" stroke-width="1.3"/><path d="M685,64 L652,73" stroke="#0284c7" stroke-width="1.3"/>
+        <path d="M685,64 L717,73" stroke="#0284c7" stroke-width="1.3"/><path d="M685,64 L782,73" stroke="#0284c7" stroke-width="1.3"/>
+        <text x="685" y="145" text-anchor="middle" font-size="9" fill="#14532d">near-unbounded + fault-tolerant, but now it's distributed</text>
+        <defs><marker id="av" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 5.1 — Scale up vs scale out. Vertical scaling is simplest but capped and fragile (one box). Horizontal scaling adds commodity nodes behind a load balancer for near-unbounded capacity and fault tolerance — at the cost of becoming a distributed system, with all that entails.</figcaption>
+  </figure>
+
+  <table>
+    <tr><th>Operation</th><th>Approx. latency</th><th>Relative</th></tr>
+    <tr><td>L1 cache reference</td><td>~1 ns</td><td>1×</td></tr>
+    <tr><td>Main memory reference</td><td>~100 ns</td><td>100×</td></tr>
+    <tr><td>SSD random read</td><td>~16 µs</td><td>16,000×</td></tr>
+    <tr><td>Same-datacenter round trip</td><td>~0.5 ms</td><td>500,000×</td></tr>
+    <tr><td>Cross-continent round trip</td><td>~150 ms</td><td>150,000,000×</td></tr>
+  </table>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Latency, throughput, and the tail</div>
+  <p><em>Latency</em> is time per request; <em>throughput</em> is requests per second — you can improve one at the other's expense. And averages lie: what users feel is the <strong>tail</strong> (p99/p99.9). One slow dependency in a request that fans out to 100 services almost guarantees a slow p99. Design for the tail, measure percentiles, not means.</p></div>
+
+  <div class="qa"><div class="q">Q · Vertical vs horizontal scaling — trade-offs?</div>
+  <p>Vertical (bigger machine) is simple and needs no code changes, but has a hard ceiling, gets expensive fast, and leaves a single point of failure. Horizontal (more machines) scales nearly without limit and adds redundancy, but forces you to handle distribution: load balancing, shared/partitioned state, consistency, and partial failure. Most large systems scale out and keep individual nodes modest.</p></div>
+
+  <div class="qa"><div class="q">Q · Why measure p99 latency instead of the average?</div>
+  <p>Because averages hide the users having a bad time. If 1% of requests take 2 seconds, the mean may look fine while 1 in 100 users suffers — and in fan-out systems that tail compounds. p99/p99.9 capture the worst common experience, which is what SLAs and user satisfaction actually track.</p></div>
+
+  <!-- ===================== 2 : CAP ===================== -->
+  <h2 class="sec" id="s2">2 · CAP &amp; Consistency Models</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The <em class="term">CAP theorem</em> says a distributed data store can guarantee at most two of: <strong>C</strong>onsistency (every read sees the latest write), <strong>A</strong>vailability (every request gets a non-error response), and <strong>P</strong>artition tolerance (it keeps working despite dropped messages between nodes). Since network partitions <em>will</em> happen, the real choice during a partition is <strong>C vs A</strong>.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because it's the fork in every distributed-data decision. A bank ledger picks consistency (refuse the write rather than double-spend); a shopping cart or social feed picks availability (serve slightly stale data rather than an error). Getting this backwards — an unavailable cart or an inconsistent ledger — is a business failure, not just a technical one.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 200" role="img" aria-label="CAP theorem triangle">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">Pick two — but P is mandatory, so it's really C vs A during a partition</text>
+        <polygon points="450,45 300,160 600,160" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+        <circle cx="450" cy="45" r="6" fill="#0284c7"/><text x="450" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#0c4a6e">C · Consistency</text>
+        <circle cx="300" cy="160" r="6" fill="#16a34a"/><text x="285" y="178" text-anchor="middle" font-size="11" font-weight="700" fill="#14532d">A · Availability</text>
+        <circle cx="600" cy="160" r="6" fill="#7c3aed"/><text x="615" y="178" text-anchor="middle" font-size="11" font-weight="700" fill="#4c1d95">P · Partition tol.</text>
+        <text x="375" y="108" text-anchor="middle" font-size="9" fill="#334155" transform="rotate(-38 375 108)">CP: RDBMS,</text>
+        <text x="388" y="120" text-anchor="middle" font-size="9" fill="#334155" transform="rotate(-38 388 120)">HBase, ZK</text>
+        <text x="525" y="108" text-anchor="middle" font-size="9" fill="#334155" transform="rotate(38 525 108)">AP: Cassandra,</text>
+        <text x="512" y="120" text-anchor="middle" font-size="9" fill="#334155" transform="rotate(38 512 120)">Dynamo</text>
+        <text x="450" y="150" text-anchor="middle" font-size="9" fill="#94a3b8">CA only without partitions (single node)</text>
+      </g>
+    </svg>
+    <figcaption>Figure 5.2 — CAP as a triangle. Because partitions are unavoidable in real networks, practical systems are either CP (stay consistent, sacrifice availability during a partition) or AP (stay available, serve possibly-stale data). PACELC extends this: <em>Else</em>, when there's no partition, you still trade Latency vs Consistency.</figcaption>
+  </figure>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Consistency is a spectrum, not a switch</div>
+  <p><strong>Strong</strong>: reads always see the latest write (costly coordination). <strong>Eventual</strong>: replicas converge given no new writes (fast, cheap, temporarily stale). <strong>Causal</strong>: operations that depend on each other are seen in order. Quorum systems tune it with <code class="inl">R + W &gt; N</code> (read and write replica counts) to trade latency for freshness.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — "eventually consistent" surprises users</div>
+  <p>Under eventual consistency, a user can write a comment and not see it on refresh (their read hit a lagging replica) — the "read-your-own-writes" violation. Fixes include sticky routing to the leader for a user's own recent writes, or session/causal consistency. Don't hand-wave "eventual"; specify <em>which</em> guarantees each read path needs.</p></div>
+
+  <div class="qa"><div class="q">Q · Explain the CAP theorem in one breath.</div>
+  <p>In a distributed store, when the network partitions you can keep either consistency (reject or block to avoid stale reads) or availability (answer with possibly-stale data), not both — partition tolerance is non-negotiable because networks fail. So the design choice is CP vs AP, made per data type based on whether staleness or downtime is worse.</p></div>
+
+  <div class="qa"><div class="q">Q · Strong vs eventual consistency — when each?</div>
+  <p>Strong when correctness depends on the latest value: balances, inventory decrements, unique-username checks. Eventual when availability and latency matter more than instant freshness and brief staleness is harmless: social feeds, view counts, product catalogs, DNS. Many systems mix both, choosing per operation.</p></div>
+
+  <!-- ===================== 3 : LB & HASHING ===================== -->
+  <h2 class="sec" id="s3">3 · Load Balancing &amp; Consistent Hashing</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">load balancer</em> distributes requests across identical servers by a strategy (round-robin, weighted, least-connections, key-hash). <em class="term">Consistent hashing</em> solves a harder version: mapping <em>keys</em> to servers so that adding/removing a server relocates only ~1/N of keys instead of nearly all.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because the naive <code class="inl">hash(key) % N</code> is a trap: change N by one and almost every key remaps, so every cache misses and every shard reshuffles simultaneously — a self-inflicted outage during the very scaling event you wanted to be smooth. Consistent hashing is the backbone of distributed caches (Memcached), databases (Cassandra/DynamoDB), and shard routers.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 200" role="img" aria-label="Consistent hashing ring">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">A key maps to the first server CLOCKWISE on the ring</text>
+        <circle cx="450" cy="115" r="70" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+        <circle cx="450" cy="45" r="9" fill="#0284c7"/><text x="450" y="35" text-anchor="middle" font-size="9" fill="#0c4a6e">S1</text>
+        <circle cx="520" cy="115" r="9" fill="#0284c7"/><text x="540" y="119" text-anchor="middle" font-size="9" fill="#0c4a6e">S2</text>
+        <circle cx="450" cy="185" r="9" fill="#0284c7"/><text x="450" y="200" text-anchor="middle" font-size="9" fill="#0c4a6e">S3</text>
+        <circle cx="380" cy="115" r="9" fill="#0284c7"/><text x="360" y="119" text-anchor="middle" font-size="9" fill="#0c4a6e">S4</text>
+        <circle cx="500" cy="65" r="6" fill="#dc2626"/><text x="515" y="60" text-anchor="middle" font-size="8" fill="#7f1d1d">key A</text>
+        <path d="M505,68 A70,70 0 0,1 519,106" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3" marker-end="url(#ah)"/>
+        <text x="560" y="90" font-size="8" fill="#7f1d1d">→ S2</text>
+        <text x="700" y="90" font-size="9" fill="#334155">Remove S2 → only</text>
+        <text x="700" y="104" font-size="9" fill="#334155">its arc's keys move</text>
+        <text x="700" y="118" font-size="9" fill="#334155">to S3 (~1/N), the</text>
+        <text x="700" y="132" font-size="9" fill="#334155">rest are untouched.</text>
+        <text x="200" y="104" font-size="9" fill="#334155">Virtual nodes place</text>
+        <text x="200" y="118" font-size="9" fill="#334155">each server at many</text>
+        <text x="200" y="132" font-size="9" fill="#334155">points → even load.</text>
+        <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 5.3 — Consistent hashing. Servers and keys share a circular hash space; a key belongs to the next server clockwise. Removing a server relocates only the keys in its arc (~1/N). Virtual nodes (many points per server) keep the load even. Built and proven in <code>consistent_hashing.py</code>.</figcaption>
+  </figure>
+
+  <div class="def how"><span class="lab">How — the ring lookup</span></div>
+<pre><span class="k">def</span> <span class="f">get</span>(self, key):
+    h = _hash(key)
+    idx = bisect.bisect(self._sorted, h) % <span class="f">len</span>(self._sorted)  <span class="c"># first node clockwise</span>
+    <span class="k">return</span> self._ring[self._sorted[idx]]
+<span class="c"># removing a node deletes only its points → only its arc's keys move (~1/N)</span></pre>
+
+  <div class="qa"><div class="q">Q · Why not just use <code class="inl">hash(key) % N</code> to shard?</div>
+  <p>Because when N changes (a server added or removed), the modulus changes for almost every key, remapping the vast majority at once — mass cache misses and shard reshuffles precisely during scaling. Consistent hashing places keys and servers on a ring so only ~1/N keys move when membership changes, making scaling incremental instead of catastrophic.</p></div>
+
+  <div class="qa"><div class="q">Q · What do virtual nodes solve?</div>
+  <p>With few servers, a plain ring distributes load unevenly (one server may own a large arc). Giving each physical server many virtual points spreads its ownership around the ring, evening out load and making rebalancing on add/remove smoother. It's the standard fix in real consistent-hash implementations.</p></div>
+
+  <!-- ===================== 4 : CACHING ===================== -->
+  <h2 class="sec" id="s4">4 · Caching &amp; Content Delivery</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">cache</em> stores hot data close to where it's needed to cut latency and offload the backing store. Caches live at every layer: CPU, application (in-process), distributed (Redis/Memcached), and the edge (<em class="term">CDN</em>). The design axes are <em>eviction</em> (LRU/LFU — what to drop) and <em>write policy</em> (cache-aside, write-through, write-back).</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because caching is the single highest-leverage move for read-heavy systems — turning a 50ms DB query into a 1ms lookup and shedding most load off the database. But it introduces the two hardest problems in computing: <em>invalidation</em> (keeping the cache in sync with the truth) and <em>consistency</em> (serving stale data).</p></div>
+
+  <table>
+    <tr><th>Write policy</th><th>How</th><th>Trade-off</th></tr>
+    <tr><td>Cache-aside</td><td>App reads cache; on miss, loads DB and fills cache</td><td>simple, lazy; first read is a miss</td></tr>
+    <tr><td>Write-through</td><td>Write cache + DB together</td><td>consistent reads; slower writes</td></tr>
+    <tr><td>Write-back</td><td>Write cache now, flush to DB later</td><td>fast writes; data loss risk on crash</td></tr>
+  </table>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — cache stampede (thundering herd)</div>
+  <p>When a hot key expires, thousands of concurrent requests all miss at once and hammer the database simultaneously — often taking it down. Mitigations: a per-key lock so only one request recomputes (others wait), <em>stale-while-revalidate</em> (serve the old value while one refresh runs), or randomized jitter on TTLs so keys don't expire in sync.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">The two hard cache problems</div>
+  <p>"There are only two hard things in computer science: cache invalidation and naming things." Invalidation is genuinely hard because the cache and the source of truth drift the instant either changes. Strategies: short TTLs (bounded staleness), event-based invalidation (publish on write), and versioned keys. Pick the weakest consistency your product can tolerate — it's the cheapest.</p></div>
+
+  <div class="qa"><div class="q">Q · Walk through the cache-aside pattern.</div>
+  <p>The application checks the cache first. On a hit it returns immediately. On a miss it reads the database, stores the result in the cache (with a TTL), and returns it. Writes update the database and either invalidate or update the cache entry. It's lazy (only caches what's requested) and resilient (a cache outage just means more DB load), which is why it's the most common approach.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you prevent a cache stampede?</div>
+  <p>Ensure only one request recomputes a missing hot key: use a mutex/lock (single-flight) so concurrent misses wait for one recompute, serve stale-while-revalidate to avoid blocking, and add random jitter to TTLs so many keys don't expire simultaneously. Optionally pre-warm or asynchronously refresh very hot keys before they expire.</p></div>
+
+  <!-- ===================== 5 : PARTITION/REPLICATION ===================== -->
+  <h2 class="sec" id="s5">5 · Data Partitioning &amp; Replication</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Replication</em> keeps copies of the same data on multiple nodes (for availability and read scale). <em class="term">Partitioning</em> (sharding) splits <em>different</em> data across nodes (for write scale and capacity). Real systems combine both: shard the data, then replicate each shard.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because a single database eventually can't hold the data or serve the writes. Replication removes the single point of failure and scales reads; sharding scales writes and storage past one machine. But each adds hard problems: replication lag (stale reads) and cross-shard queries/transactions (expensive or impossible).</p></div>
+
+  <table>
+    <tr><th>Approach</th><th>Scales</th><th>Main challenge</th></tr>
+    <tr><td>Leader–follower replication</td><td>reads</td><td>replication lag; failover</td></tr>
+    <tr><td>Multi-leader / leaderless</td><td>reads + writes, multi-region</td><td>write conflicts; convergence</td></tr>
+    <tr><td>Range sharding</td><td>writes + storage</td><td>hotspots on sequential keys</td></tr>
+    <tr><td>Hash sharding</td><td>writes + storage</td><td>no range scans; rebalancing</td></tr>
+  </table>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the hot shard &amp; the cross-shard join</div>
+  <p>Shard by a key with skew (e.g., <em>country</em>, or a sequential timestamp) and one shard gets all the traffic — the others idle while it melts. Choose a high-cardinality, evenly-distributed shard key. And once sharded, a query spanning shards (a join, an aggregate) becomes a scatter-gather across the network — slow and complex. Design access patterns <em>before</em> choosing the shard key.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Replication lag &amp; read-your-writes</div>
+  <p>Asynchronous replication means a follower can be milliseconds-to-seconds behind the leader. A user who just wrote and then reads from a follower may not see their change. Fixes: route a user's reads to the leader for a short window after their write, or track a version/token and read from a replica caught up to it.</p></div>
+
+  <div class="qa"><div class="q">Q · Replication vs partitioning — what's the difference?</div>
+  <p>Replication copies the <em>same</em> data to multiple nodes for availability and read scaling; partitioning (sharding) splits <em>different</em> data across nodes for write scaling and capacity. They're complementary: shard to spread load and storage, then replicate each shard so no single node's failure loses data. Replication fights failure; partitioning fights size.</p></div>
+
+  <div class="qa"><div class="q">Q · How do you choose a shard key?</div>
+  <p>Pick a key with high cardinality and even access distribution so load spreads uniformly and no shard becomes hot — and one that matches your dominant query pattern so most queries hit a single shard. Avoid sequential keys (timestamps, autoincrement IDs) that funnel writes to one shard, and avoid low-cardinality keys that create skew.</p></div>
+
+  <!-- ===================== 6 : RELIABILITY ===================== -->
+  <h2 class="sec" id="s6">6 · Reliability Patterns</h2>
+
+  <div class="def what"><span class="lab">What</span><p>The techniques that keep a distributed system standing when parts fail or overload: <em class="term">rate limiting</em> (cap request rate), <em class="term">circuit breaker</em> (stop calling a failing dependency), <em class="term">idempotency</em> (safe retries), <em class="term">back-pressure</em> (slow the producer), <em class="term">bulkhead</em> (isolate failures), and <em class="term">timeouts + retries with backoff</em>.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because in a distributed system, failure is the normal case, not the exception — dependencies time out, retries pile up, and a slow service becomes a cascading outage. These patterns turn "one component failed" into "the system degraded gracefully" instead of "everything went down together."</p></div>
+
+  <table>
+    <tr><th>Pattern</th><th>Protects against</th><th>How</th></tr>
+    <tr><td>Rate limiting</td><td>overload &amp; abuse</td><td>token bucket / sliding window (see <code class="inl">rate_limiting.py</code>)</td></tr>
+    <tr><td>Circuit breaker</td><td>hammering a dead dependency</td><td>trip open after N failures; probe to recover</td></tr>
+    <tr><td>Idempotency key</td><td>duplicate effects on retry</td><td>dedupe by key (see <code class="inl">04-system-design/production_code.py</code>)</td></tr>
+    <tr><td>Timeout + backoff</td><td>hanging calls, retry storms</td><td>bounded waits, exponential + jitter</td></tr>
+    <tr><td>Bulkhead</td><td>one failure sinking everything</td><td>isolate pools/threads per dependency</td></tr>
+  </table>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — retries without backoff cause the outage they fear</div>
+  <p>When a service slows, naive clients retry immediately and multiply the load, turning a blip into a death spiral (a "retry storm"). Always pair retries with <em>exponential backoff + jitter</em>, a retry budget/cap, and a circuit breaker so a struggling dependency gets room to recover instead of being pounded harder.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Idempotency makes retries safe</div>
+  <p>In an at-least-once world (networks retry), the same request can arrive twice. An <em>idempotency key</em> — a client-supplied unique ID stored server-side — lets the server detect the duplicate and return the original result instead of charging the card twice. It's the difference between "safe to retry" and "retries corrupt data."</p></div>
+
+  <div class="qa"><div class="q">Q · How does a circuit breaker work?</div>
+  <p>It wraps calls to a dependency and tracks failures. In <em>closed</em> state calls pass through; after too many failures it <em>trips open</em> and fails fast (no calls) for a cooldown, sparing both systems. After the cooldown it goes <em>half-open</em>, letting a probe through — success closes it, failure re-opens. This stops one slow/dead dependency from cascading into a full outage.</p></div>
+
+  <div class="qa"><div class="q">Q · What makes an operation idempotent, and why care in distributed systems?</div>
+  <p>Idempotent means applying it multiple times has the same effect as applying it once (e.g., "set balance to 100," or a create guarded by a unique key). It matters because networks retry: without idempotency a retried "charge $10" charges twice. Idempotency keys and naturally idempotent designs make at-least-once delivery safe.</p></div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">End of Part A</div>
+  <p>You now have the distributed-systems toolkit: the laws, the numbers, and the primitives. Part&nbsp;B is about <em>structure</em> — how to organize the code and services that live inside these constraints so the system stays changeable as it grows.</p></div>
+
+  <!-- ===================== 7 : MONOLITH→MICRO ===================== -->
+  <h2 class="sec" id="s7">7 · Monolith → Microservices</h2>
+
+  <div class="def what"><span class="lab">What</span><p>A <em class="term">monolith</em> is one deployable unit containing all features. <em class="term">Microservices</em> split the system into small, independently deployable services owning their own data, communicating over the network. It's a <strong>spectrum</strong>, not a binary — with the well-structured "modular monolith" in between.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because the choice drives team autonomy, deployment cadence, and operational complexity. Microservices let teams ship independently and scale hot paths in isolation — but they trade in-process function calls for network calls, and local transactions for distributed ones. Choosing microservices too early is a top cause of self-inflicted complexity.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 190" role="img" aria-label="Monolith versus microservices">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="200" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#0c4a6e">MONOLITH — one deployable, one DB</text>
+        <text x="680" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">MICROSERVICES — independent services + DBs</text>
+        <rect x="110" y="40" width="180" height="95" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+        <text x="200" y="60" text-anchor="middle" font-size="9" fill="#0c4a6e">Users · Orders · Billing</text>
+        <line x1="120" y1="70" x2="280" y2="70" stroke="#7dd3fc"/>
+        <text x="200" y="90" text-anchor="middle" font-size="9" fill="#0c4a6e">shared codebase</text>
+        <rect x="150" y="105" width="100" height="22" rx="5" fill="#bae6fd"/><text x="200" y="120" text-anchor="middle" font-size="9" fill="#0c4a6e">one database</text>
+        <text x="200" y="155" text-anchor="middle" font-size="8.5" fill="#0284c7">simple deploy/txn; couples teams &amp; scaling</text>
+        <g>
+          <rect x="500" y="45" width="80" height="40" rx="6" fill="#dcfce7" stroke="#16a34a"/><text x="540" y="62" text-anchor="middle" font-size="8.5" fill="#14532d">Users</text><text x="540" y="76" text-anchor="middle" font-size="7" fill="#14532d">db</text>
+          <rect x="620" y="45" width="80" height="40" rx="6" fill="#dcfce7" stroke="#16a34a"/><text x="660" y="62" text-anchor="middle" font-size="8.5" fill="#14532d">Orders</text><text x="660" y="76" text-anchor="middle" font-size="7" fill="#14532d">db</text>
+          <rect x="740" y="45" width="80" height="40" rx="6" fill="#dcfce7" stroke="#16a34a"/><text x="780" y="62" text-anchor="middle" font-size="8.5" fill="#14532d">Billing</text><text x="780" y="76" text-anchor="middle" font-size="7" fill="#14532d">db</text>
+        </g>
+        <path d="M580,65 L618,65" stroke="#94a3b8" stroke-width="1.3" marker-end="url(#am)"/>
+        <path d="M700,65 L738,65" stroke="#94a3b8" stroke-width="1.3" marker-end="url(#am)"/>
+        <text x="660" y="120" text-anchor="middle" font-size="8.5" fill="#16a34a">independent deploy/scale; network calls + distributed txn</text>
+        <defs><marker id="am" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 5.4 — The monolith keeps everything in one deployable with one database: simple transactions and deploys, but teams and scaling are coupled. Microservices split into independently deployable, independently scaled services with private databases — at the cost of network calls, distributed transactions, and operational overhead.</figcaption>
+  </figure>
+
+  <div class="box pitfall"><span class="ic">🚫</span><div class="h">The distributed monolith — worst of both worlds</div>
+  <p>If your "microservices" must be deployed together, share a database, or chain synchronous calls for every request, you've built a <em>distributed monolith</em>: the operational pain of microservices with none of the independence. The cure is real boundaries — each service owns its data and can be deployed alone. Most successful microservice systems started as a monolith and split along proven seams (the "monolith first" rule).</p></div>
+
+  <div class="qa"><div class="q">Q · When should you choose microservices over a monolith?</div>
+  <p>When independent deployability and team autonomy are the bottleneck — many teams stepping on one release, or specific components needing separate scaling/technology. Not for a small team or early product, where the network, data-consistency, and operational costs outweigh the benefits. Start with a modular monolith and extract services along stable, high-value boundaries when the pain is real.</p></div>
+
+  <div class="qa"><div class="q">Q · How do services communicate, and what's the trade-off?</div>
+  <p>Synchronously (REST/gRPC request-response) or asynchronously (events/messages via a broker). Synchronous is simple and immediate but couples availability — a downstream outage propagates. Asynchronous decouples services and absorbs load spikes but adds eventual consistency and harder debugging. Many systems use sync for queries and async events for state changes.</p></div>
+
+  <!-- ===================== 8 : HEXAGONAL/CLEAN ===================== -->
+  <h2 class="sec" id="s8">8 · Layered, Hexagonal &amp; Clean Architecture</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Ways to structure a <em>single</em> service's internals. <em class="term">Layered</em> stacks UI → business → data. <em class="term">Hexagonal</em> (ports &amp; adapters) puts the domain at the center, talking to the outside only through interfaces (ports) with pluggable implementations (adapters). <em class="term">Clean architecture</em> formalizes this with the <strong>dependency rule</strong>: source-code dependencies point only <em>inward</em>, toward the domain.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because it decides how testable and how coupled-to-infrastructure your business logic is. When the domain depends on abstractions (not on Postgres, Kafka, or FastAPI), you can test it without any of them and swap the database or framework without touching business rules. This is DIP (Book&nbsp;IV) applied at architectural scale.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 200" role="img" aria-label="Clean architecture dependency rule">
+      <g font-family="Segoe UI,sans-serif">
+        <text x="450" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">The dependency rule — arrows point INWARD only</text>
+        <circle cx="450" cy="115" r="80" fill="#eef6ff" stroke="#0284c7"/>
+        <circle cx="450" cy="115" r="56" fill="#f0fdf4" stroke="#16a34a"/>
+        <circle cx="450" cy="115" r="30" fill="#fef3c7" stroke="#d97706"/>
+        <text x="450" y="118" text-anchor="middle" font-size="9" font-weight="700" fill="#b45309">Entities</text>
+        <text x="450" y="80" text-anchor="middle" font-size="8.5" fill="#14532d">Use cases</text>
+        <text x="450" y="52" text-anchor="middle" font-size="8.5" fill="#0c4a6e">Adapters</text>
+        <text x="450" y="185" text-anchor="middle" font-size="8" fill="#64748b">Frameworks / DB / Web (outermost)</text>
+        <path d="M700,115 L545,115" stroke="#dc2626" stroke-width="2" marker-end="url(#ac)"/>
+        <text x="620" y="105" text-anchor="middle" font-size="8.5" fill="#7f1d1d">deps point in</text>
+        <text x="160" y="100" font-size="8.5" fill="#334155">Domain knows</text>
+        <text x="160" y="114" font-size="8.5" fill="#334155">nothing about</text>
+        <text x="160" y="128" font-size="8.5" fill="#334155">DB or web →</text>
+        <text x="160" y="142" font-size="8.5" fill="#334155">testable in isolation</text>
+        <defs><marker id="ac" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 5.5 — Clean/hexagonal architecture as concentric rings. Entities (core business rules) sit at the center; use cases wrap them; adapters and frameworks live at the edge. Source dependencies point only inward, so the domain never imports the database or web framework — it's testable in complete isolation.</figcaption>
+  </figure>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Ports &amp; adapters in practice</div>
+  <p>A <em>port</em> is an interface the domain owns (e.g., <code class="inl">OrderRepository</code>). An <em>adapter</em> implements it for a specific technology (<code class="inl">PostgresOrderRepository</code>, <code class="inl">InMemoryOrderRepository</code> for tests). The domain depends on the port; the adapter depends on the port too. Swapping Postgres for MongoDB — or a real DB for a fake in tests — changes an adapter, never the business logic. This is exactly the layered FastAPI refactor in <code class="inl">02-solid/production_code.py</code>.</p></div>
+
+  <div class="qa"><div class="q">Q · What is the dependency rule in clean architecture?</div>
+  <p>Source-code dependencies point only inward, toward higher-level policy. Outer layers (web, database, frameworks) depend on inner layers (use cases, entities), never the reverse. The domain defines interfaces; infrastructure implements them. This keeps business rules independent of, and testable without, any external technology.</p></div>
+
+  <div class="qa"><div class="q">Q · How does hexagonal architecture improve testability?</div>
+  <p>Because the domain talks to the outside only through ports (interfaces), tests inject in-memory adapters instead of real databases, queues, or HTTP. The business logic runs fast and deterministically with no infrastructure, and the same domain code works unchanged against Postgres in production. Isolation of the core from I/O is the whole point.</p></div>
+
+  <!-- ===================== 9 : DDD ===================== -->
+  <h2 class="sec" id="s9">9 · Domain-Driven Design</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Domain-Driven Design</em> (DDD) is an approach to complex domains that puts the <strong>business model</strong> at the center. Key ideas: a <em class="term">ubiquitous language</em> shared by devs and domain experts; <em class="term">bounded contexts</em> (explicit boundaries where a model and its terms are consistent); and building blocks like <em class="term">entities</em>, <em class="term">value objects</em>, and <em class="term">aggregates</em>.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because in a large system the hardest problem isn't technology — it's <em>modeling the business correctly</em> and drawing service boundaries that don't fight the domain. Bounded contexts are the natural seams along which to split microservices; getting them right is what makes services truly independent instead of a distributed monolith.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">Aggregates &amp; bounded contexts</div>
+  <p>An <em>aggregate</em> is a cluster of objects treated as one unit for consistency, with a single <em>root</em> that's the only entry point (e.g., an <code class="inl">Order</code> aggregate owning its <code class="inl">LineItems</code>) — you enforce invariants and transactions at the aggregate boundary. A <em>bounded context</em> is larger: the same word ("Customer") can mean different things in Sales vs Support, so each context has its own model. Contexts map cleanly onto service boundaries.</p></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — one giant shared model</div>
+  <p>Trying to build a single canonical model of "Customer/Product/Order" for the whole company creates a bloated, over-coupled schema that no team fully owns. DDD says the opposite: let each bounded context keep its own model and translate at the edges (context mapping). Forcing one model across contexts is a classic large-system failure.</p></div>
+
+  <div class="qa"><div class="q">Q · What is a bounded context, and why does it matter for microservices?</div>
+  <p>A bounded context is an explicit boundary within which a domain model and its terminology are consistent and self-contained. It matters because it gives you natural, low-coupling seams to split services — each service owns one context and its data. Boundaries that follow bounded contexts stay independent; boundaries drawn arbitrarily (e.g., by technical layer) leak and re-couple.</p></div>
+
+  <div class="qa"><div class="q">Q · Entity vs value object?</div>
+  <p>An entity has a distinct identity that persists over time regardless of attribute changes (a <code class="inl">User</code> is the same user even after changing their email). A value object is defined entirely by its attributes and has no identity (a <code class="inl">Money(100, "USD")</code> or an <code class="inl">Address</code>) — two with equal values are interchangeable and usually immutable. Modeling value objects as immutable prevents a class of aliasing bugs.</p></div>
+
+  <!-- ===================== 10 : EVENT-DRIVEN/CQRS ===================== -->
+  <h2 class="sec" id="s10">10 · Event-Driven, CQRS &amp; Event Sourcing</h2>
+
+  <div class="def what"><span class="lab">What</span><p><em class="term">Event-driven architecture</em> has services communicate by publishing and reacting to <strong>events</strong> ("OrderPlaced") through a broker, instead of calling each other directly. <em class="term">CQRS</em> (Command Query Responsibility Segregation) splits the write model from the read model. <em class="term">Event sourcing</em> stores state as an append-only <strong>log of events</strong>, rebuilding current state by replaying them.</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because async events decouple services in time and load: producers don't wait for consumers, spikes are absorbed by the queue, and new consumers can be added without touching producers. CQRS lets reads and writes scale and optimize independently. Event sourcing gives a perfect audit trail and time-travel — at the cost of more complexity.</p></div>
+
+  <figure class="fig-card">
+    <svg viewBox="0 0 900 175" role="img" aria-label="Event-driven flow with CQRS">
+      <g font-family="Segoe UI,sans-serif">
+        <rect x="40" y="60" width="110" height="45" rx="8" fill="#e0f2fe" stroke="#0284c7"/><text x="95" y="80" text-anchor="middle" font-size="9" fill="#0c4a6e">Order service</text><text x="95" y="94" text-anchor="middle" font-size="8" fill="#0c4a6e">(command/write)</text>
+        <rect x="360" y="55" width="150" height="55" rx="8" fill="#fef3c7" stroke="#d97706"/><text x="435" y="78" text-anchor="middle" font-size="9" fill="#b45309">Event log / broker</text><text x="435" y="94" text-anchor="middle" font-size="8" fill="#b45309">append-only, replayable</text>
+        <rect x="720" y="28" width="140" height="40" rx="8" fill="#dcfce7" stroke="#16a34a"/><text x="790" y="52" text-anchor="middle" font-size="8.5" fill="#14532d">Email consumer</text>
+        <rect x="720" y="78" width="140" height="40" rx="8" fill="#dcfce7" stroke="#16a34a"/><text x="790" y="96" text-anchor="middle" font-size="8.5" fill="#14532d">Read model (query)</text>
+        <rect x="720" y="128" width="140" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/><text x="790" y="149" text-anchor="middle" font-size="8.5" fill="#14532d">Analytics consumer</text>
+        <path d="M150,82 L358,82" stroke="#64748b" stroke-width="2" marker-end="url(#ae)"/><text x="255" y="74" text-anchor="middle" font-size="8" fill="#475569">publish "OrderPlaced"</text>
+        <path d="M510,72 L718,48" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+        <path d="M510,85 L718,96" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+        <path d="M510,98 L718,140" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+        <text x="610" y="128" text-anchor="middle" font-size="8" fill="#475569">many consumers, added independently</text>
+        <defs><marker id="ae" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+      </g>
+    </svg>
+    <figcaption>Figure 5.6 — Event-driven flow. The writer publishes an event to an append-only log; multiple consumers react independently (email, a denormalized read model for CQRS, analytics). Producers and consumers are decoupled in time and load. Building blocks are in <code>event_sourcing_cqrs.py</code> and <code>saga.py</code>.</figcaption>
+  </figure>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — at-least-once delivery &amp; distributed transactions</div>
+  <p>Message brokers typically deliver <em>at least once</em>, so consumers must be <strong>idempotent</strong> (processing the same event twice can't double-charge) — see <code class="inl">idempotent_consumer.py</code>. And you can't have a classic ACID transaction across services; use the <em class="term">Saga</em> pattern — a sequence of local transactions with compensating actions to undo on failure (<code class="inl">saga.py</code>). Event-driven trades immediate consistency for decoupling.</p></div>
+
+  <div class="box insight"><span class="ic">🔎</span><div class="h">CQRS + event sourcing, together and apart</div>
+  <p>They're independent but pair well. CQRS alone just separates read and write models (a denormalized read store updated from writes). Event sourcing makes the write side an event log; the read models are projections built by replaying events. Use CQRS when read/write needs diverge sharply; add event sourcing when you need a full audit trail or temporal queries — and accept the extra complexity only then.</p></div>
+
+  <div class="qa"><div class="q">Q · What problem does event-driven architecture solve?</div>
+  <p>It decouples services in time and load. Producers emit events without knowing or waiting for consumers, so a slow or new consumer doesn't affect the producer, and traffic spikes are buffered by the queue. This enables independent scaling and extensibility (add consumers freely), at the cost of eventual consistency and harder end-to-end tracing.</p></div>
+
+  <div class="qa"><div class="q">Q · What is event sourcing, and what's the catch?</div>
+  <p>Instead of storing current state, you store the ordered log of events that produced it, and derive state by replaying them. Benefits: a complete audit trail, time-travel/debugging, and easy new projections. Catches: more complexity, eventual consistency on read models, schema evolution of old events, and replay cost — so use it where auditability or temporal insight justifies the overhead.</p></div>
+
+  <!-- ===================== 11 : OTHER STYLES ===================== -->
+  <h2 class="sec" id="s11">11 · Other Styles &amp; Choosing Wisely</h2>
+
+  <div class="def what"><span class="lab">What</span><p>Beyond the big ones, a catalog of styles each fit for a niche: <em class="term">SOA</em> (coarse services + an ESB), <em class="term">serverless</em> (functions, no server management), <em class="term">space-based</em> (in-memory data grid for extreme scale), <em class="term">pipe-and-filter</em> (staged processing), <em class="term">microkernel</em> (plugin core), <em class="term">BFF</em> (backend-for-frontend), and the <em class="term">strangler fig</em> (incremental legacy migration).</p></div>
+
+  <div class="def why"><span class="lab">Why it matters</span><p>Because there is no "best" architecture — only the best fit for <em>your</em> constraints: team size, scale, latency needs, and how much operational complexity you can afford. The senior skill is knowing the catalog well enough to match a style to the problem and to <em>migrate</em> between them safely.</p></div>
+
+  <table>
+    <tr><th>Style</th><th>Sweet spot</th><th>Watch out for</th></tr>
+    <tr><td>Serverless (FaaS)</td><td>spiky/event workloads, low ops</td><td>cold starts; vendor lock-in; long tasks</td></tr>
+    <tr><td>Space-based</td><td>extreme, unpredictable scale</td><td>complexity; data-grid consistency</td></tr>
+    <tr><td>Pipe-and-filter</td><td>data pipelines, ETL, streaming</td><td>backpressure; stage coupling</td></tr>
+    <tr><td>BFF</td><td>multiple clients (web/mobile) with different needs</td><td>duplication across BFFs</td></tr>
+    <tr><td>Strangler fig</td><td>migrating a legacy monolith safely</td><td>long dual-run period; routing complexity</td></tr>
+  </table>
+
+  <div class="box analogy"><span class="ic">🧠</span><div class="h">The strangler fig — migrate without a rewrite</div>
+  <p>Named after a vine that grows around a tree until it replaces it. You put a routing layer in front of the legacy system and, feature by feature, redirect traffic to new services — the old system shrinks until it's gone. It avoids the catastrophic "big-bang rewrite" by keeping the system running and reversible at every step. The pragmatic default for modernizing a monolith.</p></div>
+
+  <div class="box takeaway"><span class="h">🎯 Key takeaways</span>
+  <ul class="tick" style="margin-top:6px">
+    <li><strong>Scale out, not just up</strong> — know the latency numbers and design for the p99 tail, not the average.</li>
+    <li><strong>CAP forces C-vs-A during a partition</strong>; consistency is a spectrum (strong → causal → eventual) chosen per data type.</li>
+    <li><strong>Consistent hashing</strong> moves ~1/N keys on scaling; <code class="inl">hash%N</code> reshuffles everything.</li>
+    <li><strong>Caching</strong> is the top read-scale lever; the hard parts are invalidation and stampedes.</li>
+    <li><strong>Replication fights failure; partitioning fights size</strong> — pick a high-cardinality shard key matching your queries.</li>
+    <li><strong>Reliability patterns</strong> (circuit breaker, idempotency, backoff+jitter, bulkhead) turn failures into graceful degradation.</li>
+    <li><strong>Structure matters:</strong> monolith-first, split along bounded contexts; keep the domain independent of infrastructure (hexagonal/clean).</li>
+    <li><strong>Event-driven + CQRS/event-sourcing</strong> decouple and audit — at the price of eventual consistency and idempotent consumers.</li>
+    <li>The scalability primitives are runnable in <code class="inl">04-system-design/examples/</code> — measure them, break them, tune them.</li>
+  </ul></div>
+</section>
+
+</body>
+</html>

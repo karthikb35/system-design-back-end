@@ -1,0 +1,74 @@
+name: CI
+
+# Runs the curriculum's runnable reference code and the full microservice test
+# suites on every push / PR. This is the "you cannot fix what you cannot see"
+# principle applied to the repo itself: green CI is the contract that the
+# reference implementations still work.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Curriculum reference implementations that are standard-library only and
+  #    self-testing (they assert their own behavior and exit non-zero on
+  #    failure). No third-party install needed, so this job is fast and stable.
+  # ---------------------------------------------------------------------------
+  module-selftests:
+    name: Curriculum module self-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run standard-library reference implementations
+        run: |
+          python "09-concurrency/production_code.py"
+          python "10-networking-security-testing/production_code.py"
+
+  # ---------------------------------------------------------------------------
+  # 2. The three protocol microservice repos. Each service + the gateway carries
+  #    its own requirements.txt and pytest suite. A matrix runs the three repos
+  #    in parallel; gRPC additionally regenerates its stubs from protos/ first.
+  # ---------------------------------------------------------------------------
+  microservices:
+    name: ${{ matrix.repo }} tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: [rest-ecommerce, grpc-ecommerce, graphql-ecommerce]
+    defaults:
+      run:
+        working-directory: protocol-microservices/${{ matrix.repo }}
+    env:
+      GRPC_VERBOSITY: NONE   # keep gRPC's async shutdown from polluting exit codes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies for every service + gateway
+        run: |
+          python -m pip install --upgrade pip
+          for d in services/users services/products services/orders gateway; do
+            echo "==> installing $d"
+            pip install -r "$d/requirements.txt"
+          done
+
+      - name: Generate gRPC stubs
+        if: matrix.repo == 'grpc-ecommerce'
+        run: |
+          pip install grpcio-tools
+          python scripts/gen_protos.py
+
+      - name: Run every service + gateway test suite
+        run: |
+          for d in services/users services/products services/orders gateway; do
+            echo "==> testing $d"
+            ( cd "$d" && python -m pytest -q )
+          done

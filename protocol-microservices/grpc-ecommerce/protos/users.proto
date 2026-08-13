@@ -1,0 +1,57 @@
+// Users service contract.
+//
+// gRPC contracts are defined in Protocol Buffers ("protobuf"). This file is the
+// single source of truth: both the server (Users service) and its clients
+// (Orders service, Gateway) generate code from it, so they can never disagree
+// about the wire format.
+syntax = "proto3";
+
+package users;
+
+// A service is a named collection of RPC methods. Each method takes exactly one
+// request message and returns exactly one response message (unary-unary here).
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (UserReply);
+  rpc GetUser(GetUserRequest) returns (UserReply);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersReply);
+  rpc Login(LoginRequest) returns (TokenReply);
+}
+
+// Field numbers (= 1, = 2 ...) are the identity of each field on the wire.
+// They must never change once deployed; names can change, numbers cannot.
+message CreateUserRequest {
+  string email = 1;
+  string full_name = 2;
+  string password = 3;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message ListUsersRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+// The reply deliberately has no password field — a hash can never leak.
+message UserReply {
+  string id = 1;
+  string email = 2;
+  string full_name = 3;
+  bool is_active = 4;
+}
+
+message ListUsersReply {
+  repeated UserReply users = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message TokenReply {
+  string access_token = 1;
+  string token_type = 2;
+}

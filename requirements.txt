@@ -1,0 +1,12 @@
+# The Architect's Path — shared toolchain
+# Install:  pip install -r requirements.txt
+
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic[email]>=2.6
+sqlalchemy>=2.0
+httpx>=0.27
+python-json-logger>=2.0
+elasticsearch>=8.13
+pytest>=8.0
+pytest-asyncio>=0.23

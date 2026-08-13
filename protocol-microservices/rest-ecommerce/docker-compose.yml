@@ -1,0 +1,126 @@
+# =============================================================================
+# REST e-commerce — full system orchestration.
+#   - 1 Postgres container (with 3 databases, one per service)
+#   - users, products, orders services
+#   - an API gateway that is the only public entry point
+#
+# Start everything:   docker compose up --build -d
+# =============================================================================
+services:
+
+  # --------------------------------------------------------------------------
+  # PostgreSQL — shared instance, one database per service.
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ecom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ecom_pw}
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # init script creates users_db / products_db / orders_db on first boot
+      - ./infra/postgres/init-databases.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecom}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # --------------------------------------------------------------------------
+  # Users service — owns users_db.
+  # --------------------------------------------------------------------------
+  users:
+    build: ./services/users
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecom}:${POSTGRES_PASSWORD:-ecom_pw}@postgres:5432/${USERS_DB:-users_db}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-60}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_NAME: users
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8001/health/live').status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # --------------------------------------------------------------------------
+  # Products service — owns products_db.
+  # --------------------------------------------------------------------------
+  products:
+    build: ./services/products
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecom}:${POSTGRES_PASSWORD:-ecom_pw}@postgres:5432/${PRODUCTS_DB:-products_db}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_NAME: products
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8002/health/live').status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # --------------------------------------------------------------------------
+  # Orders service — owns orders_db; CALLS users + products.
+  # --------------------------------------------------------------------------
+  orders:
+    build: ./services/orders
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-ecom}:${POSTGRES_PASSWORD:-ecom_pw}@postgres:5432/${ORDERS_DB:-orders_db}
+      USERS_SERVICE_URL: ${USERS_SERVICE_URL:-http://users:8001}
+      PRODUCTS_SERVICE_URL: ${PRODUCTS_SERVICE_URL:-http://products:8002}
+      HTTP_TIMEOUT_SECONDS: ${HTTP_TIMEOUT_SECONDS:-5.0}
+      HTTP_MAX_RETRIES: ${HTTP_MAX_RETRIES:-3}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_NAME: orders
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      users:
+        condition: service_started
+      products:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8003/health/live').status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # --------------------------------------------------------------------------
+  # API Gateway — the ONLY public entry point; fans out to the services.
+  # --------------------------------------------------------------------------
+  gateway:
+    build: ./gateway
+    environment:
+      USERS_SERVICE_URL: ${USERS_SERVICE_URL:-http://users:8001}
+      PRODUCTS_SERVICE_URL: ${PRODUCTS_SERVICE_URL:-http://products:8002}
+      ORDERS_SERVICE_URL: ${ORDERS_SERVICE_URL:-http://orders:8003}
+      HTTP_TIMEOUT_SECONDS: ${HTTP_TIMEOUT_SECONDS:-5.0}
+      HTTP_MAX_RETRIES: ${HTTP_MAX_RETRIES:-3}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_NAME: gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      users:
+        condition: service_started
+      products:
+        condition: service_started
+      orders:
+        condition: service_started
+
+volumes:
+  pgdata:
