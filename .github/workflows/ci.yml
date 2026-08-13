@@ -10,6 +10,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Cancel an in-flight run when a newer commit is pushed to the same ref, so a
+# rapid series of pushes doesn't queue up redundant CI. The last push wins.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ---------------------------------------------------------------------------
   # 0. Static checks. Ruff lints, isort verifies import order, and blacken-docs
@@ -45,13 +51,17 @@ jobs:
   #    failure). No third-party install needed, so this job is fast and stable.
   # ---------------------------------------------------------------------------
   module-selftests:
-    name: Curriculum module self-tests
+    name: Curriculum module self-tests (py${{ matrix.python }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python }}
       - name: Run standard-library reference implementations
         run: |
           python "09-concurrency/production_code.py"
@@ -63,26 +73,35 @@ jobs:
   #    in parallel; gRPC additionally regenerates its stubs from protos/ first.
   # ---------------------------------------------------------------------------
   microservices:
-    name: ${{ matrix.repo }} tests
+    name: ${{ matrix.repo }} tests (py${{ matrix.python }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         repo: [rest-ecommerce, grpc-ecommerce, graphql-ecommerce]
+        # Test across supported interpreters to catch version drift early. If a
+        # pinned dependency has no wheel yet for the newest Python, drop it here.
+        python: ["3.11", "3.12", "3.13"]
     defaults:
       run:
         working-directory: protocol-microservices/${{ matrix.repo }}
     env:
       GRPC_VERBOSITY: NONE   # keep gRPC's async shutdown from polluting exit codes
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python }}
+          # Cache the pip download/wheel cache keyed on the service requirements,
+          # so repeat runs skip re-downloading unchanged dependencies.
+          cache: pip
+          cache-dependency-path: protocol-microservices/${{ matrix.repo }}/**/requirements.txt
 
       - name: Install dependencies for every service + gateway
         run: |
           python -m pip install --upgrade pip
+          pip install pytest-cov
           for d in services/users services/products services/orders gateway; do
             echo "==> installing $d"
             pip install -r "$d/requirements.txt"
@@ -94,9 +113,43 @@ jobs:
           pip install grpcio-tools
           python scripts/gen_protos.py
 
-      - name: Run every service + gateway test suite
+      - name: Run every service + gateway test suite (with coverage)
         run: |
           for d in services/users services/products services/orders gateway; do
             echo "==> testing $d"
-            ( cd "$d" && python -m pytest -q )
+            ( cd "$d" && python -m pytest -q \
+                --cov=app --cov-report=xml:coverage.xml --cov-report=term-missing )
           done
+
+      # Coverage upload is optional: it runs only when a CODECOV_TOKEN secret is
+      # configured, and only from the 3.12 leg to avoid duplicate uploads across
+      # the Python matrix. Without the secret this step is skipped and CI stays
+      # green — nothing here can turn the build red on its own.
+      - name: Upload coverage to Codecov
+        if: ${{ env.CODECOV_TOKEN != '' && matrix.python == '3.12' }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ env.CODECOV_TOKEN }}
+          flags: ${{ matrix.repo }}
+          directory: protocol-microservices/${{ matrix.repo }}
+          fail_ci_if_error: false
+
+  # ---------------------------------------------------------------------------
+  # 3. Optional failure notification. Fires only on a failed push to main, and
+  #    only when a SLACK_WEBHOOK_URL secret exists — so PRs, forks, and repos
+  #    without the secret never error on a missing value.
+  # ---------------------------------------------------------------------------
+  notify:
+    name: Notify on failure
+    needs: [lint, module-selftests, microservices]
+    if: ${{ failure() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Post failure to Slack
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -sf -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"CI failed on main @ ${{ github.sha }} - ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SLACK_WEBHOOK_URL"
