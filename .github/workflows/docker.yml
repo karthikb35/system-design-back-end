@@ -1,0 +1,124 @@
+name: Container images
+
+# Builds a Docker image for every microservice + gateway across the three
+# protocol editions and publishes them to GitHub Container Registry (GHCR).
+#
+# Auth uses the automatic GITHUB_TOKEN with `packages: write` — no user secret
+# is required. Pull requests build (to prove the Dockerfiles still work) but do
+# NOT push; only pushes to main and manual runs publish.
+#
+# Build-context note: the gRPC edition builds every image from its REPO ROOT so
+# the Dockerfile can COPY the shared protos/ and regenerate stubs, whereas the
+# REST and GraphQL editions build from each component's own directory. The
+# matrix below encodes that difference per image (context + file).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "protocol-microservices/**"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    paths:
+      - "protocol-microservices/**"
+      - ".github/workflows/docker.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  images:
+    name: ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # --- REST edition (context = each component directory) -------------
+          - image: rest-ecommerce-users
+            context: protocol-microservices/rest-ecommerce/services/users
+            file: protocol-microservices/rest-ecommerce/services/users/Dockerfile
+          - image: rest-ecommerce-products
+            context: protocol-microservices/rest-ecommerce/services/products
+            file: protocol-microservices/rest-ecommerce/services/products/Dockerfile
+          - image: rest-ecommerce-orders
+            context: protocol-microservices/rest-ecommerce/services/orders
+            file: protocol-microservices/rest-ecommerce/services/orders/Dockerfile
+          - image: rest-ecommerce-gateway
+            context: protocol-microservices/rest-ecommerce/gateway
+            file: protocol-microservices/rest-ecommerce/gateway/Dockerfile
+
+          # --- GraphQL edition (context = each component directory) ----------
+          - image: graphql-ecommerce-users
+            context: protocol-microservices/graphql-ecommerce/services/users
+            file: protocol-microservices/graphql-ecommerce/services/users/Dockerfile
+          - image: graphql-ecommerce-products
+            context: protocol-microservices/graphql-ecommerce/services/products
+            file: protocol-microservices/graphql-ecommerce/services/products/Dockerfile
+          - image: graphql-ecommerce-orders
+            context: protocol-microservices/graphql-ecommerce/services/orders
+            file: protocol-microservices/graphql-ecommerce/services/orders/Dockerfile
+          - image: graphql-ecommerce-gateway
+            context: protocol-microservices/graphql-ecommerce/gateway
+            file: protocol-microservices/graphql-ecommerce/gateway/Dockerfile
+
+          # --- gRPC edition (context = REPO ROOT so protos/ is available) ----
+          - image: grpc-ecommerce-users
+            context: protocol-microservices/grpc-ecommerce
+            file: protocol-microservices/grpc-ecommerce/services/users/Dockerfile
+          - image: grpc-ecommerce-products
+            context: protocol-microservices/grpc-ecommerce
+            file: protocol-microservices/grpc-ecommerce/services/products/Dockerfile
+          - image: grpc-ecommerce-orders
+            context: protocol-microservices/grpc-ecommerce
+            file: protocol-microservices/grpc-ecommerce/services/orders/Dockerfile
+          - image: grpc-ecommerce-gateway
+            context: protocol-microservices/grpc-ecommerce
+            file: protocol-microservices/grpc-ecommerce/gateway/Dockerfile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Publishing credentials come from the automatic GITHUB_TOKEN. The login
+      # is skipped on pull requests (which only build, never push), so forks
+      # without package-write access still pass.
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # metadata-action lowercases the owner, so mixed-case usernames are safe.
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=long
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          # Build on every event (proves the Dockerfile works); push only when
+          # this is not a PR, i.e. a push to main or a manual dispatch.
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Reuse layers between runs via the GitHub Actions cache backend.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
