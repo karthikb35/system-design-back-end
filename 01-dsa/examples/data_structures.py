@@ -829,4 +829,3 @@ if __name__ == "__main__":
         sys.stdout.reconfigure(encoding="utf-8")
     main()
     run_data_structures_notebook()
-

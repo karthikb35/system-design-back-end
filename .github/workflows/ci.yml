@@ -28,22 +28,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install lint tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install ruff==0.16.2 isort==8.0.1 blacken-docs==1.20.0
+      - name: Install lint tools via uv
+        run: uv sync --dev --frozen
       - name: ruff (lint)
-        run: ruff check .
+        run: uv run ruff check .
       - name: isort (import order)
-        run: isort --check-only --diff .
+        run: uv run isort --check-only --diff .
       - name: blacken-docs (Markdown code blocks)
-        # blacken-docs has no dedicated --check flag: on a clean checkout it makes
-        # no changes and exits 0; it exits non-zero only if something needs
-        # reformatting. That is exactly the check-mode behavior we want in CI.
-        run: blacken-docs $(git ls-files '*.md')
+        # blacken-docs has no dedicated --check flag: exits non-zero only when reformatting is needed.
+        run: uv run blacken-docs $(git ls-files '*.md')
+
+  # ---------------------------------------------------------------------------
+  # 0b. Study-guide HTML books + CSS validity.
+  #     Checks: well-formed HTML (html5lib), relative links resolve, CSS parses.
+  # ---------------------------------------------------------------------------
+  html-css-check:
+    name: HTML & CSS check (study-guide)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install HTML/CSS check dependencies via uv
+        run: uv sync --dev --frozen
+      - name: Validate HTML books and CSS
+        run: uv run python study-guide/check_html.py
 
   # ---------------------------------------------------------------------------
   # 1. Curriculum reference implementations that are standard-library only and
