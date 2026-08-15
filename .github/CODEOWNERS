@@ -1,0 +1,11 @@
+# Global owner — required review on every PR
+*                                               @karthikb35
+
+# CI / workflow changes need extra attention
+.github/                                        @karthikb35
+
+# Study-guide HTML books and CSS
+study-guide/                                    @karthikb35
+
+# Protocol microservice code
+protocol-microservices/                         @karthikb35
