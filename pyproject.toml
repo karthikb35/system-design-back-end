@@ -16,7 +16,7 @@ dev = [
     "pre-commit>=4.0.0",
     "html5lib>=1.1",       # HTML parse check in check_html.py
     "cssutils>=2.11.1",    # CSS parse check in check_html.py
-    "lxml>=5.3.0",         # fast HTML tree builder for link checking
+    "lxml>=5.3.0",         # treebuilder backend for html5lib
 ]
 
 [tool.ruff]
