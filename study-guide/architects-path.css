@@ -93,6 +93,10 @@
   .pitfall .h{ color:var(--red); }
   .analogy{ background:linear-gradient(90deg,#f2effd,#faf8ff); border-color:#d9cdf6; }
   .analogy .h{ color:var(--violet); }
+  .scenario{ background:linear-gradient(90deg,#eaf7ff,#f5fbff); border-color:#b3dff5; }
+  .scenario .h{ color:#0369a1; }
+  .takeaway{ background:linear-gradient(90deg,#f0fdf4,#f8fff9); border-color:#bbf7d0; }
+  .takeaway .h{ color:#15803d; font-size:11pt; }
 
   ul.tick,ul.plain{ list-style:none; padding-left:0; margin:8px 0; }
   ul.tick li{ padding-left:24px; position:relative; margin:5px 0; }

@@ -57,6 +57,10 @@ jobs:
               - 'study-guide/architects-path.css'
               - 'study-guide/render_pdf.py'
               - '.github/workflows/docs-pdf.yml'
+            b0:
+              - 'study-guide/book-00-python-foundations.html'
+            b0c:
+              - 'study-guide/book-00-python-complete.html'
             b1:
               - 'study-guide/book-1-python-mastery.html'
             b2:
@@ -85,6 +89,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - key: b0
+            html: book-00-python-foundations.html
+            pdf: Book-00-Python-Foundations.pdf
+          - key: b0c
+            html: book-00-python-complete.html
+            pdf: Book-00-Python-Complete-Exhaustive.pdf
           - key: b1
             html: book-1-python-mastery.html
             pdf: Book-1-Python-Mastery.pdf

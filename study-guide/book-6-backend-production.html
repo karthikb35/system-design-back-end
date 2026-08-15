@@ -25,8 +25,8 @@
     </div>
   </div>
   <div class="foot">
-    <div><strong style="color:#eaf2fb">Every pathology is a script you can run and measure.</strong><br>Companion code in pillars <code style="color:#cfe0d6">05</code>–<code style="color:#cfe0d6">08</code>.</div>
-    <div style="text-align:right">Anti-pattern → Refactor<br>Diagrams · Gotchas · Interview Q&amp;A</div>
+    <div><strong style="color:#eaf2fb">Every pathology is a script you can run and measure.</strong><br>Companion notebooks: <code style="color:#cfe0d6">fastapi_production.ipynb</code> · <code style="color:#cfe0d6">database_production.ipynb</code> · <code style="color:#cfe0d6">observability_production.ipynb</code> · <code style="color:#cfe0d6">event_driven_production.ipynb</code></div>
+    <div style="text-align:right">Mental Model → Before (broken) → After (fixed) → Frameworks → Nuances<br>Diagrams · Gotchas · Interview Q&amp;A</div>
   </div>
 </section>
 
@@ -47,7 +47,13 @@
     <li><span class="n">9</span><div><div class="tt"><a href="#s9">Deployment &amp; Operations</a></div><div class="dd">containers · health checks · config &amp; secrets · zero-downtime deploys</div></div><span class="ic">🚀</span></li>
     <li><span class="n">10</span><div><div class="tt"><a href="#s10">The Production Readiness Checklist</a></div><div class="dd">SLOs · graceful shutdown · load shedding · the on-call mindset</div></div><span class="ic">✅</span></li>
   </ol>
-  <div class="subitems">Runnable code: <code>pagination.py</code> · <code>retry_backoff.py</code> · <code>connection_pool.py</code> · <code>outbox_pattern.py</code> · <code>structured_logging.py</code> · <code>event_sourcing_cqrs.py</code> · <code>saga.py</code> · <code>idempotent_consumer.py</code></div>
+  <div class="subitems">Runnable notebooks (ultra-elaborate, with mental models + nuances):
+    <code>05-fastapi-advanced/examples/fastapi_production.ipynb</code> ·
+    <code>07-database-scaling/examples/database_production.ipynb</code> ·
+    <code>06-elk-monitoring/examples/observability_production.ipynb</code> ·
+    <code>08-event-driven-systems/examples/event_driven_production.ipynb</code><br>
+    Original scripts: <code>pagination.py</code> · <code>retry_backoff.py</code> · <code>connection_pool.py</code> · <code>outbox_pattern.py</code> · <code>structured_logging.py</code> · <code>idempotent_consumer.py</code> · <code>saga.py</code> · <code>event_sourcing_cqrs.py</code>
+  </div>
 </section>
 
 <!-- ============================ CHAPTER SHELL ============================ -->
@@ -71,6 +77,13 @@
     <li><span class="path">07-database-scaling/examples/outbox_pattern.py</span> — the transactional outbox (no lost events)</li>
     <li><span class="path">06-elk-monitoring/production_code.py</span> · <span class="path">examples/structured_logging.py</span> — JSON logs, correlation IDs, RED metrics</li>
     <li><span class="path">08-event-driven-systems/examples/idempotent_consumer.py</span> · <span class="path">saga.py</span> · <span class="path">event_sourcing_cqrs.py</span></li>
+  </ul>
+  <p style="margin:8px 0 0"><strong>New — Ultra-elaborate notebooks</strong> (mental model → real scenario → before → after → frameworks → nuances):</p>
+  <ul>
+    <li><span class="path">05-fastapi-advanced/examples/fastapi_production.ipynb</span> — async footgun · cursor pagination · retry+jitter · DI · validation</li>
+    <li><span class="path">07-database-scaling/examples/database_production.ipynb</span> — N+1 · connection pooling · transactional outbox · indexing · zero-downtime migrations</li>
+    <li><span class="path">06-elk-monitoring/examples/observability_production.ipynb</span> — structured logs · correlation IDs · RED metrics · distributed tracing</li>
+    <li><span class="path">08-event-driven-systems/examples/event_driven_production.ipynb</span> — Kafka fundamentals · at-least-once + idempotency · sagas · event sourcing+CQRS · DLQ</li>
   </ul></div>
 
   <div class="box bigidea"><span class="ic">💡</span><div class="h">Production is where "works on my machine" goes to die</div>
@@ -386,6 +399,8 @@ SELECT * FROM items WHERE id &gt; <span class="n">180000</span> ORDER BY id LIMI
     <li><span class="path">08-event-driven-systems/examples/idempotent_consumer.py</span> — an in-memory broker with partitions, offsets, replay, at-least-once, an idempotent consumer, and a dead-letter queue.</li>
     <li><span class="path">08-event-driven-systems/examples/saga.py</span> — an orchestration saga with compensating actions (undo in reverse on failure).</li>
     <li><span class="path">08-event-driven-systems/examples/event_sourcing_cqrs.py</span> — event sourcing + CQRS with snapshots.</li>
+    <li><span class="path">04-system-design/examples/connection_pool_backpressure_idempotency_dlq.ipynb</span> — backpressure (block/drop/sample), bounded DLQ with replay, idempotent consumer with LRU seen-set, all runnable with assertions.</li>
+    <li><span class="path">04-system-design/examples/saga_pattern.ipynb</span> — orchestrated saga with full compensation chain; choreography vs orchestration comparison.</li>
   </ul></div>
 
   <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the poison message that stalls the partition</div>
@@ -393,6 +408,17 @@ SELECT * FROM items WHERE id &gt; <span class="n">180000</span> ORDER BY id LIMI
 
   <div class="box insight"><span class="ic">🔎</span><div class="h">Sagas replace distributed transactions</div>
   <p>You can't wrap "reserve inventory → charge card → create shipment" in one ACID transaction across services. A saga runs them as a sequence of local transactions; if a later step fails, it invokes <em>compensating actions</em> (refund the card, release the inventory) in reverse to undo the earlier ones. It trades atomicity for eventual consistency plus explicit rollback logic — see <code class="inl">saga.py</code>.</p></div>
+
+  <div class="box insight"><span class="ic">🧠</span><div class="h">Backpressure — matching producer speed to consumer capacity</div>
+  <p><strong>What:</strong> Backpressure is resistance applied <em>upstream</em> when downstream can't keep up. Without it, a fast producer overflows the consumer's queue → unbounded memory growth → OOM crash. <strong>The strategies, ranked by data-safety:</strong></p>
+  <table style="font-size:8.5pt;width:100%;margin:6px 0;border-collapse:collapse">
+    <tr><th style="background:#0f2743;color:#fff;padding:5px 9px;text-align:left">Strategy</th><th style="background:#0f2743;color:#fff;padding:5px 9px;text-align:left">Mechanism</th><th style="background:#0f2743;color:#fff;padding:5px 9px;text-align:left">Safe for payments?</th></tr>
+    <tr style="background:#f7fafd"><td style="padding:5px 9px;border:1px solid #e2e8f0"><strong>Block</strong></td><td style="padding:5px 9px;border:1px solid #e2e8f0">Producer blocks when queue full; delay propagates upstream</td><td style="padding:5px 9px;border:1px solid #e2e8f0">✓ Yes — no data loss</td></tr>
+    <tr><td style="padding:5px 9px;border:1px solid #e2e8f0"><strong>Drop</strong></td><td style="padding:5px 9px;border:1px solid #e2e8f0">Reject new items at capacity; fast, bounded memory</td><td style="padding:5px 9px;border:1px solid #e2e8f0">✗ Never — data lost</td></tr>
+    <tr style="background:#f7fafd"><td style="padding:5px 9px;border:1px solid #e2e8f0"><strong>Sample</strong></td><td style="padding:5px 9px;border:1px solid #e2e8f0">Accept 1-in-N; preserves statistical shape</td><td style="padding:5px 9px;border:1px solid #e2e8f0">✗ Never — for metrics/telemetry only</td></tr>
+    <tr><td style="padding:5px 9px;border:1px solid #e2e8f0"><strong>Scale out</strong></td><td style="padding:5px 9px;border:1px solid #e2e8f0">Autoscale consumers (HPA on queue depth)</td><td style="padding:5px 9px;border:1px solid #e2e8f0">✓ Yes — but has autoscale lag</td></tr>
+  </table>
+  <p style="margin-top:6px"><strong>Gotcha:</strong> unbounded queues hide backpressure entirely — the app runs fine until it hits OOM and crashes. Always set an explicit bound. <strong>In asyncio</strong>, use <code class="inl">asyncio.Queue(maxsize=N)</code> with <code class="inl">await q.put()</code>; the blocking <code class="inl">queue.Queue</code> blocks the event loop thread. Runnable in <code class="inl">04-system-design/examples/connection_pool_backpressure_idempotency_dlq.ipynb</code>.</p></div>
 
   <div class="qa"><div class="q">Q · Why must Kafka consumers be idempotent?</div>
   <p>Because Kafka guarantees at-least-once delivery: after a consumer processes a message but before it commits its offset, a crash or rebalance re-delivers that message. If processing isn't idempotent, the effect happens twice (double charge, duplicate row). Deduping by a stable event id (or using upserts / natural idempotency) makes redelivery harmless — an exactly-once <em>effect</em>.</p></div>
@@ -455,6 +481,7 @@ SELECT * FROM items WHERE id &gt; <span class="n">180000</span> ORDER BY id LIMI
     <li><strong>Solve dual-writes with the transactional outbox</strong>; make consumers idempotent for at-least-once.</li>
     <li><strong>Observe with structured logs + correlation IDs + RED metrics + traces</strong>; alert on SLOs, redact secrets.</li>
     <li><strong>Event-driven decouples</strong> — Kafka partitions/offsets, idempotent consumers, DLQs, and sagas for workflows.</li>
+    <li><strong>Apply backpressure explicitly</strong>: bound all queues; block (not drop) for correctness-critical work; autoscale consumers on queue depth.</li>
     <li><strong>Deploy safely</strong>: containers, split liveness/readiness, secrets from the environment, graceful shutdown, progressive rollouts.</li>
     <li>Every pathology here is runnable in pillars <code class="inl">05</code>–<code class="inl">08</code> — measure it, break it, fix it.</li>
   </ul></div>

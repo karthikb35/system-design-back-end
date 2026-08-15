@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python Foundations — The Architect's Path, Book 00</title>
+<link rel="stylesheet" href="architects-path.css">
+<style>
+  /* Extra styles for comprehensive book */
+  .milestone{display:flex;gap:0;margin:18px 0;break-inside:avoid;}
+  .milestone .step{flex:1;text-align:center;position:relative;}
+  .milestone .step .dot{width:32px;height:32px;border-radius:50%;background:var(--teal);
+    color:#fff;font-family:"Segoe UI",sans-serif;font-weight:800;font-size:11pt;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 6px;}
+  .milestone .step .line{position:absolute;top:16px;left:50%;right:-50%;height:2px;background:var(--teal);z-index:-1;}
+  .milestone .step:last-child .line{display:none;}
+  .milestone .step .lbl{font-family:"Segoe UI",sans-serif;font-size:8.5pt;color:var(--navy);font-weight:700;}
+  .milestone .step .sub{font-family:"Segoe UI",sans-serif;font-size:7.5pt;color:var(--muted);}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0;}
+  .two-col-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0;}
+  .card{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:#fff;break-inside:avoid;}
+  .card .title{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:10pt;color:var(--navy);margin-bottom:5px;}
+  .card .sub{font-size:9pt;color:var(--muted);}
+  .iqa{border-left:4px solid var(--violet);background:#f9f7ff;border-radius:0 10px 10px 0;
+    padding:11px 14px;margin:12px 0;break-inside:avoid;}
+  .iqa .q{font-family:"Segoe UI",sans-serif;font-weight:800;color:var(--violet);font-size:10pt;}
+  .iqa .follow{font-family:"Segoe UI",sans-serif;font-size:8.8pt;color:var(--muted);margin-top:6px;}
+  .level{display:inline-block;font-family:"Segoe UI",sans-serif;font-size:7.5pt;font-weight:700;
+    padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
+  .level.j{background:#fde2e2;color:#991b1b;}
+  .level.s{background:#dcfce7;color:#166534;}
+  .level.a{background:#ede9fe;color:#5b21b6;}
+</style>
+</head>
+<body>
+<!-- Global SVG marker defs — accessible from all inline SVGs in this document -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden">
+  <defs>
+    <marker id="g-arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#64748b"/></marker>
+    <marker id="g-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#0284c7"/></marker>
+    <marker id="g-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#16a34a"/></marker>
+    <marker id="g-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#dc2626"/></marker>
+    <marker id="g-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#7c3aed"/></marker>
+    <marker id="g-navy" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#0f2743"/></marker>
+    <marker id="g-rev" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto"><polygon points="10 0,0 3.5,10 7" fill="#7c3aed"/></marker>
+    <marker id="g-rev-green" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto"><polygon points="10 0,0 3.5,10 7" fill="#16a34a"/></marker>
+  </defs>
+</svg>
+
+<!-- ======================== COVER ======================== -->
+<section class="cover">
+  <div>
+    <div class="kicker">The Architect's Path · Book 00 · Edition 2026</div>
+    <h1>Python<br>Foundations</h1>
+    <div class="sub">From names &amp; objects to metaclasses and the GC — every concept you need to build, scale, and explain production Python. Structured for the junior who wants to think like an architect.</div>
+    <div class="stackrow">🐍 Object model · 📦 Collections · 🔁 Generators · 🎀 Decorators · 🧬 Descriptors · 🧠 Memory</div>
+    <div class="badges">
+      <span class="badge">🔤 Variables &amp; types</span>
+      <span class="badge">🔀 Control flow</span>
+      <span class="badge">⚙️ Functions &amp; closures</span>
+      <span class="badge">🧱 OOP &amp; MRO</span>
+      <span class="badge">🔁 Iterators &amp; generators</span>
+      <span class="badge">🎀 Decorators</span>
+      <span class="badge">🎯 Advanced dunders</span>
+      <span class="badge">🧬 Descriptors &amp; metaclasses</span>
+      <span class="badge">📐 Typing &amp; protocols</span>
+      <span class="badge">🧠 CPython memory</span>
+    </div>
+  </div>
+  <div class="foot">
+    <div><strong style="color:#eaf2fb">Every idea is a script you can run.</strong><br>Companion code: <code style="color:#cfe0d6">00-python-foundations/</code></div>
+    <div style="text-align:right">What → Why → How → When<br>SVG diagrams · Gotchas · 25+ Architect Q&amp;A</div>
+  </div>
+</section>
+
+<!-- ======================== TOC ======================== -->
+<section class="toc">
+  <h2>Table of Contents</h2>
+  <div class="rule"></div>
+  <p class="small">13 sections — foundations first, then the "how Python works internally" topics that separate junior code from senior design. Each section follows <strong>What → Why → How → When</strong>, then code references, gotchas, and interview questions.</p>
+  <ol>
+    <li><span class="n">1</span><div><div class="tt"><a href="#s1">Variables, Names &amp; the Object Model</a></div><div class="dd">Names as labels · identity vs equality · aliasing · mutable vs immutable</div></div><span class="ic">🔤</span></li>
+    <li><span class="n">2</span><div><div class="tt"><a href="#s2">Truthiness &amp; Control Flow</a></div><div class="dd">Falsy values · if/elif/else · for/while · for-else · match (3.10+)</div></div><span class="ic">🔀</span></li>
+    <li><span class="n">3</span><div><div class="tt"><a href="#s3">The Four Collections &amp; Big-O</a></div><div class="dd">list · tuple · set · dict · Counter · defaultdict · deque</div></div><span class="ic">📦</span></li>
+    <li><span class="n">4</span><div><div class="tt"><a href="#s4">Functions, Closures &amp; LEGB Scope</a></div><div class="dd">Defaults · *args/**kwargs · closures · comprehensions · lambda · functional tools</div></div><span class="ic">⚙️</span></li>
+    <li><span class="n">5</span><div><div class="tt"><a href="#s5">Files, Modules &amp; Exception Handling</a></div><div class="dd">import · with · try/except/else/finally · EAFP · custom exceptions</div></div><span class="ic">🗂️</span></li>
+    <li><span class="n">6</span><div><div class="tt"><a href="#s6">OOP — Four Pillars, ABCs &amp; MRO</a></div><div class="dd">Encapsulation · abstraction · inheritance · polymorphism · MRO · dataclasses</div></div><span class="ic">🧱</span></li>
+    <li><span class="n">7</span><div><div class="tt"><a href="#s7">The Iterator Protocol</a></div><div class="dd">__iter__ / __next__ · StopIteration · what every for-loop does</div></div><span class="ic">🔁</span></li>
+    <li><span class="n">8</span><div><div class="tt"><a href="#s8">Generators &amp; Lazy Evaluation</a></div><div class="dd">yield · frame suspension · infinite sequences · back-pressure · pipelines</div></div><span class="ic">💤</span></li>
+    <li><span class="n">9</span><div><div class="tt"><a href="#s9">Decorators — Cross-Cutting Concerns</a></div><div class="dd">functools.wraps · parameterized decorators · class-based · stacking</div></div><span class="ic">🎀</span></li>
+    <li><span class="n">10</span><div><div class="tt"><a href="#s10">Advanced Dunder Methods — The Data Model</a></div><div class="dd">repr/str · eq/hash · ordering · containers · context managers · __call__</div></div><span class="ic">🎯</span></li>
+    <li><span class="n">11</span><div><div class="tt"><a href="#s11">Descriptors, __slots__ &amp; Metaclasses</a></div><div class="dd">__get__/__set__ · @property machinery · __slots__ · factory decorators · auto-registry</div></div><span class="ic">🧬</span></li>
+    <li><span class="n">12</span><div><div class="tt"><a href="#s12">Typing, Protocols &amp; Structural Interfaces</a></div><div class="dd">TypeVar · Generic · Protocol · @contextmanager · suppress</div></div><span class="ic">📐</span></li>
+    <li><span class="n">13</span><div><div class="tt"><a href="#s13">The CPython Memory Model</a></div><div class="dd">Reference counting · cyclic GC · weakref · WeakValueDictionary</div></div><span class="ic">🧠</span></li>
+    <li><span class="n">★</span><div><div class="tt"><a href="#sq">Architect-Level Interview Bank</a></div><div class="dd">25 questions with full model answers — junior, senior, and staff level</div></div><span class="ic">🏆</span></li>
+  </ol>
+  <div class="subitems">Runnable code: <code>fundamentals.py</code> · <code>oop.py</code> · <code>iterators_generators_decorators.py</code> · <code>advanced_dunder.py</code> · <code>descriptors_slots_meta.py</code> · <code>typing_and_memory.py</code></div>
+</section>
+
+<!-- ======================== CHAPTER INTRO ======================== -->
+<section class="chapter" id="s0">
+  <div class="ch-head">
+    <div class="num">🐍</div>
+    <div><div class="t">Python Foundations</div>
+    <div class="s">The language as an architectural tool — from your first variable to the object model internals</div></div>
+    <div class="ico">🐍</div>
+  </div>
+
+  <p class="lead">This book treats Python not as a collection of syntax to memorize, but as a set of <strong>protocols and constraints</strong> that shape the systems you can build. Every topic below asks the same meta-question SOLID asks: <em>when a requirement changes, how much has to change with it?</em></p>
+
+  <div class="milestone">
+    <div class="step"><div class="dot">1</div><div class="line"></div><div class="lbl">The Language</div><div class="sub">Types, flow, collections, functions</div></div>
+    <div class="step"><div class="dot">2</div><div class="line"></div><div class="lbl">OOP</div><div class="sub">Pillars, MRO, dataclasses</div></div>
+    <div class="step"><div class="dot">3</div><div class="line"></div><div class="lbl">Protocols</div><div class="sub">Iterators, generators, decorators</div></div>
+    <div class="step"><div class="dot">4</div><div class="line"></div><div class="lbl">Internals</div><div class="sub">Dunders, descriptors, metaclasses</div></div>
+    <div class="step"><div class="dot">5</div><div class="line"></div><div class="lbl">Types &amp; Memory</div><div class="sub">Protocols, GC, weakref</div></div>
+    <div class="step"><div class="dot">★</div><div class="lbl">Interview Bank</div><div class="sub">25 architect-level Q&amp;A</div></div>
+  </div>
+
+  <div class="coderef"><div class="h">📂 Runnable companion code</div>
+  <ul>
+    <li><span class="path">00-python-foundations/fundamentals.py</span> — types, control flow, collections, functions, files, exceptions</li>
+    <li><span class="path">00-python-foundations/oop.py</span> — four pillars, dunder methods, classmethod/staticmethod, dataclasses</li>
+    <li><span class="path">00-python-foundations/iterators_generators_decorators.py</span> — iterator protocol, generators, decorators</li>
+    <li><span class="path">00-python-foundations/advanced_dunder.py</span> — eq/hash, ordering, containers, context managers, __call__</li>
+    <li><span class="path">00-python-foundations/descriptors_slots_meta.py</span> — descriptors, __slots__, decorator factories, metaclasses</li>
+    <li><span class="path">00-python-foundations/typing_and_memory.py</span> — generics, Protocols, @contextmanager, refcounting, GC, weakref</li>
+  </ul>
+  <div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
+  <span style="font-family:'Segoe UI',sans-serif;font-size:8.5pt;font-weight:700;color:var(--teal-d)">📓 Interactive notebooks (with 🧠 mental models)</span>
+  <ul style="margin-top:4px">
+    <li><span class="path">00-python-foundations/py_types_collections.ipynb</span> — WHY/WHAT/HOW/WHEN for types, truthiness, control flow, collections, functions, exceptions</li>
+    <li><span class="path">00-python-foundations/py_functions_closures.ipynb</span> — 69 built-ins, loops, comprehensions (lazy vs eager), closures, decorators</li>
+    <li><span class="path">00-python-foundations/py_iterators_generators.ipynb</span> — iterator protocol, generator state machine, itertools, context managers</li>
+    <li><span class="path">00-python-foundations/py_oop.ipynb</span> — four pillars, IS-A/HAS-A decision tree, dunder contracts, classmethod/staticmethod</li>
+    <li><span class="path">00-python-foundations/py_advanced.ipynb</span> — descriptor lookup priority, __slots__ memory model, metaclass creation steps</li>
+  </ul></div>
+  </div>
+
+<!-- ===================== S1: VARIABLES & OBJECT MODEL ===================== -->
+<h2 class="sec" id="s1">1 · Variables, Names &amp; the Object Model</h2>
+
+<div class="def what"><span class="lab">What</span><p>A <em class="term">variable</em> is a <strong>name bound to an object</strong> — not a box containing a value, but a label pointing at one in memory. Python never declares types; you bind a name to whatever object you assign. Every object has three properties: <strong>identity</strong> (its address in memory, returned by <code class="inl">id()</code>), <strong>type</strong>, and <strong>value</strong>.</p></div>
+
+<div class="def why"><span class="lab">Why it matters architecturally</span><p>Because "name = label on object" is the source of Python's most dangerous bugs: <em class="term">aliasing</em> (two names pointing at one mutable object, so a mutation through one is visible through the other) and the <em class="term">mutable default argument</em> trap. Both stem from the same fact — shared references to mutable objects. Understanding this determines whether you design safe, immutable value types or accidentally build shared-state nightmares.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 220" role="img" aria-label="Python Object Model: names as labels, aliasing, rebinding">
+  <defs>
+    <marker id="arr1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="arr2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#16a34a"/>
+    </marker>
+    <marker id="arr3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <g font-family="Segoe UI,sans-serif">
+    <!-- Left panel: mutable aliasing -->
+    <rect x="10" y="8" width="360" height="204" rx="10" fill="#fff7f7" stroke="#fca5a5" stroke-width="1.5"/>
+    <text x="190" y="28" text-anchor="middle" font-size="11" font-weight="800" fill="#991b1b">MUTABLE — aliasing shares all changes</text>
+    <!-- name boxes -->
+    <rect x="30" y="50" width="70" height="28" rx="6" fill="#dbeafe"/><text x="65" y="69" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af">a</text>
+    <rect x="30" y="100" width="70" height="28" rx="6" fill="#dbeafe"/><text x="65" y="119" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af">b = a</text>
+    <!-- object box -->
+    <rect x="200" y="68" width="140" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="270" y="86" text-anchor="middle" font-size="10" font-weight="700" fill="#7f1d1d">[1, 2, 3]</text>
+    <text x="270" y="101" text-anchor="middle" font-size="8.5" fill="#7f1d1d">list — id: 0x7f42</text>
+    <!-- arrows both pointing at same object -->
+    <path d="M100,64 L198,84" stroke="#0284c7" stroke-width="2" marker-end="url(#arr1)"/>
+    <path d="M100,114 L198,98" stroke="#0284c7" stroke-width="2" marker-end="url(#arr1)"/>
+    <!-- annotation -->
+    <text x="110" y="155" font-size="9" fill="#7f1d1d">b.append(4) → [1,2,3,4]</text>
+    <text x="110" y="170" font-size="9" fill="#7f1d1d">a  ALSO sees [1,2,3,4] ← silent bug</text>
+    <rect x="28" y="185" width="324" height="20" rx="5" fill="#fee2e2"/>
+    <text x="190" y="199" text-anchor="middle" font-size="8.5" font-weight="700" fill="#991b1b">⚠ One object, two names — mutation is shared</text>
+
+    <!-- Right panel: immutable rebinding -->
+    <rect x="400" y="8" width="370" height="204" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+    <text x="585" y="28" text-anchor="middle" font-size="11" font-weight="800" fill="#14532d">IMMUTABLE — rebinding creates a new object</text>
+    <!-- name box -->
+    <rect x="418" y="70" width="60" height="28" rx="6" fill="#dcfce7"/><text x="448" y="89" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">x</text>
+    <!-- old object -->
+    <rect x="560" y="50" width="90" height="30" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="605" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#14532d">42 (int)</text>
+    <!-- new object -->
+    <rect x="560" y="108" width="90" height="30" rx="8" fill="#f0fdf4" stroke="#0284c7" stroke-width="2"/>
+    <text x="605" y="127" text-anchor="middle" font-size="10" font-weight="700" fill="#1d4ed8">43 (NEW int)</text>
+    <!-- x points at old 42 -->
+    <path d="M478,82 L558,64" stroke="#16a34a" stroke-width="2" marker-end="url(#arr2)"/>
+    <!-- after x += 1, x points at new 43 -->
+    <path d="M478,88 L558,120" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr3)"/>
+    <text x="490" y="75" font-size="8" fill="#16a34a" transform="rotate(-22,490,75)">before</text>
+    <text x="490" y="118" font-size="8" fill="#94a3b8" transform="rotate(22,490,118)">after</text>
+    <text x="585" y="160" text-anchor="middle" font-size="9" fill="#14532d">x += 1 rebinds x to a NEW int</text>
+    <text x="585" y="175" text-anchor="middle" font-size="9" fill="#14532d">The old 42 is unchanged (refcount drops)</text>
+    <rect x="418" y="187" width="334" height="18" rx="5" fill="#dcfce7"/>
+    <text x="585" y="200" text-anchor="middle" font-size="8.5" font-weight="700" fill="#166534">✓ Immutable types are safe across shared references</text>
+  </g>
+</svg>
+<figcaption>Figure 1.1 — Names are labels, not boxes. Two names on a mutable object share all mutations (aliasing). "Changing" an immutable type rebinds the name to a brand-new object; the original is untouched.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How</span></div>
+<pre>x = <span class="n">42</span>            <span class="c"># int — immutable; x is a name bound to object 42</span>
+name = <span class="s">"Ada"</span>      <span class="c"># str — immutable</span>
+nums = [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]  <span class="c"># list — mutable</span>
+
+a = nums           <span class="c"># a and nums are BOTH labels on the SAME list</span>
+a.append(<span class="n">4</span>)       <span class="c"># mutates through 'a' → nums sees [1,2,3,4] !</span>
+<span class="k">assert</span> nums == [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>, <span class="n">4</span>]  <span class="c"># aliasing: shared mutation</span>
+
+<span class="c"># Safe copy patterns</span>
+safe = nums[:]     <span class="c"># shallow copy — new list, same inner objects</span>
+<span class="k">import</span> copy
+deep = copy.deepcopy(nums)  <span class="c"># deep copy — all new objects recursively</span>
+
+<span class="c"># == tests VALUE equality; is tests IDENTITY (same object)</span>
+list1 = [<span class="n">1</span>, <span class="n">2</span>]; list2 = [<span class="n">1</span>, <span class="n">2</span>]
+<span class="k">assert</span> list1 == list2      <span class="c"># equal VALUES</span>
+<span class="k">assert</span> list1 <span class="k">is not</span> list2  <span class="c"># different objects</span>
+<span class="k">assert</span> <span class="k">None</span> <span class="k">is</span> <span class="k">None</span>         <span class="c"># correct: use `is` for singletons only</span></pre>
+
+<div class="def when"><span class="lab">When to apply this</span><p>Apply immutability at <strong>every boundary</strong> — function arguments, return values, cache keys, and data-transfer objects. Return copies (or use tuples/frozen dataclasses) whenever you don't want callers to be surprised by mutations. Use <code class="inl">is</code> only for <code class="inl">None</code>, <code class="inl">True</code>, and <code class="inl">False</code> — never for values.</p></div>
+
+<div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the mutable default argument trap</div>
+<p><code class="inl">def f(x, acc=[])</code> evaluates <code class="inl">[]</code> <strong>once at definition time</strong>. The same list is shared on every call that doesn't pass <code class="inl">acc</code>. Calls accumulate state across each other — a silent, persistent bug. Always default to <code class="inl">None</code> and build the mutable inside the function body.</p></div>
+<pre><span class="c"># ✕ BROKEN — shared list, accumulates across calls</span>
+<span class="k">def</span> <span class="f">broken</span>(x, acc=[]):
+    acc.append(x); <span class="k">return</span> acc   <span class="c"># same list every call!</span>
+
+<span class="c"># ✓ CORRECT — sentinel idiom</span>
+<span class="k">def</span> <span class="f">fixed</span>(x, acc=<span class="k">None</span>):
+    <span class="k">if</span> acc <span class="k">is None</span>: acc = []   <span class="c"># fresh list each call</span>
+    acc.append(x); <span class="k">return</span> acc</pre>
+
+<div class="qa"><div class="q">Q · Python is pass-by-value or pass-by-reference?</div>
+<p>Neither. Python is <strong>call-by-object-reference</strong> (a.k.a. call-by-sharing). The function receives a reference to the same object, but the parameter name is a new binding. Mutating <em>in place</em> (<code class="inl">lst.append()</code>) is visible to the caller; <em>rebinding</em> (<code class="inl">lst = [...]</code>) only moves the local name — the caller sees nothing. The design rule: return new values instead of mutating arguments you don't own.</p></div>
+
+<!-- ===================== S2: CONTROL FLOW ===================== -->
+<h2 class="sec" id="s2">2 · Truthiness &amp; Control Flow</h2>
+
+<div class="def what"><span class="lab">What</span><p>Python evaluates any object as <em class="term">truthy</em> or <em class="term">falsy</em>. Falsy: <code class="inl">None</code>, <code class="inl">False</code>, <code class="inl">0</code>, <code class="inl">0.0</code>, <code class="inl">""</code>, <code class="inl">[]</code>, <code class="inl">{}</code>, <code class="inl">set()</code>. Control flow uses <code class="inl">if/elif/else</code>, <code class="inl">for</code>, <code class="inl">while</code>, and Python 3.10's <code class="inl">match</code> — structural pattern matching.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 200" role="img" aria-label="for-else control flow diagram">
+  <defs>
+    <marker id="af" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#0f2743"/>
+    </marker>
+  </defs>
+  <g font-family="Segoe UI,sans-serif">
+    <!-- Title -->
+    <text x="390" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f2743">The for…else Pattern — Most Misunderstood Construct in Python</text>
+    <!-- Start -->
+    <rect x="20" y="38" width="80" height="28" rx="14" fill="#0f2743"/><text x="60" y="57" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">START</text>
+    <path d="M100,52 L144,52" stroke="#0f2743" stroke-width="2" marker-end="url(#af)"/>
+    <!-- Condition diamond -->
+    <polygon points="185,36 230,52 185,68 140,52" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+    <text x="185" y="56" text-anchor="middle" font-size="9" font-weight="700" fill="#0284c7">item?</text>
+    <!-- No branch → else -->
+    <path d="M185,68 L185,115" stroke="#16a34a" stroke-width="2" marker-end="url(#af)"/>
+    <text x="195" y="95" font-size="9" fill="#16a34a" font-weight="700">No more</text>
+    <rect x="140" y="116" width="90" height="28" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="185" y="134" text-anchor="middle" font-size="9.5" font-weight="700" fill="#166534">else block ✓</text>
+    <path d="M230,130 L370,130" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="300" y="145" text-anchor="middle" font-size="8.5" fill="#166534">"loop completed normally"</text>
+
+    <!-- Yes branch → body -->
+    <path d="M230,52 L300,52" stroke="#0284c7" stroke-width="2" marker-end="url(#af)"/>
+    <text x="265" y="44" text-anchor="middle" font-size="9" fill="#0284c7" font-weight="700">Yes</text>
+    <rect x="300" y="38" width="90" height="28" rx="6" fill="#dbeafe"/>
+    <text x="345" y="56" text-anchor="middle" font-size="9.5" fill="#1e40af" font-weight="700">body runs</text>
+
+    <!-- break? diamond -->
+    <path d="M390,52 L440,52" stroke="#0f2743" stroke-width="2" marker-end="url(#af)"/>
+    <polygon points="480,36 520,52 480,68 440,52" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+    <text x="480" y="56" text-anchor="middle" font-size="9" font-weight="700" fill="#b45309">break?</text>
+
+    <!-- Yes break → exit (no else) -->
+    <path d="M480,68 L480,115" stroke="#dc2626" stroke-width="2" marker-end="url(#af)"/>
+    <text x="490" y="95" font-size="9" fill="#dc2626" font-weight="700">break</text>
+    <rect x="440" y="116" width="80" height="28" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="480" y="134" text-anchor="middle" font-size="9.5" font-weight="700" fill="#991b1b">exit ✕ else</text>
+    <text x="480" y="170" text-anchor="middle" font-size="8.5" fill="#991b1b">"else never runs after break"</text>
+
+    <!-- No break → loop back -->
+    <path d="M520,52 L600,52" stroke="#0f2743" stroke-width="2" marker-end="url(#af)"/>
+    <text x="560" y="44" text-anchor="middle" font-size="9" fill="#0f2743">no break</text>
+    <path d="M600,52 L640,52 L640,100 L185,100 L185,68" stroke="#0f2743" stroke-width="1.5" stroke-dasharray="5,3" fill="none" marker-end="url(#af)"/>
+    <text x="640" y="80" font-size="8.5" fill="#0f2743" transform="rotate(90,640,80)">← next item</text>
+  </g>
+</svg>
+<figcaption>Figure 2.1 — The <code>for…else</code> control flow. The <code>else</code> runs only if the loop consumed all items without hitting <code>break</code>. Perfect for "search &amp; report not-found" patterns without a separate flag variable.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — key patterns</span></div>
+<pre><span class="c"># for-else: idiom for "search or default"</span>
+<span class="k">for</span> n <span class="k">in</span> candidates:
+    <span class="k">if</span> is_prime(n):
+        winner = n; <span class="k">break</span>
+<span class="k">else</span>:
+    winner = <span class="k">None</span>       <span class="c"># no break → no prime found</span>
+
+<span class="c"># match — structural pattern matching (3.10+)</span>
+<span class="k">match</span> event:
+    <span class="k">case</span> {<span class="s">"type"</span>: <span class="s">"click"</span>, <span class="s">"x"</span>: x, <span class="s">"y"</span>: y}:  <span class="c"># dict pattern</span>
+        handle_click(x, y)
+    <span class="k">case</span> [<span class="s">"move"</span>, dx, dy]:                    <span class="c"># sequence pattern</span>
+        move(dx, dy)
+    <span class="k">case</span> _ <span class="k">if</span> event.get(<span class="s">"urgent"</span>):          <span class="c"># guard</span>
+        escalate()
+    <span class="k">case</span> _:
+        log_unknown(event)</pre>
+
+<div class="box insight"><span class="ic">🔎</span><div class="h">Truthiness is an interface, not a special case</div>
+<p>Any class can implement <code class="inl">__bool__</code> (or <code class="inl">__len__</code>) to participate in truthiness — <code class="inl">if queue:</code> means "if the queue has items." This is the contract that makes your custom types feel native. Python calls <code class="inl">__bool__</code> first; falls back to <code class="inl">__len__ != 0</code>; defaults to <code class="inl">True</code>.</p></div>
+
+<!-- ===================== S3: COLLECTIONS ===================== -->
+<h2 class="sec" id="s3">3 · The Four Collections &amp; Big-O</h2>
+
+<div class="def what"><span class="lab">What</span><p>Python ships four workhorse containers — <code class="inl">list</code>, <code class="inl">tuple</code>, <code class="inl">set</code>, <code class="inl">dict</code> — plus the <code class="inl">collections</code> module's upgrades. Picking the right one for the hot operation is the first performance decision in every system.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 210" role="img" aria-label="Collection Big-O comparison">
+  <g font-family="Segoe UI,sans-serif">
+    <!-- Header row -->
+    <rect x="10" y="10" width="760" height="28" rx="6" fill="#0f2743"/>
+    <text x="100" y="29" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">Collection</text>
+    <text x="230" y="29" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">Ordered?</text>
+    <text x="330" y="29" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">Mutable?</text>
+    <text x="430" y="29" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">index / lookup</text>
+    <text x="540" y="29" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">insert / append</text>
+    <text x="650" y="29" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">use-case</text>
+    <!-- list row -->
+    <rect x="10" y="40" width="760" height="32" rx="4" fill="#dbeafe"/>
+    <text x="100" y="60" text-anchor="middle" font-size="10" font-weight="700" fill="#1e40af">list [ ]</text>
+    <text x="230" y="60" text-anchor="middle" font-size="10" fill="#1e40af">✓ Yes</text>
+    <text x="330" y="60" text-anchor="middle" font-size="10" fill="#1e40af">✓ Yes</text>
+    <text x="430" y="60" text-anchor="middle" font-size="10" fill="#1e40af">O(1) index · O(n) search</text>
+    <text x="540" y="60" text-anchor="middle" font-size="10" fill="#1e40af">O(1) append · O(n) insert[i]</text>
+    <text x="650" y="60" text-anchor="middle" font-size="10" fill="#1e40af">Sequences, stacks</text>
+    <!-- tuple row -->
+    <rect x="10" y="74" width="760" height="32" rx="4" fill="#f3e8ff"/>
+    <text x="100" y="94" text-anchor="middle" font-size="10" font-weight="700" fill="#6b21a8">tuple ( )</text>
+    <text x="230" y="94" text-anchor="middle" font-size="10" fill="#6b21a8">✓ Yes</text>
+    <text x="330" y="94" text-anchor="middle" font-size="10" fill="#6b21a8">✕ No (hashable)</text>
+    <text x="430" y="94" text-anchor="middle" font-size="10" fill="#6b21a8">O(1) index</text>
+    <text x="540" y="94" text-anchor="middle" font-size="10" fill="#6b21a8">Immutable after creation</text>
+    <text x="650" y="94" text-anchor="middle" font-size="10" fill="#6b21a8">Dict keys, records</text>
+    <!-- set row -->
+    <rect x="10" y="108" width="760" height="32" rx="4" fill="#dcfce7"/>
+    <text x="100" y="128" text-anchor="middle" font-size="10" font-weight="700" fill="#166534">set { }</text>
+    <text x="230" y="128" text-anchor="middle" font-size="10" fill="#166534">✕ No</text>
+    <text x="330" y="128" text-anchor="middle" font-size="10" fill="#166534">✓ Yes</text>
+    <text x="430" y="128" text-anchor="middle" font-size="10" fill="#166534">O(1) membership</text>
+    <text x="540" y="128" text-anchor="middle" font-size="10" fill="#166534">O(1) add / discard</text>
+    <text x="650" y="128" text-anchor="middle" font-size="10" fill="#166534">Dedup, set algebra</text>
+    <!-- dict row -->
+    <rect x="10" y="142" width="760" height="32" rx="4" fill="#fff7ed"/>
+    <text x="100" y="162" text-anchor="middle" font-size="10" font-weight="700" fill="#92400e">dict { : }</text>
+    <text x="230" y="162" text-anchor="middle" font-size="10" fill="#92400e">✓ (3.7+)</text>
+    <text x="330" y="162" text-anchor="middle" font-size="10" fill="#92400e">✓ Yes</text>
+    <text x="430" y="162" text-anchor="middle" font-size="10" fill="#92400e">O(1) key lookup</text>
+    <text x="540" y="162" text-anchor="middle" font-size="10" fill="#92400e">O(1) insert / delete</text>
+    <text x="650" y="162" text-anchor="middle" font-size="10" fill="#92400e">Key-value mapping</text>
+    <!-- collections upgrades -->
+    <rect x="10" y="176" width="760" height="28" rx="4" fill="#f4f7fb"/>
+    <text x="390" y="193" text-anchor="middle" font-size="9.5" font-weight="700" fill="#5b6b7b">collections module: Counter (freq counts) · defaultdict (no KeyError) · deque (O(1) both ends) · OrderedDict · namedtuple</text>
+  </g>
+</svg>
+<figcaption>Figure 3.1 — Collection Big-O at a glance. Pick the container whose hot operation is O(1). Membership test in a list is O(n); in a set it is O(1) — for 1 M items that is the difference between 1 ms and 1 μs.</figcaption>
+</figure>
+
+<div class="def what"><span class="lab">🧠 Mental model — collection decision tree</span>
+<p>Ask two questions: <strong>(1) Do I need order?</strong> If yes, mutable → <code class="inl">list</code>, immutable → <code class="inl">tuple</code>. If no, unique values → <code class="inl">set</code>, key-value → <code class="inl">dict</code>. <strong>(2) What's my hot operation?</strong> Match the O(1) column in the table above. <strong>Hashability rule:</strong> immutable types (<code class="inl">int</code>, <code class="inl">str</code>, <code class="inl">tuple</code>, <code class="inl">frozenset</code>) are always hashable → usable as <code class="inl">dict</code> keys and <code class="inl">set</code> members. Mutable types (<code class="inl">list</code>, <code class="inl">dict</code>, <code class="inl">set</code>) are never hashable. <strong>Comprehension forms:</strong> <code class="inl">[…]</code> → list (eager), <code class="inl">{…}</code> → set/dict (eager), <code class="inl">(…)</code> → generator (lazy, O(1) memory). Feed generators into <code class="inl">sum()</code>/<code class="inl">any()</code>/<code class="inl">all()</code> when you don't need to iterate twice.</p>
+</div>
+
+<div class="def how"><span class="lab">How — choosing the right collection</span></div>
+<pre><span class="k">from</span> collections <span class="k">import</span> Counter, defaultdict, deque
+
+<span class="c"># Counter — frequency map in one call</span>
+freq = Counter(<span class="s">"mississippi"</span>)   <span class="c"># {"s":4, "i":4, "p":2, "m":1}</span>
+top2 = freq.most_common(<span class="n">2</span>)       <span class="c"># [("s",4),("i",4)]</span>
+
+<span class="c"># defaultdict — no KeyError on missing keys</span>
+groups = defaultdict(list)
+<span class="k">for</span> item <span class="k">in</span> data:
+    groups[item.category].append(item)  <span class="c"># auto-creates the list</span>
+
+<span class="c"># deque — O(1) append/pop from BOTH ends (list popleft is O(n))</span>
+q = deque(maxlen=<span class="n">1000</span>)   <span class="c"># bounded queue / sliding window</span>
+q.appendleft(<span class="s">"event"</span>)      <span class="c"># O(1) prepend</span>
+
+<span class="c"># Comprehensions — the Pythonic loop replacement</span>
+squares = [n*n <span class="k">for</span> n <span class="k">in</span> range(<span class="n">10</span>)]
+evens   = {n <span class="k">for</span> n <span class="k">in</span> range(<span class="n">20</span>) <span class="k">if</span> n%<span class="n">2</span>==<span class="n">0</span>}
+lookup  = {word: <span class="f">len</span>(word) <span class="k">for</span> word <span class="k">in</span> words}
+lazy    = (n*n <span class="k">for</span> n <span class="k">in</span> range(<span class="n">10</span>**<span class="n">6</span>))  <span class="c"># generator — O(1) memory</span></pre>
+
+<div class="box insight"><span class="ic">🔎</span><div class="h">The set-vs-list membership trap in production</div>
+<p>A <code class="inl">for item in big_list: if item in another_list:</code> inner loop is O(n²). Convert <code class="inl">another_list</code> to a set before the loop and the membership check becomes O(1), making the whole thing O(n). This is the most common algorithmic upgrade in code reviews.</p></div>
+
+<div class="qa"><div class="q">Q · When would you use a <code class="inl">deque</code> instead of a list?</div>
+<p>When you need O(1) append or pop from <strong>both</strong> ends. <code class="inl">list.pop(0)</code> is O(n) because it shifts every element; <code class="inl">deque.popleft()</code> is O(1). Use <code class="inl">deque</code> for queues (BFS), sliding windows (<code class="inl">maxlen</code>), and producer-consumer buffers. Use a list when you need O(1) random indexing.</p></div>
+
+<!-- ===================== S4: FUNCTIONS ===================== -->
+<h2 class="sec" id="s4">4 · Functions, Closures &amp; LEGB Scope</h2>
+
+<div class="def what"><span class="lab">What</span><p>Functions in Python are <strong>first-class objects</strong> — they can be passed as arguments, returned from other functions, and stored in variables. Scope resolution follows <em class="term">LEGB</em>: Local → Enclosing → Global → Built-in. A <em class="term">closure</em> is a function that <em>captures</em> variables from its enclosing scope.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 200" role="img" aria-label="LEGB scope chain">
+  <g font-family="Segoe UI,sans-serif">
+    <!-- Built-in (outermost) -->
+    <rect x="10" y="10" width="760" height="180" rx="14" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+    <text x="30" y="30" font-size="10.5" font-weight="800" fill="#92400e">B — Built-in scope</text>
+    <text x="30" y="44" font-size="9" fill="#92400e">len, range, print, type, id, isinstance … (always available)</text>
+    <!-- Global -->
+    <rect x="30" y="54" width="720" height="130" rx="11" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="50" y="73" font-size="10.5" font-weight="800" fill="#166534">G — Global scope (module level)</text>
+    <text x="50" y="86" font-size="9" fill="#166534">MODULE_NAME = "app"  # global constant  |  def top_level(): …</text>
+    <!-- Enclosing -->
+    <rect x="50" y="94" width="680" height="84" rx="9" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+    <text x="70" y="112" font-size="10.5" font-weight="800" fill="#1d4ed8">E — Enclosing scope (outer function / closure)</text>
+    <text x="70" y="125" font-size="9" fill="#1d4ed8">def make_counter():   multiplier = 10   ← captured by inner fn</text>
+    <!-- Local -->
+    <rect x="70" y="132" width="640" height="40" rx="7" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="90" y="150" font-size="10.5" font-weight="800" fill="#5b21b6">L — Local scope (inside the function)</text>
+    <text x="90" y="163" font-size="9" fill="#5b21b6">x = 5   result = x * multiplier   ← local vars</text>
+    <!-- lookup arrow -->
+    <text x="730" y="100" font-size="9" font-weight="700" fill="#0f2743" transform="rotate(90,730,100)">LOOKUP ORDER: L → E → G → B</text>
+  </g>
+</svg>
+<figcaption>Figure 4.1 — LEGB scope chain. Python looks up a name starting in the innermost scope (Local) and working outward. Closures capture variables from the Enclosing scope — this is how factory functions and decorators retain state.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — closures, *args/**kwargs, and the sentinel pattern</span></div>
+<pre><span class="c"># Closure: inner function captures 'factor' from enclosing scope</span>
+<span class="k">def</span> <span class="f">make_multiplier</span>(factor):
+    <span class="k">def</span> <span class="f">multiply</span>(x):
+        <span class="k">return</span> x * factor   <span class="c"># 'factor' lives in E-scope; captured</span>
+    <span class="k">return</span> multiply
+
+triple = make_multiplier(<span class="n">3</span>)
+<span class="k">assert</span> triple(<span class="n">10</span>) == <span class="n">30</span>       <span class="c"># 'factor' is still 3, stored in closure</span>
+
+<span class="c"># *args (positional) and **kwargs (keyword) — variadic signatures</span>
+<span class="k">def</span> <span class="f">greet</span>(name, greeting=<span class="s">"Hi"</span>, *extras, **metadata):
+    <span class="k">return</span> <span class="s">f"{greeting}, {name} | extras={extras} | meta={metadata}"</span>
+
+<span class="c"># Mutable default — ALWAYS use None sentinel</span>
+<span class="k">def</span> <span class="f">add_item</span>(x, items=<span class="k">None</span>):
+    items = items <span class="k">if</span> items <span class="k">is not None</span> <span class="k">else</span> []  <span class="c"># safe</span>
+    items.append(x); <span class="k">return</span> items
+
+<span class="c"># functools utilities (functional-style)</span>
+<span class="k">from</span> functools <span class="k">import</span> partial, reduce
+double = partial(<span class="f">multiply</span>, factor=<span class="n">2</span>)  <span class="c"># 'bake in' an argument</span>
+total  = reduce(<span class="k">lambda</span> a, b: a + b, [<span class="n">1</span>,<span class="n">2</span>,<span class="n">3</span>,<span class="n">4</span>], <span class="n">0</span>)  <span class="c"># fold</span></pre>
+
+<div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — the late-binding closure trap</div>
+<p><code class="inl">fns = [lambda: i for i in range(3)]</code> — all three lambdas share the same <code class="inl">i</code> variable from the enclosing loop. When called later, <code class="inl">i</code> is already 2. Fix: bind the current value with a default argument: <code class="inl">lambda i=i: i</code>. Same root cause as the mutable default trap — the closure captures the <em>variable</em>, not its value at capture time.</p></div>
+
+<h3 class="sub">4a · nonlocal, global &amp; the Walrus Operator <code class="inl">:=</code></h3>
+
+<div class="def what"><span class="lab">What</span><p><code class="inl">nonlocal</code> lets an inner function <strong>rebind</strong> a variable in the enclosing scope — essential for closures that maintain state. <code class="inl">global</code> rebinds a module-level name from inside a function. The <em class="term">walrus operator</em> (<code class="inl">:=</code>, Python 3.8+) assigns and returns a value in one expression — useful in <code class="inl">while</code> conditions and comprehensions to avoid computing a value twice.</p></div>
+
+<pre><span class="c"># nonlocal: rebind a captured variable in the enclosing scope</span>
+<span class="k">def</span> <span class="f">make_counter</span>():
+    count = <span class="n">0</span>
+    <span class="k">def</span> <span class="f">inc</span>():
+        <span class="k">nonlocal</span> count    <span class="c"># without this, count += 1 raises UnboundLocalError</span>
+        count += <span class="n">1</span>; <span class="k">return</span> count
+    <span class="k">return</span> inc
+
+counter = make_counter()
+<span class="k">assert</span> counter() == <span class="n">1</span>
+<span class="k">assert</span> counter() == <span class="n">2</span>   <span class="c"># state persists in the closure</span>
+
+<span class="c"># walrus := — assign inside an expression (avoids computing twice)</span>
+<span class="k">import</span> re
+<span class="k">if</span> (m := re.search(<span class="s">r"(\d+)"</span>, text)):   <span class="c"># assign and test in one step</span>
+    <span class="k">print</span>(m.group(<span class="n">1</span>))                    <span class="c"># m is in scope here</span>
+
+<span class="c"># walrus in while — read until empty chunk</span>
+<span class="k">while</span> chunk := f.read(<span class="n">8192</span>):           <span class="c"># assign and check truthiness</span>
+    process(chunk)
+
+<span class="c"># walrus in comprehension — filter and transform in one pass</span>
+results = [v <span class="k">for</span> x <span class="k">in</span> data <span class="k">if</span> (v := expensive(x)) <span class="k">is not None</span>]</pre>
+
+<div class="box insight"><span class="ic">🔎</span><div class="h">Why nonlocal raises UnboundLocalError without declaration</div>
+<p>The key: you can <em>mutate</em> a captured mutable object (<code class="inl">lst.append(x)</code>) without <code class="inl">nonlocal</code> — you're calling a method through an existing reference. But <code class="inl">count += 1</code> desugars to <code class="inl">count = count + 1</code>, which is an <em>assignment</em>. Python compiles any assigned name in a function as a local variable at compile time. Without <code class="inl">nonlocal</code>, Python reads the right-hand <code class="inl">count</code> as a local that hasn't been assigned yet — hence <code class="inl">UnboundLocalError</code>. The <code class="inl">nonlocal</code> declaration tells the compiler to look in the enclosing scope instead.</p></div>
+
+<!-- ===================== S5: FILES & EXCEPTIONS ===================== -->
+<h2 class="sec" id="s5">5 · Files, Modules &amp; Exception Handling</h2>
+
+<div class="def what"><span class="lab">What</span><p>Python uses <em class="term">EAFP</em> (Easier to Ask Forgiveness than Permission) as its exception philosophy: try the operation, catch specific failures — as opposed to LBYL (Look Before You Leap), which pre-checks conditions. Exceptions are objects in a class hierarchy; <strong>context managers</strong> (<code class="inl">with</code>) guarantee resource cleanup even when exceptions occur.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 190" role="img" aria-label="Python exception hierarchy">
+  <defs>
+    <marker id="ae" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#64748b"/>
+    </marker>
+  </defs>
+  <g font-family="Segoe UI,sans-serif">
+    <text x="390" y="18" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">Python Exception Hierarchy (simplified)</text>
+    <!-- BaseException -->
+    <rect x="320" y="26" width="140" height="26" rx="6" fill="#0f2743"/>
+    <text x="390" y="44" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">BaseException</text>
+    <!-- SystemExit -->
+    <rect x="30" y="80" width="100" height="24" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="80" y="97" text-anchor="middle" font-size="9" fill="#7f1d1d">SystemExit</text>
+    <path d="M350,52 L80,80" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+    <!-- KeyboardInterrupt -->
+    <rect x="150" y="80" width="130" height="24" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="215" y="97" text-anchor="middle" font-size="9" fill="#7f1d1d">KeyboardInterrupt</text>
+    <path d="M370,52 L215,80" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+    <!-- Exception -->
+    <rect x="310" y="80" width="160" height="26" rx="6" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+    <text x="390" y="97" text-anchor="middle" font-size="10" font-weight="700" fill="#1e40af">Exception ← catch-all</text>
+    <path d="M390,52 L390,80" stroke="#0284c7" stroke-width="2" marker-end="url(#ae)"/>
+    <!-- ValueError -->
+    <rect x="160" y="132" width="100" height="24" rx="6" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="210" y="149" text-anchor="middle" font-size="9" fill="#166534">ValueError</text>
+    <path d="M360,106 L210,132" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+    <!-- TypeError -->
+    <rect x="280" y="132" width="100" height="24" rx="6" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="330" y="149" text-anchor="middle" font-size="9" fill="#166534">TypeError</text>
+    <path d="M380,106 L330,132" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+    <!-- LookupError -->
+    <rect x="400" y="132" width="110" height="24" rx="6" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="455" y="149" text-anchor="middle" font-size="9" fill="#92400e">LookupError</text>
+    <path d="M400,106 L455,132" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+    <!-- KeyError, IndexError -->
+    <rect x="390" y="168" width="80" height="20" rx="5" fill="#fef9c3"/>
+    <text x="430" y="182" text-anchor="middle" font-size="8.5" fill="#78350f">KeyError</text>
+    <path d="M430,156 L430,168" stroke="#64748b" stroke-width="1" marker-end="url(#ae)"/>
+    <rect x="490" y="168" width="80" height="20" rx="5" fill="#fef9c3"/>
+    <text x="530" y="182" text-anchor="middle" font-size="8.5" fill="#78350f">IndexError</text>
+    <path d="M480,156 L530,168" stroke="#64748b" stroke-width="1" marker-end="url(#ae)"/>
+    <!-- OSError -->
+    <rect x="530" y="132" width="90" height="24" rx="6" fill="#f3e8ff" stroke="#7c3aed"/>
+    <text x="575" y="149" text-anchor="middle" font-size="9" fill="#5b21b6">OSError</text>
+    <path d="M420,106 L575,132" stroke="#64748b" stroke-width="1.5" marker-end="url(#ae)"/>
+    <!-- Custom domain exception hint -->
+    <rect x="640" y="132" width="120" height="24" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-dasharray="5,3"/>
+    <text x="700" y="149" text-anchor="middle" font-size="9" fill="#166534">YourDomainError</text>
+    <path d="M430,106 L700,132" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ae)"/>
+    <text x="700" y="170" text-anchor="middle" font-size="8" fill="#166534">← inherit from Exception</text>
+  </g>
+</svg>
+<figcaption>Figure 5.1 — Python's exception hierarchy. Always catch the most specific exception you expect. <code>except Exception</code> is broad but safe; <code>except BaseException</code> catches signals and exits — almost never what you want.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — EAFP + context managers + domain exceptions</span></div>
+<pre><span class="c"># Custom domain exception — communicates a business rule failure</span>
+<span class="k">class</span> <span class="f">PaymentDeclined</span>(Exception):
+    <span class="k">pass</span>
+
+<span class="c"># EAFP: try the operation, handle the specific failure</span>
+<span class="k">def</span> <span class="f">safe_int</span>(value: str, default: int = <span class="n">0</span>) -> int:
+    <span class="k">try</span>:
+        <span class="k">return</span> <span class="f">int</span>(value)
+    <span class="k">except</span> ValueError:
+        <span class="k">return</span> default
+
+<span class="c"># try / except / else / finally — all four branches</span>
+<span class="k">try</span>:
+    result = charge(balance=<span class="n">100</span>, amount=<span class="n">250</span>)
+<span class="k">except</span> PaymentDeclined <span class="k">as</span> e:
+    log.error(str(e))         <span class="c"># specific failure</span>
+<span class="k">else</span>:
+    notify_success(result)    <span class="c"># runs only if NO exception</span>
+<span class="k">finally</span>:
+    close_session()           <span class="c"># ALWAYS runs — cleanup</span>
+
+<span class="c"># Context managers — guaranteed teardown even on exception</span>
+<span class="k">with</span> open(<span class="s">"data.csv"</span>, encoding=<span class="s">"utf-8"</span>) <span class="k">as</span> f:
+    lines = f.readlines()     <span class="c"># file closes on __exit__, error or not</span></pre>
+
+<div class="box bigidea"><span class="ic">💡</span><div class="h">EAFP vs LBYL — why EAFP is usually right</div>
+<p>LBYL: <code class="inl">if key in d: return d[key]</code> — the check and the access are two separate operations; between them another thread could delete the key (TOCTOU race condition). EAFP: <code class="inl">try: return d[key] except KeyError: ...</code> — atomic, expressive, and works correctly under concurrency. In Python, EAFP is idiomatic; prefer it unless the check is significantly cheaper than the operation and you're not worried about races.</p></div>
+
+<h3 class="sub">5a · Exception Chaining &amp; contextlib.ExitStack</h3>
+
+<pre><span class="c"># raise X from Y — preserves the original cause in the traceback</span>
+<span class="k">try</span>:
+    result = json.loads(raw)
+<span class="k">except</span> json.JSONDecodeError <span class="k">as</span> e:
+    <span class="k">raise</span> ValueError(<span class="s">f"Invalid config at line {e.lineno}"</span>) <span class="k">from</span> e
+    <span class="c"># "During handling... ValueError" shows BOTH exceptions in traceback</span>
+
+<span class="c"># raise X from None — hides implementation detail, clean public API</span>
+<span class="k">try</span>:
+    <span class="k">return</span> self._cache[key]
+<span class="k">except</span> KeyError:
+    <span class="k">raise</span> CacheMiss(key) <span class="k">from</span> <span class="k">None</span>   <span class="c"># caller sees CacheMiss, not KeyError internals</span>
+
+<span class="c"># ExitStack: manage N context managers dynamically</span>
+<span class="k">from</span> contextlib <span class="k">import</span> ExitStack
+<span class="k">with</span> ExitStack() <span class="k">as</span> stack:
+    files = [stack.enter_context(open(f)) <span class="k">for</span> f <span class="k">in</span> file_paths]  <span class="c"># all closed on exit</span>
+    process(files)</pre>
+
+<div class="box insight"><span class="ic">🔎</span><div class="h">raise X from Y in production debugging</div>
+<p>Without explicit chaining, translating a low-level exception to a domain exception loses the original stack frame — <code class="inl">KeyError</code> on line 47 disappears, and you're left debugging why <code class="inl">DomainError</code> was raised with no context. Use <code class="inl">raise DomainError(...) from original</code> when the cause is useful for debugging; use <code class="inl">from None</code> when it's an implementation detail that callers shouldn't depend on. The difference shows up immediately in Sentry or CloudWatch logs at 3 AM.</p></div>
+
+<!-- ===================== S6: OOP ===================== -->
+<h2 class="sec" id="s6">6 · OOP — Four Pillars, ABCs &amp; MRO</h2>
+
+<div class="def what"><span class="lab">What</span><p>Python OOP rests on four pillars: <em class="term">Encapsulation</em> (bundling state with the methods that guard it), <em class="term">Abstraction</em> (exposing a clean interface, hiding the how), <em class="term">Inheritance</em> (reusing and specializing a base class), and <em class="term">Polymorphism</em> (the same call, different behavior per type). Python resolves multiple inheritance using the <em class="term">C3 linearization</em> algorithm to produce a deterministic <em class="term">Method Resolution Order (MRO)</em>.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 200" role="img" aria-label="MRO C3 linearization diagram">
+  <defs>
+    <marker id="am" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#0f2743"/>
+    </marker>
+  </defs>
+  <g font-family="Segoe UI,sans-serif">
+    <text x="390" y="18" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">Method Resolution Order (MRO) — C3 Linearization</text>
+    <!-- object -->
+    <rect x="330" y="28" width="120" height="28" rx="7" fill="#0f2743"/><text x="390" y="47" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">object</text>
+    <!-- A -->
+    <rect x="180" y="88" width="100" height="28" rx="7" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/><text x="230" y="107" text-anchor="middle" font-size="10" font-weight="700" fill="#1e40af">A</text>
+    <path d="M230,88 L350,56" stroke="#0284c7" stroke-width="1.5" marker-end="url(#am)"/>
+    <!-- B -->
+    <rect x="500" y="88" width="100" height="28" rx="7" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/><text x="550" y="107" text-anchor="middle" font-size="10" font-weight="700" fill="#1e40af">B</text>
+    <path d="M550,88 L430,56" stroke="#0284c7" stroke-width="1.5" marker-end="url(#am)"/>
+    <!-- C: inherits from A -->
+    <rect x="120" y="148" width="100" height="28" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="170" y="167" text-anchor="middle" font-size="10" font-weight="700" fill="#166534">C(A)</text>
+    <path d="M170,148 L210,116" stroke="#16a34a" stroke-width="1.5" marker-end="url(#am)"/>
+    <!-- D: inherits from A, B (diamond) -->
+    <rect x="340" y="148" width="100" height="28" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/><text x="390" y="167" text-anchor="middle" font-size="10" font-weight="700" fill="#166534">D(A,B)</text>
+    <path d="M370,148 L250,116" stroke="#16a34a" stroke-width="1.5" marker-end="url(#am)"/>
+    <path d="M410,148 L530,116" stroke="#16a34a" stroke-width="1.5" marker-end="url(#am)"/>
+    <!-- E: diamond inheritance from C, D -->
+    <rect x="210" y="148" width="100" height="28" rx="7" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/><text x="260" y="167" text-anchor="middle" font-size="10" font-weight="700" fill="#5b21b6">E(C,D)</text>
+    <path d="M240,148 L185,176" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#am)"/>
+    <path d="M260,176 L375,176" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#am)"/>
+    <!-- MRO label -->
+    <rect x="540" y="148" width="230" height="44" rx="8" fill="#fef9c3" stroke="#f59e0b"/>
+    <text x="655" y="167" text-anchor="middle" font-size="9" font-weight="700" fill="#78350f">MRO for E:</text>
+    <text x="655" y="183" text-anchor="middle" font-size="9" fill="#78350f">E → C → D → A → B → object</text>
+    <text x="380" y="195" text-anchor="middle" font-size="8.5" fill="#5b21b6">print(E.__mro__) verifies the order; super() follows it</text>
+  </g>
+</svg>
+<figcaption>Figure 6.1 — C3 linearization produces a deterministic MRO so <code>super()</code> always calls the right next method in multiple-inheritance chains. Python raises a <code>TypeError</code> at class definition if a consistent linearization is impossible.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — OOP patterns</span></div>
+<pre><span class="k">from</span> abc <span class="k">import</span> ABC, abstractmethod
+<span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+
+<span class="c"># Abstraction via ABC — forces subclasses to implement the contract</span>
+<span class="k">class</span> <span class="f">Animal</span>(ABC):
+    @abstractmethod
+    <span class="k">def</span> <span class="f">speak</span>(self) -> str: ...    <span class="c"># cannot instantiate Animal directly</span>
+
+<span class="k">class</span> <span class="f">Dog</span>(Animal):
+    <span class="k">def</span> <span class="f">speak</span>(self) -> str: <span class="k">return</span> <span class="s">"Woof"</span>   <span class="c"># polymorphism: same call, Dog result</span>
+
+<span class="c"># classmethod = alternative constructor; staticmethod = utility</span>
+<span class="k">class</span> <span class="f">Temperature</span>:
+    @classmethod
+    <span class="k">def</span> <span class="f">from_fahrenheit</span>(cls, f): <span class="k">return</span> cls((f - <span class="n">32</span>) * <span class="n">5</span> / <span class="n">9</span>)
+    @staticmethod
+    <span class="k">def</span> <span class="f">is_freezing</span>(c): <span class="k">return</span> c <= <span class="n">0</span>
+
+<span class="c"># dataclass — auto-generates __init__, __repr__, __eq__</span>
+@dataclass
+<span class="k">class</span> <span class="f">Point</span>:
+    x: float; y: float
+    <span class="k">def</span> <span class="f">__add__</span>(self, o): <span class="k">return</span> Point(self.x+o.x, self.y+o.y)
+
+<span class="c"># super() follows the MRO — do NOT call Parent.method(self) directly</span>
+<span class="k">class</span> <span class="f">LoggedDog</span>(Dog):
+    <span class="k">def</span> <span class="f">speak</span>(self):
+        result = super().speak()   <span class="c"># calls Dog.speak via MRO</span>
+        <span class="k">return</span> <span class="s">f"[logged] {result}"</span></pre>
+
+<div class="def what"><span class="lab">🧠 Mental model — IS-A vs HAS-A vs CAN-DO</span>
+<p><strong>IS-A (Inheritance):</strong> use when a subclass truly IS a more specific kind of the parent (<code class="inl">Dog(Animal)</code>, <code class="inl">ElectricCar(Car)</code>). The MRO decides which method to call. <strong>HAS-A (Composition):</strong> use when a class <em>uses</em> another (<code class="inl">Car</code> has an <code class="inl">Engine</code>). Prefer composition — it's easier to swap and test. <strong>CAN-DO (Protocol/Duck typing):</strong> use <code class="inl">typing.Protocol</code> when you only care that an object has certain methods — no inheritance required. The classmethod/staticmethod split: <code class="inl">@classmethod</code> receives the <em>class</em> as first arg (<code class="inl">cls</code>) — use for alternative constructors that respect subclassing; <code class="inl">@staticmethod</code> receives nothing — use for pure utilities logically belonging to the class.</p>
+</div>
+
+<div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — using Parent.method(self) breaks cooperative multiple inheritance</div>
+<p>Calling <code class="inl">Dog.speak(self)</code> hard-codes the parent and skips the MRO. In a multiple-inheritance chain it can call the same ancestor twice or skip a mixin entirely. Always use <code class="inl">super()</code> so Python's C3 MRO routes the call correctly to the next class in line.</p></div>
+
+<h3 class="sub">6a · Dataclass Advanced — frozen, slots, __post_init__</h3>
+
+<pre><span class="k">from</span> dataclasses <span class="k">import</span> dataclass, field
+
+<span class="c"># frozen=True: immutable after construction, auto-generates __hash__</span>
+@dataclass(frozen=<span class="k">True</span>)
+<span class="k">class</span> <span class="f">Money</span>:
+    amount: float; currency: str = <span class="s">"USD"</span>
+    <span class="c"># Money(10) == Money(10) is True; can be a dict key; thread-safe</span>
+
+<span class="c"># slots=True (3.10+): no per-instance __dict__ — ~50% smaller instances</span>
+@dataclass(slots=<span class="k">True</span>)
+<span class="k">class</span> <span class="f">Coord</span>:
+    x: float; y: float   <span class="c"># Coord().z = 1 → AttributeError (typo protection)</span>
+
+<span class="c"># __post_init__: validation and computed fields AFTER __init__</span>
+@dataclass
+<span class="k">class</span> <span class="f">Order</span>:
+    items: list[str]
+    discount: float = <span class="n">0.0</span>
+    <span class="k">def</span> <span class="f">__post_init__</span>(self):
+        <span class="k">if</span> not (<span class="n">0</span> <= self.discount <= <span class="n">1</span>): <span class="k">raise</span> ValueError(<span class="s">"discount 0-1"</span>)
+
+<span class="c"># field(default_factory=) solves the mutable-default problem</span>
+@dataclass
+<span class="k">class</span> <span class="f">Cart</span>:
+    items: list[str] = field(default_factory=list)  <span class="c"># NOT default=[]</span></pre>
+
+
+<p>A <strong>classmethod</strong> receives the class (<code class="inl">cls</code>) as its first argument and can build instances of subclasses (polymorphic factory pattern). A <strong>staticmethod</strong> receives no implicit argument — it's just a regular function namespaced inside the class, used for utilities that logically belong there but don't need <code class="inl">self</code> or <code class="inl">cls</code>. The key design use: factory classmethods (<code class="inl">@classmethod def from_json(cls, data)</code>) replace telescoping constructors.</p></div>
+
+<!-- ===================== S7: ITERATOR PROTOCOL ===================== -->
+<h2 class="sec" id="s7">7 · The Iterator Protocol</h2>
+
+<div class="def what"><span class="lab">What</span><p>Every <code class="inl">for</code> loop in Python calls two dunder methods under the hood: <code class="inl">__iter__()</code> on the container to get an iterator, then <code class="inl">__next__()</code> on the iterator repeatedly until it raises <code class="inl">StopIteration</code>. Any object implementing this two-method protocol is iterable — sets, dicts, files, database cursors, and your custom classes.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 170" role="img" aria-label="Iterator protocol sequence diagram">
+  <defs>
+    <marker id="ai" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#0f2743"/>
+    </marker>
+    <marker id="air" markerWidth="9" markerHeight="7" refX="1" refY="3.5" orient="auto">
+      <polygon points="9 0,0 3.5,9 7" fill="#0f2743"/>
+    </marker>
+  </defs>
+  <g font-family="Segoe UI,sans-serif">
+    <!-- Lifelines -->
+    <text x="110" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="#0f2743">for loop</text>
+    <line x1="110" y1="28" x2="110" y2="165" stroke="#0f2743" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="330" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="#0284c7">container (obj)</text>
+    <line x1="330" y1="28" x2="330" y2="165" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <text x="560" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="#7c3aed">iterator</text>
+    <line x1="560" y1="28" x2="560" y2="165" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+    <!-- iter(obj) call -->
+    <path d="M110,45 L328,45" stroke="#0f2743" stroke-width="2" marker-end="url(#ai)"/>
+    <text x="220" y="40" text-anchor="middle" font-size="9" fill="#0f2743">iter(obj)</text>
+    <!-- obj.__iter__() → iterator -->
+    <path d="M330,58 L558,58" stroke="#0284c7" stroke-width="2" marker-end="url(#ai)"/>
+    <text x="445" y="53" text-anchor="middle" font-size="9" fill="#0284c7">obj.__iter__()</text>
+    <!-- iterator returned to loop -->
+    <path d="M558,68 L112,68" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#air)"/>
+    <text x="335" y="63" text-anchor="middle" font-size="9" fill="#7c3aed">returns iterator</text>
+
+    <!-- next(it) loop 1 -->
+    <path d="M110,85 L558,85" stroke="#0f2743" stroke-width="2" marker-end="url(#ai)"/>
+    <text x="334" y="80" text-anchor="middle" font-size="9" fill="#0f2743">next(it) ① </text>
+    <path d="M558,95 L112,95" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#air)"/>
+    <text x="334" y="90" text-anchor="middle" font-size="9" fill="#7c3aed">value₁</text>
+    <!-- next(it) loop 2 -->
+    <path d="M110,110 L558,110" stroke="#0f2743" stroke-width="2" marker-end="url(#ai)"/>
+    <text x="334" y="105" text-anchor="middle" font-size="9" fill="#0f2743">next(it) ② </text>
+    <path d="M558,120 L112,120" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#air)"/>
+    <text x="334" y="115" text-anchor="middle" font-size="9" fill="#7c3aed">value₂</text>
+    <!-- StopIteration -->
+    <path d="M110,135 L558,135" stroke="#0f2743" stroke-width="2" marker-end="url(#ai)"/>
+    <text x="334" y="130" text-anchor="middle" font-size="9" fill="#0f2743">next(it) ③ </text>
+    <rect x="495" y="140" width="130" height="18" rx="5" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="560" y="153" text-anchor="middle" font-size="9" font-weight="700" fill="#dc2626">StopIteration → loop ends</text>
+    <path d="M558,140 L112,150" stroke="#dc2626" stroke-width="1.5" marker-end="url(#air)"/>
+  </g>
+</svg>
+<figcaption>Figure 7.1 — What <code>for x in obj:</code> actually does. The loop calls <code>iter(obj)</code> once (invokes <code>__iter__</code>), then calls <code>next()</code> on the returned iterator until <code>StopIteration</code>. Any object implementing these two methods is iterable.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — hand-written iterator vs generator</span></div>
+<pre><span class="c"># Hand-written iterator: class with __iter__ and __next__</span>
+<span class="k">class</span> <span class="f">Countdown</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, start): self.n = start
+    <span class="k">def</span> <span class="f">__iter__</span>(self): <span class="k">return</span> self        <span class="c"># the iterator IS the object</span>
+    <span class="k">def</span> <span class="f">__next__</span>(self):
+        <span class="k">if</span> self.n <= <span class="n">0</span>: <span class="k">raise</span> StopIteration
+        self.n -= <span class="n">1</span>; <span class="k">return</span> self.n + <span class="n">1</span>
+
+<span class="k">assert</span> list(Countdown(<span class="n">3</span>)) == [<span class="n">3</span>, <span class="n">2</span>, <span class="n">1</span>]
+
+<span class="c"># Generator function: same result, zero boilerplate</span>
+<span class="k">def</span> <span class="f">countdown</span>(n):
+    <span class="k">while</span> n > <span class="n">0</span>:
+        <span class="k">yield</span> n; n -= <span class="n">1</span>
+
+<span class="c"># built-in collections implement __iter__ returning dedicated iterator objects</span>
+mylist = [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+it = <span class="f">iter</span>(mylist)     <span class="c"># list_iterator</span>
+<span class="k">assert</span> <span class="f">next</span>(it) == <span class="n">1</span>  <span class="c"># consume one element</span></pre>
+
+<div class="box insight"><span class="ic">🔎</span><div class="h">Why iterables and iterators are different objects</div>
+<p>A <strong>container</strong> (like a list) returns a <em>new</em> iterator each time <code class="inl">iter()</code> is called, so you can iterate it multiple times independently. An <strong>iterator</strong> returns <code class="inl">self</code> from <code class="inl">__iter__</code> — consuming it twice yields nothing the second time. This design lets <code class="inl">for a in lst: for b in lst:</code> produce the expected nested loops, not a one-pass mess.</p></div>
+
+<!-- ===================== S8: GENERATORS ===================== -->
+<h2 class="sec" id="s8">8 · Generators &amp; Lazy Evaluation</h2>
+
+<div class="def what"><span class="lab">What</span><p>A <em class="term">generator</em> is a function with <code class="inl">yield</code>. Each <code class="inl">next()</code> call runs the function until the next <code class="inl">yield</code>, produces its value, then <strong>suspends the entire stack frame</strong> (local variables, instruction pointer, everything) until the next call. This makes generators O(1) memory regardless of output length, and they can represent infinite sequences.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 200" role="img" aria-label="Generator frame suspension diagram">
+  <g font-family="Segoe UI,sans-serif">
+    <text x="390" y="18" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">Generator Execution Model — Suspended Frame</text>
+    <!-- Consumer side -->
+    <rect x="10" y="26" width="180" height="168" rx="10" fill="#f4f7fb" stroke="#dbe4ee" stroke-width="1.5"/>
+    <text x="100" y="45" text-anchor="middle" font-size="10" font-weight="800" fill="#0f2743">Consumer</text>
+    <rect x="22" y="52" width="156" height="22" rx="5" fill="#dbeafe"/>
+    <text x="100" y="67" text-anchor="middle" font-size="8.5" fill="#1e40af">gen = fibonacci()</text>
+    <rect x="22" y="80" width="156" height="22" rx="5" fill="#dbeafe"/>
+    <text x="100" y="95" text-anchor="middle" font-size="8.5" fill="#1e40af">next(gen) → 0</text>
+    <rect x="22" y="108" width="156" height="22" rx="5" fill="#dbeafe"/>
+    <text x="100" y="123" text-anchor="middle" font-size="8.5" fill="#1e40af">next(gen) → 1</text>
+    <rect x="22" y="136" width="156" height="22" rx="5" fill="#dbeafe"/>
+    <text x="100" y="151" text-anchor="middle" font-size="8.5" fill="#1e40af">next(gen) → 1</text>
+    <rect x="22" y="164" width="156" height="22" rx="5" fill="#f0fdf4"/>
+    <text x="100" y="179" text-anchor="middle" font-size="8.5" fill="#166534">… infinite lazily …</text>
+
+    <!-- arrows between consumer and generator -->
+    <defs>
+      <marker id="ag" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <polygon points="0 0,9 3.5,0 7" fill="#7c3aed"/>
+      </marker>
+      <marker id="agr" markerWidth="9" markerHeight="7" refX="1" refY="3.5" orient="auto">
+        <polygon points="9 0,0 3.5,9 7" fill="#16a34a"/>
+      </marker>
+    </defs>
+    <path d="M190,63 L320,63" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ag)"/>
+    <text x="255" y="58" text-anchor="middle" font-size="8" fill="#7c3aed">next(gen)</text>
+    <path d="M320,73 L190,73" stroke="#16a34a" stroke-width="1.5" marker-end="url(#agr)"/>
+    <text x="255" y="83" text-anchor="middle" font-size="8" fill="#16a34a">yield 0</text>
+    <path d="M190,91 L320,91" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ag)"/>
+    <text x="255" y="86" text-anchor="middle" font-size="8" fill="#7c3aed">next(gen)</text>
+    <path d="M320,101 L190,101" stroke="#16a34a" stroke-width="1.5" marker-end="url(#agr)"/>
+    <text x="255" y="111" text-anchor="middle" font-size="8" fill="#16a34a">yield 1</text>
+
+    <!-- Generator frame -->
+    <rect x="320" y="26" width="200" height="168" rx="10" fill="#fdf4ff" stroke="#c4b5fd" stroke-width="2"/>
+    <text x="420" y="45" text-anchor="middle" font-size="10" font-weight="800" fill="#5b21b6">Generator Frame</text>
+    <text x="420" y="60" text-anchor="middle" font-size="9" fill="#5b21b6">def fibonacci():</text>
+    <text x="420" y="74" text-anchor="middle" font-size="9" fill="#5b21b6">    a, b = 0, 1</text>
+    <!-- Suspended boxes alternating -->
+    <rect x="332" y="80" width="176" height="22" rx="5" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="420" y="95" text-anchor="middle" font-size="8.5" fill="#5b21b6">→ yield a (suspended here)</text>
+    <rect x="332" y="108" width="176" height="22" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="420" y="123" text-anchor="middle" font-size="8.5" fill="#166534">resumed → a,b = b,a+b</text>
+    <rect x="332" y="136" width="176" height="22" rx="5" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="420" y="151" text-anchor="middle" font-size="8.5" fill="#5b21b6">→ yield a (suspended again)</text>
+    <text x="420" y="185" text-anchor="middle" font-size="8.5" fill="#5b21b6">Frame state preserved ↕</text>
+
+    <!-- Memory benefit panel -->
+    <rect x="540" y="26" width="230" height="168" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+    <text x="655" y="45" text-anchor="middle" font-size="10" font-weight="800" fill="#166534">Memory Benefit</text>
+    <text x="655" y="62" text-anchor="middle" font-size="9" fill="#166534">list: all items materialised</text>
+    <rect x="558" y="68" width="184" height="18" rx="4" fill="#fee2e2"/>
+    <text x="650" y="81" text-anchor="middle" font-size="8.5" fill="#7f1d1d">100 M items → ~800 MB RAM</text>
+    <text x="655" y="106" text-anchor="middle" font-size="9" fill="#166534">generator: one item at a time</text>
+    <rect x="558" y="112" width="184" height="18" rx="4" fill="#dcfce7"/>
+    <text x="650" y="125" text-anchor="middle" font-size="8.5" fill="#166534">100 M items → ~few KB RAM</text>
+    <text x="655" y="148" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">Back-pressure:</text>
+    <text x="655" y="162" text-anchor="middle" font-size="8.5" fill="#166534">slow consumer → producer</text>
+    <text x="655" y="174" text-anchor="middle" font-size="8.5" fill="#166534">never gets ahead</text>
+  </g>
+</svg>
+<figcaption>Figure 8.1 — Generator frame suspension. Between each <code>yield</code>, the generator's stack frame (all locals + instruction pointer) is frozen. Memory stays O(1) no matter how many values are produced.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — generators, infinite sequences, lazy pipelines</span></div>
+<pre><span class="c"># Infinite generator — impossible with a list</span>
+<span class="k">def</span> <span class="f">fibonacci</span>():
+    a, b = <span class="n">0</span>, <span class="n">1</span>
+    <span class="k">while</span> <span class="k">True</span>:
+        <span class="k">yield</span> a; a, b = b, a + b
+
+<span class="c"># Lazy pipeline — no intermediate lists created</span>
+<span class="k">def</span> <span class="f">read_csv_rows</span>(path):
+    <span class="k">with</span> open(path) <span class="k">as</span> f:
+        <span class="k">for</span> line <span class="k">in</span> f: <span class="k">yield</span> line.strip().split(<span class="s">","</span>)
+
+pipeline = (
+    row[<span class="n">2</span>]
+    <span class="k">for</span> row <span class="k">in</span> read_csv_rows(<span class="s">"big.csv"</span>)    <span class="c"># step 1: read line by line</span>
+    <span class="k">if</span> row[<span class="n">1</span>] == <span class="s">"active"</span>                   <span class="c"># step 2: filter</span>
+)
+total = sum(float(v) <span class="k">for</span> v <span class="k">in</span> pipeline)   <span class="c"># step 3: aggregate — O(1) memory throughout</span>
+
+<span class="c"># itertools extends the lazy toolkit</span>
+<span class="k">import</span> itertools
+first_10_fibs = list(itertools.islice(fibonacci(), <span class="n">10</span>))
+pairs = list(itertools.pairwise([<span class="n">1</span>,<span class="n">2</span>,<span class="n">3</span>,<span class="n">4</span>]))  <span class="c"># [(1,2),(2,3),(3,4)]</span></pre>
+
+<h3 class="sub">8a · yield from, send() &amp; the Bridge to async/await</h3>
+
+<pre><span class="c"># yield from: delegate to a sub-generator — forwards send() and throw() transparently</span>
+<span class="k">def</span> <span class="f">flatten</span>(nested):
+    <span class="k">for</span> item <span class="k">in</span> nested:
+        <span class="k">if</span> isinstance(item, list):
+            <span class="k">yield from</span> flatten(item)  <span class="c"># recursive delegation; not just yield</span>
+        <span class="k">else</span>:
+            <span class="k">yield</span> item
+
+<span class="k">assert</span> list(flatten([<span class="n">1</span>, [<span class="n">2</span>, [<span class="n">3</span>]], <span class="n">4</span>])) == [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>, <span class="n">4</span>]
+
+<span class="c"># send(): two-way communication — caller pushes a value INTO the generator</span>
+<span class="k">def</span> <span class="f">running_total</span>():
+    total = <span class="n">0</span>
+    <span class="k">while</span> <span class="k">True</span>:
+        value = <span class="k">yield</span> total    <span class="c"># suspend: yield current total, receive next value</span>
+        <span class="k">if</span> value <span class="k">is</span> <span class="k">None</span>: <span class="k">break</span>
+        total += value
+
+acc = running_total()
+<span class="f">next</span>(acc)         <span class="c"># prime: advance to first yield (must call next() first!)</span>
+acc.send(<span class="n">10</span>)      <span class="c"># → yields 10</span>
+acc.send(<span class="n">5</span>)       <span class="c"># → yields 15</span></pre>
+
+<div class="box bigidea"><span class="ic">💡</span><div class="h">Why this matters: the bridge to async/await</div>
+<p><code class="inl">async def</code> / <code class="inl">await</code> are built directly on the generator protocol. An <code class="inl">async def</code> function is a coroutine; <code class="inl">await expr</code> is effectively <code class="inl">yield from expr.__await__()</code>. The event loop (asyncio) calls <code class="inl">.send(None)</code> on coroutines to advance them — exactly like the <code class="inl">next(acc)</code> call above. When a coroutine hits <code class="inl">await asyncio.sleep(0)</code>, it <em>yields</em> control back to the event loop, which runs other coroutines, then <em>resumes</em> this one via <code class="inl">send()</code> when the awaitable completes. Understanding <code class="inl">yield from</code> and <code class="inl">send()</code> means you understand exactly why <code class="inl">await</code> suspends without blocking a thread — which is the heart of FastAPI's performance model.</p></div>
+
+<div class="def when"><span class="lab">When to choose generator over list</span><p>Choose a generator when: data is large (millions of rows), data is streamed (network, file), data is infinite (counter, Fibonacci), or you want natural back-pressure. Choose a list when: you need random access by index, need to iterate multiple times, or the sequence is small and code clarity benefits from materialization.</p></div>
+
+<!-- ===================== S9: DECORATORS ===================== -->
+<h2 class="sec" id="s9">9 · Decorators — Cross-Cutting Concerns</h2>
+
+<div class="def what"><span class="lab">What</span><p>A <em class="term">decorator</em> is a callable that takes a function, wraps it, and returns the wrapper. The <code class="inl">@decorator</code> syntax is sugar for <code class="inl">fn = decorator(fn)</code>. Decorators separate <em class="term">cross-cutting concerns</em> (timing, retry, memoization, auth, logging) from the business logic they apply to — without touching the function's code.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 190" role="img" aria-label="Decorator wrapping layers">
+  <g font-family="Segoe UI,sans-serif">
+    <text x="390" y="18" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">Decorator Stacking — Outermost Applied Last, Called First</text>
+    <!-- @retry outer -->
+    <rect x="20" y="28" width="740" height="156" rx="12" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+    <text x="50" y="48" font-size="10" font-weight="800" fill="#92400e">@retry(3)</text>
+    <text x="50" y="62" font-size="9" fill="#b45309">wrapper: catches exceptions, loops up to 3 times</text>
+    <!-- @timed middle -->
+    <rect x="40" y="70" width="700" height="108" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="70" y="90" font-size="10" font-weight="800" fill="#166534">@timed</text>
+    <text x="70" y="103" font-size="9" fill="#166534">wrapper: records perf_counter before/after call</text>
+    <!-- @memoize inner -->
+    <rect x="60" y="112" width="660" height="60" rx="9" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="90" y="132" font-size="10" font-weight="800" fill="#5b21b6">@memoize</text>
+    <text x="90" y="145" font-size="9" fill="#5b21b6">wrapper: checks cache; stores result on miss</text>
+    <!-- original fn -->
+      <rect x="280" y="155" width="220" height="14" rx="5" fill="#0f2743"/>
+      <text x="390" y="166" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">original function body</text>
+    <!-- call order annotation -->
+    <text x="50" y="180" font-size="9" fill="#92400e">Call: retry wrapper → timed wrapper → memoize wrapper → original</text>
+    <text x="50" y="192" font-size="9" fill="#92400e">Application: @memoize first, @timed second, @retry outermost (read bottom-up)</text>
+  </g>
+</svg>
+<figcaption>Figure 9.1 — Decorator layers. Decorators are applied bottom-up but execute top-down on each call. Always use <code>@functools.wraps(fn)</code> inside wrappers to preserve the original function's name, docstring, and signature.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — decorator, parameterized decorator, class decorator</span></div>
+<pre><span class="k">import</span> functools, time
+
+<span class="c"># Simple decorator: 1 level of nesting</span>
+<span class="k">def</span> <span class="f">timed</span>(fn):
+    @functools.wraps(fn)               <span class="c"># preserves fn.__name__, fn.__doc__</span>
+    <span class="k">def</span> <span class="f">wrapper</span>(*args, **kwargs):
+        t0 = time.perf_counter()
+        result = fn(*args, **kwargs)
+        wrapper.last_ms = (time.perf_counter() - t0) * <span class="n">1000</span>
+        <span class="k">return</span> result
+    wrapper.last_ms = <span class="n">0.0</span>
+    <span class="k">return</span> wrapper
+
+<span class="c"># Parameterized decorator: 3 levels of nesting (factory → decorator → wrapper)</span>
+<span class="k">def</span> <span class="f">retry</span>(times=<span class="n">3</span>, exceptions=(Exception,)):
+    <span class="k">def</span> <span class="f">decorator</span>(fn):
+        @functools.wraps(fn)
+        <span class="k">def</span> <span class="f">wrapper</span>(*args, **kwargs):
+            last = <span class="k">None</span>
+            <span class="k">for</span> _ <span class="k">in</span> range(times):
+                <span class="k">try</span>: <span class="k">return</span> fn(*args, **kwargs)
+                <span class="k">except</span> exceptions <span class="k">as</span> e: last = e
+            <span class="k">raise</span> last
+        <span class="k">return</span> wrapper
+    <span class="k">return</span> decorator
+
+@retry(times=<span class="n">3</span>, exceptions=(ConnectionError,))
+@timed
+<span class="k">def</span> <span class="f">fetch_data</span>(url): ...    <span class="c"># retry is outer; timed is inner</span></pre>
+
+<div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — forgetting @functools.wraps</div>
+<p>Without <code class="inl">@functools.wraps(fn)</code>, <code class="inl">fetch_data.__name__</code> returns <code class="inl">"wrapper"</code>, docstrings vanish, and Sphinx/FastAPI/Pydantic generate broken documentation. Also, <code class="inl">functools.lru_cache</code> uses <code class="inl">__qualname__</code> for its repr — wrapping without preserving identity produces confusing cache stats.</p></div>
+
+<div class="qa"><div class="q">Q · What is a "decorator factory" and why does it have three levels of nesting?</div>
+<p>A decorator factory is a function that <em>returns</em> a decorator. The three levels are: (1) the factory <code class="inl">retry(times=3)</code> — receives configuration; (2) the decorator <code class="inl">decorator(fn)</code> — receives the function to wrap; (3) the wrapper <code class="inl">wrapper(*args, **kwargs)</code> — replaces the original call. This is the general shape of <code class="inl">app.route("/path")</code>, <code class="inl">@lru_cache(maxsize=128)</code>, and every configurable decorator in production frameworks.</p></div>
+
+<h3 class="sub">9a · functools.lru_cache — production memoization</h3>
+
+<pre><span class="k">from</span> functools <span class="k">import</span> lru_cache, cache
+
+<span class="c"># @lru_cache — memoize with bounded LRU eviction</span>
+@lru_cache(maxsize=<span class="n">128</span>)
+<span class="k">def</span> <span class="f">fib</span>(n: int) -> int:
+    <span class="k">if</span> n < <span class="n">2</span>: <span class="k">return</span> n
+    <span class="k">return</span> fib(n-<span class="n">1</span>) + fib(n-<span class="n">2</span>)   <span class="c"># O(n) total calls, not O(2ⁿ)</span>
+
+<span class="c"># @cache (Python 3.9+) = lru_cache(maxsize=None) — unbounded</span>
+@cache
+<span class="k">def</span> <span class="f">expensive</span>(key: str) -> object: ...
+
+<span class="c"># Introspect and manage the cache</span>
+info = fib.cache_info()          <span class="c"># CacheInfo(hits=N, misses=M, maxsize=128, currsize=K)</span>
+fib.cache_clear()                <span class="c"># evict all — useful after config change</span></pre>
+
+<div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — lru_cache requires hashable arguments</div>
+<p><code class="inl">lru_cache</code> caches by hashing all positional and keyword arguments. Pass a <code class="inl">list</code> or <code class="inl">dict</code> and it raises <code class="inl">TypeError: unhashable type</code>. Fix: convert to <code class="inl">tuple</code>, or <code class="inl">frozenset</code>, or wrap in a hashable dataclass. Also: cached functions hold <em>strong references</em> to all cached return values — an unbounded <code class="inl">@cache</code> on a function returning large objects is a memory leak. Use <code class="inl">maxsize</code> to cap it.</p></div>
+
+
+<h2 class="sec" id="s10">10 · Advanced Dunder Methods — The Data Model</h2>
+
+<div class="def what"><span class="lab">What</span><p>Python's <em class="term">data model</em> (the dunder protocol) is the real interface system. Implement the right dunder methods and your objects participate in Python's built-in syntax — they print nicely, compare, sort, hash, iterate, index, manage resources, and call like functions. This is <strong>duck typing made formal</strong>: the protocol is real; the enforcement is yours.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 200" role="img" aria-label="Dunder method dispatch table">
+  <g font-family="Segoe UI,sans-serif">
+    <text x="390" y="18" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">Key Dunder Protocols — What They Unlock</text>
+    <!-- header -->
+    <rect x="10" y="26" width="760" height="26" rx="5" fill="#0f2743"/>
+    <text x="130" y="44" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff">Protocol</text>
+    <text x="310" y="44" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff">Dunders required</text>
+    <text x="520" y="44" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff">Capability unlocked</text>
+    <text x="700" y="44" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff">Failure mode</text>
+    <!-- rows -->
+    <rect x="10" y="54" width="760" height="24" rx="3" fill="#dbeafe"/>
+    <text x="130" y="70" text-anchor="middle" font-size="9" font-weight="700" fill="#1e40af">Value object</text>
+    <text x="310" y="70" text-anchor="middle" font-size="9" fill="#1e40af">__eq__ / __hash__</text>
+    <text x="520" y="70" text-anchor="middle" font-size="9" fill="#1e40af">dict/set keys; equality checks</text>
+    <text x="700" y="70" text-anchor="middle" font-size="9" fill="#7f1d1d">Mutable key → silent lookup miss</text>
+
+    <rect x="10" y="80" width="760" height="24" rx="3" fill="#f3e8ff"/>
+    <text x="130" y="96" text-anchor="middle" font-size="9" font-weight="700" fill="#6b21a8">Ordering</text>
+    <text x="310" y="96" text-anchor="middle" font-size="9" fill="#6b21a8">__lt__ (+ @total_ordering)</text>
+    <text x="520" y="96" text-anchor="middle" font-size="9" fill="#6b21a8">sort(), min(), max(), &lt; &gt;</text>
+    <text x="700" y="96" text-anchor="middle" font-size="9" fill="#7f1d1d">Forget __eq__ → broken sort</text>
+
+    <rect x="10" y="106" width="760" height="24" rx="3" fill="#dcfce7"/>
+    <text x="130" y="122" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">Container</text>
+    <text x="310" y="122" text-anchor="middle" font-size="9" fill="#166534">__len__ / __getitem__ / __contains__</text>
+    <text x="520" y="122" text-anchor="middle" font-size="9" fill="#166534">len(), indexing, slicing, in</text>
+    <text x="700" y="122" text-anchor="middle" font-size="9" fill="#7f1d1d">__len__ ≠ actual count</text>
+
+    <rect x="10" y="132" width="760" height="24" rx="3" fill="#fff7ed"/>
+    <text x="130" y="148" text-anchor="middle" font-size="9" font-weight="700" fill="#92400e">Iterable</text>
+    <text x="310" y="148" text-anchor="middle" font-size="9" fill="#92400e">__iter__ / __next__</text>
+    <text x="520" y="148" text-anchor="middle" font-size="9" fill="#92400e">for loops, unpacking, *spread</text>
+    <text x="700" y="148" text-anchor="middle" font-size="9" fill="#7f1d1d">__next__ never raises → infinite</text>
+
+    <rect x="10" y="158" width="760" height="24" rx="3" fill="#fdf4ff"/>
+    <text x="130" y="174" text-anchor="middle" font-size="9" font-weight="700" fill="#6b21a8">Context manager</text>
+    <text x="310" y="174" text-anchor="middle" font-size="9" fill="#6b21a8">__enter__ / __exit__</text>
+    <text x="520" y="174" text-anchor="middle" font-size="9" fill="#6b21a8">with statement; resource cleanup</text>
+    <text x="700" y="174" text-anchor="middle" font-size="9" fill="#7f1d1d">return True → swallows exceptions</text>
+
+    <rect x="10" y="183" width="760" height="14" rx="3" fill="#f4f7fb"/>
+    <text x="390" y="193" text-anchor="middle" font-size="8.5" fill="#5b6b7b">Also: __repr__/__str__ (print nicely) · __call__ (be a function) · __add__ (operators) · __getattr__ (dynamic attrs)</text>
+  </g>
+</svg>
+<figcaption>Figure 10.1 — The dunder protocol table. Each protocol is a contract between your class and Python's runtime. Implement <code>__eq__</code> without <code>__hash__</code> and instances silently become unhashable. Always treat the protocol as a unit.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — value object, context manager, callable</span></div>
+<pre><span class="k">from</span> functools <span class="k">import</span> total_ordering
+
+@total_ordering
+<span class="k">class</span> <span class="f">Money</span>:
+    __slots__ = (<span class="s">"cents"</span>,)             <span class="c"># no __dict__ — saves memory</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, dollars):
+        object.__setattr__(self, <span class="s">"cents"</span>, round(dollars * <span class="n">100</span>))
+    <span class="k">def</span> <span class="f">__repr__</span>(self): <span class="k">return</span> <span class="s">f"Money({self.cents/100:.2f})"</span>
+    <span class="k">def</span> <span class="f">__eq__</span>(self, o):  <span class="k">return</span> isinstance(o, Money) <span class="k">and</span> self.cents == o.cents
+    <span class="k">def</span> <span class="f">__hash__</span>(self): <span class="k">return</span> hash(self.cents)   <span class="c"># MUST match __eq__</span>
+    <span class="k">def</span> <span class="f">__lt__</span>(self, o):  <span class="k">return</span> self.cents < o.cents   <span class="c"># @total_ordering derives &lt;= > >=</span>
+    <span class="k">def</span> <span class="f">__add__</span>(self, o): <span class="k">return</span> Money((self.cents + o.cents) / <span class="n">100</span>)
+
+<span class="c"># Context manager: __exit__ returning False re-raises; True suppresses</span>
+<span class="k">class</span> <span class="f">Transaction</span>:
+    <span class="k">def</span> <span class="f">__enter__</span>(self): self.log = [<span class="s">"BEGIN"</span>]; <span class="k">return</span> self
+    <span class="k">def</span> <span class="f">__exit__</span>(self, exc_type, exc, tb):
+        self.log.append(<span class="s">"ROLLBACK"</span> <span class="k">if</span> exc_type <span class="k">else</span> <span class="s">"COMMIT"</span>)
+        <span class="k">return</span> <span class="k">False</span>    <span class="c"># do NOT suppress — re-raise the exception</span>
+
+<span class="c"># Callable instance: __call__ makes it behave like a function with state</span>
+<span class="k">class</span> <span class="f">RateLimiter</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, max_per_sec): self.rate = max_per_sec; self.tokens = max_per_sec
+    <span class="k">def</span> <span class="f">__call__</span>(self): ... <span class="c"># check & decrement token bucket</span></pre>
+
+<div class="box bigidea"><span class="ic">💡</span><div class="h">The __eq__/__hash__ contract — the most dangerous rule</div>
+<p>The contract: objects that compare equal <strong>must</strong> hash equal (<code class="inl">a == b</code> ⇒ <code class="inl">hash(a) == hash(b)</code>). If you override <code class="inl">__eq__</code> without <code class="inl">__hash__</code>, Python sets <code class="inl">__hash__ = None</code> (unhashable). Worse: define both inconsistently, or mutate a field used in hashing after insertion into a dict/set — the object lands in one bucket, its hash changes, and lookups return a miss while the entry still occupies memory. Silently lost data.</p></div>
+
+<!-- ===================== S11: DESCRIPTORS ===================== -->
+<h2 class="sec" id="s11">11 · Descriptors, <code class="inl">__slots__</code> &amp; Metaclasses</h2>
+
+<div class="def what"><span class="lab">🧠 Mental model — descriptor lookup priority &amp; <code class="inl">__slots__</code></span>
+<p><strong>Attribute lookup order for <code class="inl">obj.attr</code>:</strong> (1) <em>data descriptor</em> in <code class="inl">type(obj).__mro__</code> (has both <code class="inl">__get__</code> and <code class="inl">__set__</code>/<code class="inl">__delete__</code>) → (2) <code class="inl">obj.__dict__["attr"]</code> → (3) <em>non-data descriptor</em> in <code class="inl">type(obj).__mro__</code> (has only <code class="inl">__get__</code>) → (4) <code class="inl">AttributeError</code>. <code class="inl">@property</code> is a data descriptor — it always wins over the instance dict. Instance methods are non-data descriptors — the instance dict can shadow them (though rarely intentional). <strong><code class="inl">__slots__</code> memory model:</strong> a normal instance has a <code class="inl">__dict__</code> hash table costing ~200 bytes overhead. A slotted instance uses a fixed C array (~56 bytes). For 1 million instances: ~200 MB vs ~56 MB. Trade-off: no dynamic attributes; subclasses must also declare <code class="inl">__slots__</code> or the savings evaporate. <strong>Metaclass use:</strong> reach for <code class="inl">__init_subclass__</code> first (90 % of cases), only use a full metaclass for framework-level hooks (<code class="inl">__prepare__</code>, ordering class attributes, Django/SQLAlchemy style).</p>
+</div>
+
+<div class="def what"><span class="lab">What</span><p><em class="term">Descriptors</em> are objects with <code class="inl">__get__</code>/<code class="inl">__set__</code>/<code class="inl">__delete__</code> that intercept attribute access. They are the machinery behind <code class="inl">@property</code>, methods, <code class="inl">classmethod</code>, <code class="inl">staticmethod</code>, and ORM fields. <em class="term">__slots__</em> replaces the per-instance <code class="inl">__dict__</code> with a fixed set of fields, reducing memory and blocking attribute typos. <em class="term">Metaclasses</em> are classes whose instances are themselves classes — they customize class creation.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 180" role="img" aria-label="Descriptor attribute lookup protocol">
+  <defs>
+    <marker id="ad" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#0284c7"/>
+    </marker>
+    <marker id="adn" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#dc2626"/>
+    </marker>
+    <marker id="ady" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <g font-family="Segoe UI,sans-serif">
+    <text x="390" y="16" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">Attribute Lookup Protocol — obj.attr</text>
+    <!-- Start -->
+    <rect x="320" y="24" width="120" height="26" rx="13" fill="#0f2743"/>
+    <text x="380" y="41" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">obj.attr</text>
+    <!-- Step 1: data descriptor in type MRO? -->
+    <path d="M380,50 L380,68" stroke="#0284c7" stroke-width="1.5" marker-end="url(#ad)"/>
+    <polygon points="320,68 440,68 480,82 440,96 320,96 280,82" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="380" y="79" text-anchor="middle" font-size="9" fill="#0284c7" font-weight="700">data descriptor</text>
+    <text x="380" y="91" text-anchor="middle" font-size="9" fill="#0284c7">in type(obj).__mro__?</text>
+    <!-- YES → descriptor.__get__ -->
+    <path d="M440,82 L560,82" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ady)"/>
+    <text x="500" y="76" text-anchor="middle" font-size="9" fill="#16a34a" font-weight="700">Yes</text>
+    <rect x="560" y="70" width="200" height="24" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="660" y="86" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">→ descriptor.__get__(obj, type)</text>
+    <!-- NO → check instance dict -->
+    <path d="M380,96 L380,114" stroke="#dc2626" stroke-width="1.5" marker-end="url(#adn)"/>
+    <text x="390" y="110" font-size="9" fill="#dc2626" font-weight="700">No</text>
+    <polygon points="320,114 440,114 480,128 440,142 320,142 280,128" fill="#fff7ed" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="380" y="125" text-anchor="middle" font-size="9" fill="#92400e" font-weight="700">key in</text>
+    <text x="380" y="138" text-anchor="middle" font-size="9" fill="#92400e">obj.__dict__?</text>
+    <!-- YES → return dict value -->
+    <path d="M440,128 L560,128" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ady)"/>
+    <text x="500" y="122" text-anchor="middle" font-size="9" fill="#16a34a" font-weight="700">Yes</text>
+    <rect x="560" y="116" width="200" height="24" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="660" y="132" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">→ obj.__dict__["attr"]</text>
+    <!-- NO → non-data descriptor or error -->
+    <path d="M380,142 L380,160" stroke="#dc2626" stroke-width="1.5" marker-end="url(#adn)"/>
+    <rect x="310" y="160" width="140" height="16" rx="5" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="380" y="172" text-anchor="middle" font-size="9" fill="#7f1d1d" font-weight="700">→ non-data descriptor / AttributeError</text>
+    <text x="10" y="174" font-size="8" fill="#5b6b7b">*Data descriptor: has __set__ (e.g. @property with setter, ORM field). Non-data: only __get__ (e.g. a plain method).</text>
+  </g>
+</svg>
+<figcaption>Figure 11.1 — Python's attribute lookup protocol. Data descriptors (with <code>__set__</code>) take priority over instance <code>__dict__</code>; non-data descriptors (methods, read-only properties) lose to instance dict. This is exactly how <code>@property</code> works and why an ORM can validate on assignment.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — descriptor, __slots__, metaclass</span></div>
+<pre><span class="c"># Data descriptor: reusable validated field (DRY validation)</span>
+<span class="k">class</span> <span class="f">Positive</span>:
+    <span class="k">def</span> <span class="f">__set_name__</span>(self, owner, name): self._name = <span class="s">"_"</span> + name
+    <span class="k">def</span> <span class="f">__get__</span>(self, obj, objtype=<span class="k">None</span>):
+        <span class="k">return</span> self <span class="k">if</span> obj <span class="k">is</span> <span class="k">None</span> <span class="k">else</span> getattr(obj, self._name)
+    <span class="k">def</span> <span class="f">__set__</span>(self, obj, value):
+        <span class="k">if</span> value <= <span class="n">0</span>: <span class="k">raise</span> ValueError(<span class="s">f"{self._name[1:]} must be > 0"</span>)
+        setattr(obj, self._name, value)
+
+<span class="k">class</span> <span class="f">Product</span>:
+    price    = Positive()    <span class="c"># one descriptor validates every Product.price assignment</span>
+    quantity = Positive()
+
+<span class="c"># __slots__: fixed fields → no per-instance __dict__ → ~50% less memory</span>
+<span class="k">class</span> <span class="f">Coord</span>:
+    __slots__ = (<span class="s">"x"</span>, <span class="s">"y"</span>)
+    <span class="k">def</span> <span class="f">__init__</span>(self, x, y): self.x, self.y = x, y
+<span class="c"># Coord().z = 1 → AttributeError: typo caught, not silently stored</span>
+
+<span class="c"># Metaclass: customize class creation (auto-registry pattern)</span>
+<span class="k">class</span> <span class="f">PluginMeta</span>(type):
+    registry = {}
+    <span class="k">def</span> <span class="f">__new__</span>(mcs, name, bases, ns):
+        cls = super().__new__(mcs, name, bases, ns)
+        <span class="k">if</span> bases: PluginMeta.registry[name.lower()] = cls   <span class="c"># skip base class</span>
+        <span class="k">return</span> cls
+
+<span class="k">class</span> <span class="f">Plugin</span>(metaclass=PluginMeta): <span class="k">pass</span>
+<span class="k">class</span> <span class="f">JsonExporter</span>(Plugin): ...   <span class="c"># auto-registered as "jsonexporter" — zero boilerplate</span></pre>
+
+<div class="box insight"><span class="ic">🔎</span><div class="h">When to use a descriptor vs @property</div>
+<p><code class="inl">@property</code> works per-class: if you need the same validation on 5 fields across 3 classes, you write it 15 times. A descriptor is a reusable object: write it once, assign it to any field in any class, and validation is DRY. ORM frameworks (SQLAlchemy, Django ORM) use descriptors for every column definition — that is why <code class="inl">column = Column(Integer)</code> validates on assignment without you writing any code.</p></div>
+
+<h3 class="sub">11a · __init_subclass__ — lighter than a metaclass</h3>
+
+<div class="def what"><span class="lab">What</span><p><code class="inl">__init_subclass__</code> (Python 3.6+) is called on a base class whenever a subclass is <em>defined</em>. It gives you the same "run at class creation" hook as a metaclass, but as a regular classmethod — simpler, cooperative with <code class="inl">super()</code>, and no metaclass machinery needed.</p></div>
+
+<pre><span class="c"># Auto-registry via __init_subclass__ — zero boilerplate on the subclass</span>
+<span class="k">class</span> <span class="f">Plugin</span>:
+    _registry: dict[str, type] = {}
+
+    <span class="k">def</span> <span class="f">__init_subclass__</span>(cls, name: str = <span class="s">""</span>, **kwargs):
+        super().__init_subclass__(**kwargs)   <span class="c"># cooperative: pass kwargs up the MRO</span>
+        Plugin._registry[name <span class="k">or</span> cls.__name__.lower()] = cls
+
+<span class="k">class</span> <span class="f">CsvPlugin</span>(Plugin, name=<span class="s">"csv"</span>):   ...   <span class="c"># auto-registered — no decorator needed</span>
+<span class="k">class</span> <span class="f">JsonPlugin</span>(Plugin, name=<span class="s">"json"</span>): ...   <span class="c"># auto-registered</span>
+<span class="k">class</span> <span class="f">XmlPlugin</span>(Plugin): ...              <span class="c"># registered as "xmlplugin" (default name)</span>
+
+<span class="k">assert</span> Plugin._registry[<span class="s">"csv"</span>] <span class="k">is</span> CsvPlugin</pre>
+
+<div class="two-col">
+  <div class="card"><div class="title">__init_subclass__ (prefer)</div><div class="sub">Runs when subclass is defined · Simpler than metaclass · Keyword args from class header · Cooperative via super() · Python 3.6+ · No metaclass conflicts</div></div>
+  <div class="card"><div class="title">Metaclass (when necessary)</div><div class="sub">Full control over the class dict before the class object exists · __prepare__ for custom namespaces · __class_getitem__ customization · Building DSLs or ORMs at framework level</div></div>
+</div>
+
+
+<h2 class="sec" id="s12">12 · Typing, Protocols &amp; Structural Interfaces</h2>
+
+<div class="def what"><span class="lab">What</span><p>Python's type hints are <strong>transparent at runtime</strong> — they change no behavior. Their power is tooling (mypy, Pylance) and documentation. <em class="term">TypeVar</em> and <em class="term">Generic</em> express that a container's element type is flexible but consistent. <em class="term">Protocol</em> provides <em>structural</em> typing: any class with the right methods satisfies the protocol, with no inheritance required.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 170" role="img" aria-label="Protocol vs ABC comparison">
+  <g font-family="Segoe UI,sans-serif">
+    <text x="390" y="18" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">Protocol (Structural) vs ABC (Nominal) — When to Use Which</text>
+    <!-- Protocol left -->
+    <rect x="10" y="28" width="370" height="136" rx="12" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="195" y="48" text-anchor="middle" font-size="11" font-weight="800" fill="#166534">Protocol — Structural</text>
+    <text x="195" y="64" text-anchor="middle" font-size="9" fill="#166534">No inheritance required</text>
+    <text x="195" y="78" text-anchor="middle" font-size="9" fill="#166534">class SupportsArea(Protocol):</text>
+    <text x="195" y="91" text-anchor="middle" font-size="9" fill="#166534">    def area(self) -&gt; float: ...</text>
+    <text x="195" y="107" text-anchor="middle" font-size="9" fill="#166534">ANY class with .area() satisfies it</text>
+    <text x="195" y="121" text-anchor="middle" font-size="9" fill="#166534">→ zero coupling to third-party types</text>
+    <text x="195" y="135" text-anchor="middle" font-size="9" fill="#166534">→ test fakes are plain classes</text>
+    <rect x="20" y="148" width="350" height="12" rx="4" fill="#dcfce7"/>
+    <text x="195" y="158" text-anchor="middle" font-size="8.5" font-weight="700" fill="#166534">Use for: dependency interfaces, adapters, DIP at boundaries</text>
+
+    <!-- ABC right -->
+    <rect x="400" y="28" width="370" height="136" rx="12" fill="#dbeafe" stroke="#0284c7" stroke-width="2"/>
+    <text x="585" y="48" text-anchor="middle" font-size="11" font-weight="800" fill="#1d4ed8">ABC — Nominal</text>
+    <text x="585" y="64" text-anchor="middle" font-size="9" fill="#1d4ed8">Must explicitly subclass</text>
+    <text x="585" y="78" text-anchor="middle" font-size="9" fill="#1d4ed8">class Animal(ABC):</text>
+    <text x="585" y="91" text-anchor="middle" font-size="9" fill="#1d4ed8">    @abstractmethod</text>
+    <text x="585" y="104" text-anchor="middle" font-size="9" fill="#1d4ed8">    def speak(self) -&gt; str: ...</text>
+    <text x="585" y="118" text-anchor="middle" font-size="9" fill="#1d4ed8">→ enforced at instantiation</text>
+    <text x="585" y="131" text-anchor="middle" font-size="9" fill="#1d4ed8">→ can share code in base class</text>
+    <rect x="410" y="148" width="350" height="12" rx="4" fill="#dbeafe"/>
+    <text x="585" y="158" text-anchor="middle" font-size="8.5" font-weight="700" fill="#1d4ed8">Use for: internal hierarchies, shared implementation, explicit contract</text>
+  </g>
+</svg>
+<figcaption>Figure 12.1 — Protocol vs ABC. The key axis is coupling: Protocol creates zero coupling (the implementer doesn't even import it); ABC requires an explicit inheritance relationship. Use Protocol for dependency interfaces you consume; use ABC for class families you own.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — TypeVar, Generic, Protocol, @contextmanager</span></div>
+<pre><span class="k">from</span> typing <span class="k">import</span> Generic, TypeVar, Protocol
+<span class="k">from</span> contextlib <span class="k">import</span> contextmanager, suppress
+
+T = TypeVar(<span class="s">"T"</span>)
+
+<span class="k">class</span> <span class="f">Stack</span>(Generic[T]):                  <span class="c"># Stack[int] vs Stack[str] are distinct to mypy</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self) -> <span class="k">None</span>: self._items: list[T] = []
+    <span class="k">def</span> <span class="f">push</span>(self, item: T) -> <span class="k">None</span>: self._items.append(item)
+    <span class="k">def</span> <span class="f">pop</span>(self) -> T: <span class="k">return</span> self._items.pop()
+
+<span class="k">class</span> <span class="f">SupportsArea</span>(Protocol):             <span class="c"># structural — no inheritance needed</span>
+    <span class="k">def</span> <span class="f">area</span>(self) -> float: ...
+
+<span class="k">def</span> <span class="f">total_area</span>(shapes: list[SupportsArea]) -> float:
+    <span class="k">return</span> sum(s.area() <span class="k">for</span> s <span class="k">in</span> shapes)  <span class="c"># Circle or Square — no shared base</span>
+
+<span class="c"># @contextmanager: cleaner than a class for simple resource guards</span>
+@contextmanager
+<span class="k">def</span> <span class="f">db_transaction</span>(conn):
+    <span class="k">try</span>:
+        <span class="k">yield</span> conn                        <span class="c"># bound to `as conn`</span>
+        conn.commit()
+    <span class="k">except</span>:
+        conn.rollback(); <span class="k">raise</span>            <span class="c"># re-raise so caller sees the error</span>
+
+<span class="k">with</span> suppress(FileNotFoundError):        <span class="c"># named exception suppression — idiomatic</span>
+    old_file.unlink()</pre>
+
+<div class="qa"><div class="q">Q · When would you choose a Protocol over an ABC?</div>
+<p>Choose <code class="inl">Protocol</code> when defining the shape of a <em>dependency you consume</em>, especially across module or package boundaries, or when you can't modify third-party types. The implementer needs no knowledge of your protocol — any existing class with the right methods just works, and test doubles are plain classes with no imports. Choose an ABC when you <em>own</em> the class family, need to share implementation in the base, or want an instantiation-time error rather than a type-checker error for incomplete implementations.</p></div>
+
+<!-- ===================== S13: MEMORY ===================== -->
+<h2 class="sec" id="s13">13 · The CPython Memory Model</h2>
+
+<div class="def what"><span class="lab">What</span><p>CPython frees objects by <em class="term">reference counting</em>: every object tracks how many names point at it and is freed <em>immediately</em> when that count reaches zero — no pause, deterministic. Reference counting has one blind spot: <em class="term">reference cycles</em> (A → B → A) keep both counts above zero even when neither is reachable from user code. A <em class="term">cyclic garbage collector</em> runs periodically to detect and reclaim such cycles. <em class="term">weakref</em> lets you observe an object without contributing to its refcount.</p></div>
+
+<figure class="fig-card">
+<svg viewBox="0 0 780 190" role="img" aria-label="CPython memory model diagram">
+  <g font-family="Segoe UI,sans-serif">
+    <text x="390" y="18" text-anchor="middle" font-size="11" font-weight="800" fill="#0f2743">CPython Memory Model — Refcounting, Cycles &amp; weakref</text>
+    <!-- Refcounting panel -->
+    <rect x="10" y="26" width="230" height="158" rx="11" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+    <text x="125" y="45" text-anchor="middle" font-size="10" font-weight="800" fill="#166534">Reference Counting</text>
+    <rect x="60" y="54" width="130" height="32" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="125" y="68" text-anchor="middle" font-size="9" fill="#166534">"hello" (str)</text>
+    <text x="125" y="82" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">refcount = 2</text>
+    <!-- arrows -->
+    <text x="30" y="100" font-size="9" fill="#166534">a ──────►</text>
+    <text x="30" y="115" font-size="9" fill="#166534">b ──────►</text>
+    <text x="60" y="135" font-size="9" fill="#166534">del b → refcount = 1</text>
+    <text x="60" y="150" font-size="9" fill="#166534">del a → refcount = 0</text>
+    <rect x="60" y="156" width="130" height="22" rx="5" fill="#fee2e2"/>
+    <text x="125" y="171" text-anchor="middle" font-size="9" font-weight="700" fill="#7f1d1d">→ freed immediately ✓</text>
+
+    <!-- Cycle panel -->
+    <rect x="255" y="26" width="250" height="158" rx="11" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+    <text x="380" y="45" text-anchor="middle" font-size="10" font-weight="800" fill="#92400e">Reference Cycles — Blind Spot</text>
+    <rect x="290" y="56" width="80" height="30" rx="7" fill="#fff7ed" stroke="#f59e0b"/>
+    <text x="330" y="75" text-anchor="middle" font-size="9" fill="#92400e">Node A</text>
+    <rect x="410" y="56" width="80" height="30" rx="7" fill="#fff7ed" stroke="#f59e0b"/>
+    <text x="450" y="75" text-anchor="middle" font-size="9" fill="#92400e">Node B</text>
+    <!-- cycle arrows -->
+    <path d="M370,70 L408,70" stroke="#dc2626" stroke-width="2" marker-end="url(#adn)"/>
+    <path d="M410,86 L372,86" stroke="#dc2626" stroke-width="2" marker-end="url(#adn)"/>
+    <text x="380" y="110" text-anchor="middle" font-size="9" fill="#92400e">del a, b → refcounts still = 1</text>
+    <text x="380" y="124" text-anchor="middle" font-size="9" fill="#dc2626">(each keeps the other alive)</text>
+    <rect x="280" y="135" width="160" height="22" rx="6" fill="#fef9c3" stroke="#f59e0b"/>
+    <text x="360" y="150" text-anchor="middle" font-size="9" font-weight="700" fill="#78350f">gc.collect() breaks cycle</text>
+    <text x="380" y="173" text-anchor="middle" font-size="8.5" fill="#92400e">Cyclic GC runs every ~700 allocs</text>
+
+    <!-- weakref panel -->
+    <rect x="520" y="26" width="250" height="158" rx="11" fill="#fdf4ff" stroke="#a78bfa" stroke-width="2"/>
+    <text x="645" y="45" text-anchor="middle" font-size="10" font-weight="800" fill="#5b21b6">weakref — Non-Owning Reference</text>
+    <rect x="570" y="56" width="150" height="30" rx="7" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="645" y="75" text-anchor="middle" font-size="9" fill="#5b21b6">expensive_obj (Big)</text>
+    <!-- strong and weak arrows -->
+    <text x="538" y="110" font-size="8.5" fill="#5b21b6">strong ref (owner)</text>
+    <path d="M538,116 L568,76" stroke="#5b21b6" stroke-width="2" marker-end="url(#ag)"/>
+    <text x="538" y="135" font-size="8.5" fill="#94a3b8">weakref (cache)</text>
+    <path d="M538,128 L568,84" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ag)"/>
+    <text x="530" y="155" font-size="8.5" fill="#5b21b6">del owner → refcount → 0</text>
+    <rect x="542" y="160" width="210" height="18" rx="5" fill="#ede9fe"/>
+    <text x="647" y="173" text-anchor="middle" font-size="8.5" font-weight="700" fill="#5b21b6">cache["k"]() → None (auto-evicted ✓)</text>
+  </g>
+</svg>
+<figcaption>Figure 13.1 — The three-part CPython memory model. Refcounting is fast and deterministic but blind to cycles. The cyclic GC handles cycles. <code>weakref</code> lets caches and back-references observe objects without keeping them alive — the leak-free cache pattern.</figcaption>
+</figure>
+
+<div class="def how"><span class="lab">How — inspecting refcounts, collecting cycles, building a leak-free cache</span></div>
+<pre><span class="k">import</span> sys, gc, weakref
+
+<span class="c"># Refcount inspection</span>
+a = [<span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>]
+<span class="k">print</span>(sys.getrefcount(a))   <span class="c"># +1 for the getrefcount call itself</span>
+b = a                       <span class="c"># refcount +1</span>
+<span class="k">del</span> b                       <span class="c"># refcount -1 (immediate, no pause)</span>
+
+<span class="c"># Cycle: refcounting can NEVER free this without gc.collect()</span>
+<span class="k">class</span> <span class="f">Node</span>: <span class="k">pass</span>
+x, y = Node(), Node()
+x.ref = y; y.ref = x        <span class="c"># cycle created</span>
+wx = weakref.ref(x)         <span class="c"># weak reference — does NOT keep x alive</span>
+<span class="k">del</span> x, y
+gc.collect()                 <span class="c"># cyclic GC breaks the cycle</span>
+<span class="k">assert</span> wx() <span class="k">is</span> <span class="k">None</span>          <span class="c"># object is gone</span>
+
+<span class="c"># Leak-free cache with WeakValueDictionary</span>
+cache = weakref.WeakValueDictionary()
+obj = SomeExpensiveObject()
+cache[<span class="s">"key"</span>] = obj           <span class="c"># cache does NOT prevent GC</span>
+<span class="k">del</span> obj                     <span class="c"># last strong owner gone</span>
+<span class="k">assert</span> cache.get(<span class="s">"key"</span>) <span class="k">is</span> <span class="k">None</span>   <span class="c"># auto-evicted — no manual cleanup needed</span></pre>
+
+<div class="box gotcha"><span class="ic">⚠️</span><div class="h">Production trap — strong references in long-lived caches</div>
+<p>Any long-lived dict (module-level cache, class variable) that stores objects by value holds a strong reference. If those objects have back-references to the cache (parent ↔ child, observer ↔ subject), you have a cycle that grows forever — a memory leak invisible to profiling tools that only look at active heap. The symptom is steady RSS growth that stops when you switch to <code class="inl">WeakValueDictionary</code>. Use <code class="inl">weakref</code> for caches and observer lists you don't intend to own.</p></div>
+
+</section><!-- end main chapter -->
+
+<!-- ======================== INTERVIEW BANK ======================== -->
+<section class="chapter" id="sq">
+  <div class="ch-head">
+    <div class="num">🏆</div>
+    <div><div class="t">Architect-Level Interview Bank</div>
+    <div class="s">25 questions — from junior warm-up to staff-level deep dives</div></div>
+    <div class="ico">🎯</div>
+  </div>
+
+  <p class="lead">For each question: formulate your answer out loud <em>before</em> reading the model answer. The senior answer always names the trade-off, the failure mode, and the design rule — not just the mechanism.</p>
+
+  <h2 class="sec">Part A — Fundamentals (Junior → Mid)</h2>
+
+  <div class="iqa">
+    <div class="q">Q1 · What is the difference between <code class="inl">==</code> and <code class="inl">is</code>? When is each correct? <span class="level j">Junior</span></div>
+    <p><code class="inl">==</code> calls <code class="inl">__eq__</code> to compare <em>values</em>; <code class="inl">is</code> compares object <em>identity</em> (same address). Use <code class="inl">==</code> for values. Use <code class="inl">is</code> only for singletons: <code class="inl">None</code>, <code class="inl">True</code>, <code class="inl">False</code>. The trap: small ints (–5 to 256) and short strings are cached and interned, so <code class="inl">is</code> <em>happens</em> to work — until the value leaves that range and breaks silently.</p>
+    <div class="follow">Follow-up: "What is CPython's small-integer cache?" → CPython pre-allocates int objects for –5…256 at interpreter startup; names bound to those values all point at the same cached object. Implementation detail — never rely on it.</div>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q2 · Why does <code class="inl">def f(x, cache={})</code> almost always misbehave? <span class="level j">Junior</span></div>
+    <p>Default arguments are evaluated <em>once at definition time</em> and stored on <code class="inl">f.__defaults__</code>. Every call shares the same dict — accumulating state silently across callers. The fix is the sentinel idiom: <code class="inl">def f(x, cache=None): if cache is None: cache = {}</code>. The root cause is the object/reference model: the default is a reference, not a fresh allocation per call.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q3 · Explain <code class="inl">for…else</code>. When is it actually useful? <span class="level j">Junior</span></div>
+    <p>The <code class="inl">else</code> runs when the loop finishes <em>without hitting <code class="inl">break</code></em>. Classic use: search loops. Without <code class="inl">for/else</code> you need a sentinel flag variable. With it: <code class="inl">for item in candidates: if pred(item): result = item; break</code> / <code class="inl">else: result = default</code>. Interviewers use this to probe whether you read the language reference or learned Python from Stack Overflow.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q4 · list vs deque for a queue — which is faster and why? <span class="level j">Junior</span></div>
+    <p><code class="inl">deque</code> is faster for queue operations. <code class="inl">list.pop(0)</code> is O(n) because it shifts every remaining element left. <code class="inl">deque.popleft()</code> is O(1) — implemented as a doubly-linked list of blocks. For stacks (append/pop from the same end), both are O(1) and <code class="inl">list</code> is fine.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q5 · What does EAFP mean and why does Python prefer it over LBYL? <span class="level j">Junior</span></div>
+    <p>EAFP = Easier to Ask Forgiveness than Permission (try; catch the specific failure). LBYL = Look Before You Leap (check then act). EAFP is preferred because: (1) it avoids the TOCTOU race — a check and an operation are two steps; another thread can change state between them; (2) it's often faster — the "check" in LBYL duplicates work the operation does anyway; (3) it handles all failure modes, not just the ones you remembered to check. Python exceptions are cheap for the non-error path.</p>
+  </div>
+
+  <h2 class="sec">Part B — Intermediate (Mid → Senior)</h2>
+
+  <div class="iqa">
+    <div class="q">Q6 · Is Python pass-by-value or pass-by-reference? <span class="level s">Senior</span></div>
+    <p>Neither label fits. Python is <em>call-by-object-reference</em> (call-by-sharing). The function receives a reference to the same object — but the parameter name is a new binding. Mutation in-place (<code class="inl">lst.append()</code>) is visible to the caller because they share the object. Rebinding (<code class="inl">lst = new_list</code>) is local — the caller's binding is unaffected. Design rule: never mutate arguments you don't own; return new values instead, or document the mutation explicitly.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q7 · Explain the <code class="inl">__eq__</code>/<code class="inl">__hash__</code> contract. What breaks if you violate it? <span class="level s">Senior</span></div>
+    <p>The contract: <code class="inl">a == b</code> ⇒ <code class="inl">hash(a) == hash(b)</code>. Violation 1: override <code class="inl">__eq__</code> without <code class="inl">__hash__</code> → Python sets <code class="inl">__hash__ = None</code> (loud, immediate). Violation 2: define both inconsistently, or mutate a key after insertion. An object is placed in a dict bucket based on its hash. If the hash changes after insertion, lookups miss the bucket — the entry exists in memory but is unreachable. Silently lost data. That is why value objects must be effectively immutable for the fields that define equality.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q8 · Generators vs lists for a 100M-row file stream — what changes? <span class="level s">Senior</span></div>
+    <p>A list materializes all 100M rows: ~8–80 GB RAM depending on row size. A generator yields one row at a time: O(1) memory. Beyond memory: (1) <em>latency</em> — the first row arrives immediately vs after the whole file is read; (2) <em>back-pressure</em> — a slow downstream consumer automatically throttles I/O because nothing is produced until <code class="inl">next()</code> is called; (3) generators are single-pass and not indexable. In a pipeline, wrap with <code class="inl">itertools.tee</code> to fork — but that materializes internally, so if you need multiple passes, use a list or re-read the file.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q9 · What is a decorator factory and why three levels of nesting? <span class="level s">Senior</span></div>
+    <p>A decorator factory is a function that returns a decorator: <code class="inl">retry(times=3)</code> returns <code class="inl">decorator</code>; <code class="inl">decorator(fn)</code> returns <code class="inl">wrapper</code>; <code class="inl">wrapper(*a, **kw)</code> is the replacement call. Three levels because: level 1 captures configuration, level 2 captures the function, level 3 intercepts every call. This is the shape of <code class="inl">@app.route("/path")</code>, <code class="inl">@lru_cache(maxsize=128)</code>, and every configurable framework decorator. Forgetting <code class="inl">@functools.wraps</code> at level 3 erases the function's identity — a silent documentation and introspection bug.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q10 · Explain the LEGB rule and the late-binding closure trap. <span class="level s">Senior</span></div>
+    <p>LEGB: name lookup goes Local → Enclosing (closure) → Global (module) → Built-in. A closure captures the <em>variable</em>, not its value — so <code class="inl">lambdas = [lambda: i for i in range(3)]</code> all reference the same loop variable <code class="inl">i</code>. When called after the loop, <code class="inl">i</code> is 2 for all three. Fix: bind the current value as a default: <code class="inl">lambda i=i: i</code>. This creates a new local scope on each iteration, capturing the current value. Same root cause as the mutable-default trap: closures close over variables, not values.</p>
+  </div>
+
+  <h2 class="sec">Part C — Advanced / Staff Level</h2>
+
+  <div class="iqa">
+    <div class="q">Q11 · Explain the CPython memory model. When is <code class="inl">weakref</code> the right tool? <span class="level a">Staff</span></div>
+    <p>CPython frees objects by reference counting: immediate at count zero, no GC pause. Blind spot: reference cycles (A → B → A) keep refcounts above zero; the cyclic GC reclaims them periodically (every ~700 allocations by default). <code class="inl">weakref</code> is the right tool when you want to <em>observe</em> an object without owning it: caches (<code class="inl">WeakValueDictionary</code> auto-evicts entries when the real owner is gone), observer/event patterns (subjects don't keep listeners alive indefinitely), and parent↔child back-references. Use regular references where ownership is intended; use <code class="inl">weakref</code> where it isn't.</p>
+    <div class="follow">Follow-up: "How would you detect a reference-cycle leak in production?" → use <code class="inl">gc.get_unreachable()</code>, objgraph, or memory-profiler; look for growing RSS with stable heap — often a module-level dict holding closures that captured large objects.</div>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q12 · How does CPython implement <code class="inl">@property</code>? What is a descriptor? <span class="level a">Staff</span></div>
+    <p><code class="inl">@property</code> is a <em>data descriptor</em> — an object with <code class="inl">__get__</code> and <code class="inl">__set__</code>. Python's attribute lookup gives data descriptors priority over instance <code class="inl">__dict__</code>. So <code class="inl">obj.x = 5</code> calls <code class="inl">property.__set__(obj, 5)</code>, not <code class="inl">obj.__dict__["x"] = 5</code>. This is why <code class="inl">@property</code> can validate, compute, or delegate on both get and set. A descriptor is reusable: one <code class="inl">Positive()</code> class validates every field it's assigned to, across every class — the DRY validation pattern that ORM column definitions use (SQLAlchemy's <code class="inl">Column()</code> is a descriptor).</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q13 · Protocol vs ABC — when does each apply? <span class="level a">Staff</span></div>
+    <p>The axis is <em>coupling</em>. A <code class="inl">Protocol</code> is structural: any class with the right shape satisfies it, zero coupling, no imports. An <code class="inl">ABC</code> is nominal: membership requires explicit inheritance. Use Protocol when consuming an interface across a boundary (especially third-party or test doubles) — it embodies Dependency Inversion without an inheritance tree. Use ABC when you own the class hierarchy, need to share implementation in the base, or want instantiation-time (not type-check-time) enforcement. The senior phrasing: "Protocol for what I consume; ABC for what I own."</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q14 · What are metaclasses and when should you use one vs a class decorator? <span class="level a">Staff</span></div>
+    <p>A metaclass is a class whose instances are classes — it customizes class <em>creation</em> (runs at <code class="inl">class</code> statement time). A class decorator wraps a class <em>after</em> creation. Use a metaclass when: (1) every subclass must be automatically registered or modified; (2) you need to enforce constraints at class-definition time (before any instance exists); (3) building DSLs or ORMs (Django models use metaclasses to collect field descriptors). Use a class decorator when the modification is simpler, applies to a specific class (not all subclasses), or you want explicit opt-in. Metaclasses are powerful but add invisible complexity — the Python docs say "if in doubt, you don't need one."</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q15 · You have a hot path creating millions of small objects per second. How do you reduce memory overhead? <span class="level a">Staff</span></div>
+    <p>Three graduated approaches: (1) <strong>__slots__</strong> — remove per-instance <code class="inl">__dict__</code> (saves 56–200 bytes per instance depending on fields); (2) <strong>dataclass(slots=True)</strong> (Python 3.10+) — automatic slot generation with dataclass ergonomics; (3) <strong>numpy structured arrays / Cython / Rust extension</strong> — for true zero-overhead memory layout. Measure first with <code class="inl">sys.getsizeof()</code> and <code class="inl">tracemalloc</code>. Profile before optimizing — premature slot-ification costs flexibility (subclassing becomes harder, dynamic attributes are blocked).</p>
+  </div>
+
+  <h2 class="sec">Part D — Architecture Connection Questions</h2>
+
+  <div class="iqa">
+    <div class="q">Q16 · A FastAPI endpoint processes 10K requests/sec. Each request creates a Pydantic model. What Python primitives underpin Pydantic's validation? <span class="level a">Staff</span></div>
+    <p>Pydantic v2 uses descriptors for field definitions and <code class="inl">__init_subclass__</code> / metaclass machinery to introspect type annotations at class-definition time. At runtime, validators are effectively <code class="inl">__set__</code> descriptors. The Python connection: type hints power schema introspection; <code class="inl">__slots__</code> (in v2 models) reduces per-model memory; Protocol is how <code class="inl">BaseSettings</code> providers are typed. Every Python feature in this book is load-bearing in the framework.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q17 · Describe three ways generators provide back-pressure in a streaming pipeline. <span class="level a">Staff</span></div>
+    <p>(1) <strong>Lazy pull model</strong>: the consumer drives production via <code class="inl">next()</code>; a slow consumer simply doesn't call <code class="inl">next()</code> and the producer stays suspended. (2) <strong>Backpressure across I/O</strong>: a generator reading from a socket reads only what the consumer has requested — no unbounded buffering. (3) <strong>asyncio.Queue with maxsize</strong>: combine async generators with a bounded queue — <code class="inl">await queue.put()</code> blocks the producer coroutine when the queue is full, creating explicit flow control. Without generators, you'd need manual buffer management or a streaming library.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q18 · An observability system stores 50K live Event objects. Each holds a strong reference back to its parent Span. After 90% of events are done, memory doesn't drop. Diagnose. <span class="level a">Staff</span></div>
+    <p>Classic reference-cycle memory leak. Event ↔ Span forms a cycle that reference counting alone cannot break (each object keeps the other's refcount above zero). Even after user code discards all names pointing at them, the cycle persists until <code class="inl">gc.collect()</code> runs. Diagnosis steps: (1) <code class="inl">gc.get_count()</code> — if generation 2 is growing, cycles are accumulating; (2) <code class="inl">objgraph.show_most_common_types()</code> — confirms Event/Span are the culprits; (3) Fix: replace back-references with <code class="inl">weakref.ref(parent)</code> — the cycle is broken, refcounting reclaims objects immediately. Also consider <code class="inl">gc.collect()</code> at request boundaries for predictable latency.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q19 · What does <code class="inl">yield from</code> do that a plain <code class="inl">for/yield</code> loop cannot? <span class="level a">Staff</span></div>
+    <p>Three things a manual loop cannot do: (1) forwards <code class="inl">.send(value)</code> to the sub-generator — the value arrives at the sub-generator's <code class="inl">yield</code> expression; (2) forwards <code class="inl">.throw(exc)</code> into the sub-generator; (3) captures the sub-generator's <code class="inl">return</code> value as the expression's result. These three are essential for coroutine chains — when the event loop <code class="inl">send()</code>s a result to resume a coroutine, <code class="inl">yield from</code> passes it through every layer of the async call stack. This is the mechanical foundation of <code class="inl">await</code>.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q20 · How does <code class="inl">nonlocal</code> differ from just mutating a captured mutable object? <span class="level s">Senior</span></div>
+    <p>Mutating a captured mutable object (<code class="inl">lst.append(x)</code>) requires no declaration — you're calling a method through an existing reference, no rebinding occurs. <code class="inl">count += 1</code> desugars to <code class="inl">count = count + 1</code>, which is an <em>assignment</em>. Python's compiler treats any assigned name in a function as local at compile time — without <code class="inl">nonlocal</code>, Python sees an uninitialized local <code class="inl">count</code> on the right side and raises <code class="inl">UnboundLocalError</code>. Design rule: prefer returning new values over <code class="inl">nonlocal</code> mutation — closures with mutable state are harder to reason about than pure functions.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q21 · When should you use <code class="inl">raise X from Y</code> vs <code class="inl">raise X from None</code>? <span class="level s">Senior</span></div>
+    <p><code class="inl">raise DomainError(...) from original</code> sets <code class="inl">__cause__</code> and shows both exceptions in the traceback — use when the original cause is useful for debugging (translating a library exception to a domain exception). <code class="inl">raise DomainError(...) from None</code> suppresses the context — use when the original is an implementation detail callers shouldn't depend on (<code class="inl">KeyError</code> → <code class="inl">CacheMiss</code>). Never use a bare <code class="inl">raise NewError</code> inside an <code class="inl">except</code> — it chains implicitly via <code class="inl">__context__</code> and may expose internal details.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q22 · When is <code class="inl">@dataclass(frozen=True, slots=True)</code> the right choice? <span class="level s">Senior</span></div>
+    <p>Use <strong>frozen</strong> for immutable value objects (Money, Coordinate, Config) — auto-generates <code class="inl">__hash__</code>, making instances safe as dict keys and thread-safe. Use <strong>slots</strong> when instantiating at high frequency (10K+/sec) — removes <code class="inl">__dict__</code> overhead (~50% memory saving, faster attribute access). Combined: event objects in event-sourcing systems (immutable, millions created), request DTOs in high-throughput APIs. Caveats: frozen blocks assignment post-init (use <code class="inl">object.__setattr__</code> in <code class="inl">__post_init__</code> for computed fields); slots complicates subclassing; both require Python 3.10+ for <code class="inl">slots=True</code>.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q23 · How would you design a plugin registry without a metaclass? <span class="level a">Staff</span></div>
+    <p>Three options by coupling level: (1) <strong><code class="inl">__init_subclass__</code></strong> — subclasses auto-register via keyword args at class-definition time; cooperative, zero boilerplate, stays in-process. (2) <strong>Class decorator</strong> — <code class="inl">@register</code> is explicit opt-in; clear, auditable, no magic. (3) <strong>Entry points</strong> (importlib.metadata) — plugin installed as a separate package, no import coupling, most scalable for third-party ecosystem. Choose based on coupling tolerance: <code class="inl">__init_subclass__</code> for in-repo plugins; entry points for external ecosystem plugins.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q24 · Your service creates 5M <code class="inl">Point(x, y)</code> objects per minute and memory is climbing. Walk through your optimization strategy. <span class="level a">Staff</span></div>
+    <p>In order: (1) <strong>Measure first</strong>: <code class="inl">sys.getsizeof(Point(0,0))</code> and <code class="inl">tracemalloc</code> to confirm Point instances are the culprit. (2) <strong><code class="inl">@dataclass(slots=True)</code></strong> — no code change at call sites, removes <code class="inl">__dict__</code>, typically halves instance size. (3) <strong>Measure again</strong> — confirm the saving. (4) If still insufficient: numpy structured array — contiguous C-array, 8 bytes per point vs 200+ for a Python object. Never optimize before measuring; never optimize the wrong thing.</p>
+  </div>
+
+  <div class="iqa">
+    <div class="q">Q25 · Design a type-safe event bus in Python. What features would you use and why? <span class="level a">Staff</span></div>
+    <p>(1) <strong>Generic[T] + Protocol</strong> — <code class="inl">Handler[E]</code> is structurally typed with <code class="inl">def handle(self, event: E) -> None</code>; any class with that signature satisfies it without inheritance. (2) <strong>Decorator factory</strong> — <code class="inl">@bus.on(OrderPlaced)</code> registers a handler; internally stores <code class="inl">{type: [callable]}</code>. (3) <strong>dataclass(frozen=True)</strong> for events — immutable, hashable, safe across threads. (4) <strong>TypeVar bound</strong> — <code class="inl">E = TypeVar("E", bound=BaseEvent)</code> ensures end-to-end type safety. (5) <strong>WeakValueDictionary</strong> (or <code class="inl">weakref.ref</code>) for handlers — prevents the bus from keeping handler objects alive after their owners are garbage-collected. Result: ~30 lines of type-checked, memory-safe Python.</p>
+  </div>
+
+  <h2 class="sec">Part E — Multiple-Choice Quick Check</h2>
+
+  <table>
+    <tr><th>#</th><th>Question</th><th>Options</th><th>Answer</th></tr>
+    <tr><td>1</td><td><code class="inl">def f(x, a=[]): a.append(x); return a</code> — three calls with no second arg gives:</td><td>A) three separate lists<br>B) one growing shared list<br>C) TypeError<br>D) empty list each time</td><td><strong>B</strong> — default evaluated once</td></tr>
+    <tr><td>2</td><td>Which operation on a Python <code class="inl">list</code> is O(n) worst case?</td><td>A) append<br>B) pop() at end<br>C) insert(0, x)<br>D) indexing by int</td><td><strong>C</strong> — shifts all elements</td></tr>
+    <tr><td>3</td><td>Overriding <code class="inl">__eq__</code> without <code class="inl">__hash__</code> makes instances:</td><td>A) hashable with default hash<br>B) unhashable<br>C) sorted differently<br>D) frozen</td><td><strong>B</strong> — Python sets __hash__ = None</td></tr>
+    <tr><td>4</td><td>A generator's memory cost relative to a list of same items:</td><td>A) O(n) — same<br>B) O(n/2)<br>C) O(1) — constant<br>D) O(log n)</td><td><strong>C</strong> — one frame, not n objects</td></tr>
+    <tr><td>5</td><td>A reference cycle between two objects is reclaimed by:</td><td>A) refcounting alone<br>B) the cyclic GC<br>C) weakref<br>D) never</td><td><strong>B</strong> — gc.collect()</td></tr>
+    <tr><td>6</td><td>The MRO for <code class="inl">class D(B, C)</code> where B and C both inherit from A is:</td><td>A) D, A, B, C<br>B) D, B, C, A<br>C) D, C, B, A<br>D) A, B, C, D</td><td><strong>B</strong> — C3 linearization: left-to-right, then base</td></tr>
+    <tr><td>7</td><td>Which is a data descriptor (intercepts assignment)?</td><td>A) a plain method<br>B) a non-data descriptor<br>C) @property with a setter<br>D) a classmethod</td><td><strong>C</strong> — has both __get__ and __set__</td></tr>
+  </table>
+
+  <h2 class="sec">Part F — Gotchas Checklist</h2>
+  <div class="takeaway">
+    <div class="h">🏁 Before your next Python interview — verify you can explain all of these</div>
+    <ul class="tick">
+      <li>Mutable default arguments (<code class="inl">def f(x, a=[])</code>) are shared — always use <code class="inl">None</code> sentinel.</li>
+      <li>Aliasing: <code class="inl">b = a</code> on a mutable object means mutations through <code class="inl">b</code> are visible through <code class="inl">a</code>.</li>
+      <li><code class="inl">__eq__</code> without <code class="inl">__hash__</code> → unhashable; both inconsistently → silent dict/set corruption.</li>
+      <li>Generators are single-pass and not indexable; consuming twice yields nothing the second time.</li>
+      <li>Generator errors surface lazily — the exception appears when the item is <em>pulled</em>, not when the generator is created.</li>
+      <li>Forget <code class="inl">@functools.wraps</code> → decorator erases <code class="inl">__name__</code>, <code class="inl">__doc__</code>, and <code class="inl">__module__</code>.</li>
+      <li>Late-binding closures in loops: <code class="inl">lambda: i</code> captures variable, not current value — use <code class="inl">lambda i=i: i</code>.</li>
+      <li><code class="inl">__exit__</code> returning truthy swallows exceptions — almost always wrong in production code.</li>
+      <li>Reference cycles + strong caches = memory leak; use <code class="inl">weakref.WeakValueDictionary</code> for caches you don't own.</li>
+      <li>Type hints are transparent at runtime — they don't validate; use Pydantic at system boundaries.</li>
+      <li><code class="inl">super()</code> follows the MRO; hard-coding <code class="inl">Parent.method(self)</code> breaks cooperative multiple inheritance.</li>
+      <li><code class="inl">__slots__</code> is an optimization — apply it only where the memory profile justifies the lost flexibility.</li>
+      <li>Metaclasses run at class-definition time, not at instantiation — unexpected behavior if you put I/O in them.</li>
+    </ul>
+  </div>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">How these primitives power the rest of the repo</div>
+  <p>Every feature in this book is load-bearing in the protocol-microservices layer: <strong>async/await</strong> builds on the generator/iterator protocol; <strong>FastAPI route decorators</strong> are decorator factories; <strong>Pydantic models</strong> use descriptor-like field validation; <strong>SQLAlchemy columns</strong> are data descriptors; <strong>lifespan context managers</strong> are <code class="inl">@asynccontextmanager</code>; <strong>Protocol</strong> is how DI achieves Dependency Inversion without inheritance. Fluency here isn't academic — it's what lets you read and reason about production framework internals.</p></div>
+
+</section>
+
+</body>
+</html>

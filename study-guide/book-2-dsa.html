@@ -74,7 +74,22 @@
     <li><span class="path">01-dsa/examples/sorting_searching.py</span> — quicksort, mergesort, binary search</li>
     <li><span class="path">01-dsa/examples/recursion_dp_greedy_backtracking.py</span> — recursion, DP, greedy, backtracking</li>
     <li><span class="path">01-dsa/examples/bit_manipulation.py</span> — bit tricks: XOR loner, subset masks, popcount</li>
+  </ul>
+  <div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
+  <span style="font-family:'Segoe UI',sans-serif;font-size:8.5pt;font-weight:700;color:var(--teal-d)">📓 Interactive notebooks (with 🧠 WHY/WHAT/HOW/WHEN mental models)</span>
+  <ul style="margin-top:4px">
+    <li><span class="path">01-dsa/examples/hash_table.ipynb</span> — hash function, collision resolution, load factor decision guide</li>
+    <li><span class="path">01-dsa/examples/binary_search_tree.ipynb</span> — BST property, AVL rotations, traversal order guide</li>
+    <li><span class="path">01-dsa/examples/heap_priority_queue.ipynb</span> — sift up/down, lazy deletion, Top-K pattern, heapq gotchas</li>
+    <li><span class="path">01-dsa/examples/trie.ipynb</span> — prefix tree structure, O(L) operations, autocomplete implementation</li>
+    <li><span class="path">01-dsa/examples/graphs.ipynb</span> — BFS/DFS/Dijkstra decision tree, adjacency list vs matrix</li>
+    <li><span class="path">01-dsa/examples/sorting_searching.ipynb</span> — stability, sort comparison table, binary search template</li>
+    <li><span class="path">01-dsa/examples/recursion_dp.ipynb</span> — DP vs greedy vs backtracking, memoisation vs tabulation</li>
+    <li><span class="path">01-dsa/examples/linked_list.ipynb</span> — singly/doubly, reversal diagram, Floyd’s cycle detection</li>
+    <li><span class="path">01-dsa/examples/stack_queue.ipynb</span> — LIFO/FIFO, monotonic stack pattern, list.pop(0) gotcha</li>
+    <li><span class="path">01-dsa/examples/bit_manipulation.ipynb</span> — key identities, XOR tricks, subset mask generation</li>
   </ul></div>
+  </div>
 
   <div class="box bigidea"><span class="ic">💡</span><div class="h">Part A — Structures · Part B — Algorithms</div>
   <p>Chapters 1–8 build the containers (and prove their Big-O by constructing them). Chapters 9–12 are the algorithm families — sorting, recursion, dynamic programming, greedy — that turn those containers into solutions. The through-line: <strong>choose the structure that makes your hot operation cheap</strong>, then apply the algorithm family the problem's shape demands.</p></div>
@@ -392,6 +407,8 @@ right  = <span class="n">2</span>*i + <span class="n">2</span>
   <!-- ===================== 8 : GRAPHS ===================== -->
   <h2 class="sec" id="s8">8 · Graphs &amp; Traversal</h2>
 
+  <div class="def what"><span class="lab">🧠 Mental model — graph algorithm decision tree</span><p>First classify the graph: <strong>directed or undirected? Weighted or unweighted? Cyclic or acyclic?</strong> Then pick the algorithm. <strong>BFS</strong> (queue) = shortest path in hops (unweighted). <strong>DFS</strong> (stack/recursion) = connectivity, cycle detection, topological sort. <strong>Dijkstra</strong> (min-heap) = shortest path with non-negative weights, O((V+E) log V). <strong>Bellman-Ford</strong> = handles negative edges, O(VE). <strong>Kruskal/Prim</strong> = minimum spanning tree. <strong>Kahn’s algorithm</strong> (BFS with in-degrees) = topological sort for DAGs. Key trap: always mark a node <em>visited before enqueuing</em> in BFS — marking on dequeue causes re-visits in cyclic graphs.</p></div>
+
   <div class="def what"><span class="lab">What</span><p>A <em class="term">graph</em> is nodes (vertices) connected by edges — the most general structure, modeling anything relational: maps, social networks, dependencies, the web. Stored as an <em class="term">adjacency list</em> (dict of neighbor lists, sparse-friendly) or <em class="term">adjacency matrix</em> (2-D grid, dense/fast-edge-check). You explore it with <em class="term">BFS</em> or <em class="term">DFS</em>.</p></div>
 
   <div class="def why"><span class="lab">Why it matters</span><p>Because an astonishing range of problems <em>are</em> graph problems in disguise: shortest routes, dependency ordering (topological sort), cycle detection, connectivity, and scheduling. Recognizing "this is a graph" and reaching for the right traversal is a core problem-solving skill.</p></div>
@@ -521,6 +538,8 @@ right  = <span class="n">2</span>*i + <span class="n">2</span>
   <!-- ===================== 11 : DP ===================== -->
   <h2 class="sec" id="s11">11 · Dynamic Programming — the Taxonomy</h2>
 
+  <div class="def what"><span class="lab">🧠 Mental model — DP vs greedy vs backtracking</span><p><strong>Backtracking</strong>: try every possibility, prune dead branches → O(branchᵈᵉᵖᵗʰ). <strong>Greedy</strong>: always make the locally optimal choice, no reconsideration → O(n log n) or O(n). <strong>DP</strong>: overlapping subproblems exist → cache answers → O(states × cost-per-state). Recognition: if a "try everything" recursion computes the same sub-call multiple times, DP applies. <strong>Memoisation</strong> (top-down) = add <code class="inl">@cache</code> to recursion; <strong>tabulation</strong> (bottom-up) = fill a table from smallest to largest. DP pattern families: 1-D (<code class="inl">dp[i]</code> = f(dp[i-1])), 2-D grid (<code class="inl">dp[i][j]</code>), interval, knapsack, LCS/LIS sequence.</p></div>
+
   <div class="def what"><span class="lab">What</span><p><em class="term">Dynamic programming</em> (DP) solves problems with <strong>overlapping subproblems</strong> and <strong>optimal substructure</strong> by solving each subproblem <em>once</em> and reusing the answer. Two styles: <em class="term">memoization</em> (top-down recursion + a cache) and <em class="term">tabulation</em> (bottom-up, filling a table).</p></div>
 
   <div class="def why"><span class="lab">Why it matters</span><p>Because DP is how you turn an exponential recursion into a polynomial one — the difference between O(2ⁿ) and O(n). It's the hardest interview category precisely because it requires <em>recognizing</em> the two hallmarks and defining the right state. Master the taxonomy and most DP problems collapse into a handful of templates.</p></div>
@@ -625,6 +644,109 @@ n &amp; (n - <span class="n">1</span>) == <span class="n">0</span>   <span class
     <li><strong>DP</strong> needs overlapping subproblems + optimal substructure; <strong>greedy</strong> needs the greedy-choice property (prove it).</li>
     <li>Every structure and algorithm is runnable in <code class="inl">01-dsa/examples/</code> — build it, break it, measure it.</li>
   </ul></div>
+</section>
+
+<!-- ======================== REAL-WORLD DSA ======================== -->
+<section class="chapter" id="realworld">
+  <div class="ch-head"><div class="num">🏭</div><div><div class="t">DSA in Production — Where Every Structure Is Used</div><div class="s">Three systems: ShopFlow (e-commerce) · BuildFast (CI/CD) · RideStream (ride-sharing)</div></div><div class="ico">🏭</div></div>
+<style>
+  .scenario{border-left:5px solid var(--amber);background:#fffaf1;border-radius:0 12px 12px 0;padding:11px 14px;margin:10px 0;break-inside:avoid;}
+  .scenario .h{font-family:"Segoe UI",sans-serif;font-weight:800;color:#b45309;font-size:9pt;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;}
+  .without{border-left:5px solid var(--red);background:#fdecec;border-radius:0 12px 12px 0;padding:10px 14px;margin:8px 0;break-inside:avoid;}
+  .without .h{font-family:"Segoe UI",sans-serif;font-weight:800;color:var(--red);font-size:8.5pt;text-transform:uppercase;}
+  .withpat{border-left:5px solid var(--green);background:#f0fdf4;border-radius:0 12px 12px 0;padding:10px 14px;margin:8px 0;break-inside:avoid;}
+  .withpat .h{font-family:"Segoe UI",sans-serif;font-weight:800;color:var(--green);font-size:8.5pt;text-transform:uppercase;}
+  .where{border-left:5px solid var(--teal);background:#f0fbfa;border-radius:0 12px 12px 0;padding:10px 14px;margin:8px 0;break-inside:avoid;}
+  .where .h{font-family:"Segoe UI",sans-serif;font-weight:800;color:var(--teal-d);font-size:8.5pt;text-transform:uppercase;}
+  .dsa-ref{width:100%;border-collapse:collapse;font-size:8.5pt;margin:10px 0;}
+  .dsa-ref th{background:var(--navy);color:#fff;padding:7px 10px;text-align:left;}
+  .dsa-ref td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;}
+  .dsa-ref tr:nth-child(even) td{background:#f7fafd;}
+</style>
+
+  <h2 class="sec">Production Reference — Every Structure and Where It Lives</h2>
+  <table class="dsa-ref">
+    <tr><th>Structure / Algorithm</th><th>Production use (ShopFlow / BuildFast / RideStream)</th><th>Real framework / system</th><th>What breaks if you use the wrong one</th></tr>
+    <tr><td><strong>Hash Map / dict</strong></td><td>API key auth cache (O(1) lookup for 50k keys); product ID → price lookup; session store</td><td>Redis HGETALL, Python dict, Django cache framework</td><td>list membership: O(50k) per request → P99 latency goes from 8ms to 340ms at scale</td></tr>
+    <tr><td><strong>Set / frozenset</strong></td><td>Dedup user IDs in analytics batch; permission set for has_perm() O(1) check; seen-URLs in crawler</td><td>Django User._perm_cache, Redis SADD/SISMEMBER</td><td>list membership O(n): 50k users × 1000 req/sec = 50M comparisons/sec on auth alone</td></tr>
+    <tr><td><strong>Doubly-Linked List + HashMap</strong></td><td>LRU product-page cache: O(1) get + O(1) evict. functools.lru_cache is this internally</td><td>Python functools.lru_cache, Redis maxmemory-policy=allkeys-lru</td><td>Naive dict: O(n) to find LRU victim; or full cache invalidation on every miss</td></tr>
+    <tr><td><strong>deque</strong></td><td>BuildFast task queue (O(1) both-ends); BFS frontier for dependency graph traversal</td><td>Celery task queue, asyncio.Queue</td><td>list.pop(0) for queue: O(n) per dequeue; 5000 tasks × O(5000) = O(25M) ops</td></tr>
+    <tr><td><strong>Stack (list)</strong></td><td>DFS traversal of build dependency graph; balanced bracket check in code linting; undo history</td><td>Python call stack, git undo, editor undo ring</td><td>Recursive DFS crashes with RecursionError on deep graphs (Python limit ~1000)</td></tr>
+    <tr><td><strong>BST / AVL Tree</strong></td><td>RideStream: range-query for "all drivers within 2km" on sorted geohash. Database B-tree indexes</td><td>PostgreSQL B-tree index on WHERE clauses, sortedcontainers.SortedList</td><td>Unsorted list for range query: O(n) scan vs O(log n) BST range. Degenerate BST on sorted insert: O(n) same as list</td></tr>
+    <tr><td><strong>Min-Heap / heapq</strong></td><td>ShopFlow top-10 revenue products from 1M (O(n log k) vs O(n log n) sort); Dijkstra priority queue; Celery priority scheduling</td><td>Python heapq, Java PriorityQueue, RabbitMQ priority queues</td><td>Full sort for top-K: O(n log n). For n=1M k=10: sort takes 20M operations; heap takes 3M</td></tr>
+    <tr><td><strong>Trie</strong></td><td>ShopFlow: search-as-you-type product autocomplete — O(k) per keystroke regardless of 50k products</td><td>Elasticsearch prefix queries (inverted index), browser URL bar</td><td>O(n) linear scan per keystroke: 1000 users × 5 keystrokes/sec = 5000 O(50k) scans/sec</td></tr>
+    <tr><td><strong>Graph + BFS</strong></td><td>BuildFast: topological sort of pipeline job dependencies; shortest build path; cycle detection for circular deps</td><td>pip dependency resolution, Bazel build graph, Kubernetes readiness graph</td><td>No cycle detection: circular deps cause infinite loop or stack overflow at build time</td></tr>
+    <tr><td><strong>Dijkstra</strong></td><td>RideStream: shortest route for driver dispatch (weighted road network); network routing (OSPF)</td><td>Google Maps, AWS VPC routing, OSPF protocol</td><td>Negative edge weights: Dijkstra gives wrong shortest path → use Bellman-Ford instead</td></tr>
+    <tr><td><strong>Dynamic Programming</strong></td><td>BuildFast: allocate build minutes to jobs (0/1 knapsack); minimum billing units (coin change); diff algorithm (LCS)</td><td>git diff (Myers algorithm = DP), text editors, DNA alignment</td><td>Naive recursion: fib(50) = 2^50 calls. DP: 50 calls. Greedy fails on non-canonical coin denominations</td></tr>
+    <tr><td><strong>Binary Search</strong></td><td>ShopFlow: search-as-you-type on sorted product name list O(log n) vs O(n) linear; bisect for sorted insertion</td><td>Database B-tree range scans, bisect module, numpy searchsorted</td><td>Unsorted input: bisect gives WRONG results silently. Forgetting this = hours of debugging</td></tr>
+  </table>
+
+  <h2 class="sec">The O(n²) Auth Incident — Choosing the Wrong Structure</h2>
+
+  <div class="scenario"><div class="h">🏭 BuildFast Production Incident</div>
+  <p>BuildFast authenticates API calls against a list of valid API keys. Launch: 100 customers, list works fine. Scale: 50,000 customers. Each API call checks <code class="inl">if key in api_keys_list</code> — O(50,000) per request. At 1,000 req/sec: <strong>50 million comparisons per second</strong> just for auth. P99 latency: 8ms → 340ms. Root cause: wrong data structure.</p></div>
+
+  <div class="without"><div class="h">✗ list membership — O(n) per check</div></div>
+<pre><span class="c"># ✗ O(n) per request — fine at 100 keys, disaster at 50k</span>
+valid_keys: list[str] = load_keys_from_db()   <span class="c"># 50,000 strings</span>
+<span class="k">if</span> api_key <span class="k">in</span> valid_keys:   <span class="c"># scans up to 50,000 items EVERY request</span>
+    grant_access()
+<span class="c"># At 1000 req/sec: 50,000,000 string comparisons/sec on auth alone</span></pre>
+
+  <div class="withpat"><div class="h">✓ frozenset — O(1) per check, built once at startup</div></div>
+<pre><span class="c"># ✓ Build the index ONCE, O(1) lookup per request thereafter</span>
+valid_keys: frozenset[str] = frozenset(load_keys_from_db())
+<span class="k">if</span> api_key <span class="k">in</span> valid_keys:   <span class="c"># hash lookup, always O(1) regardless of size</span>
+    grant_access()
+<span class="c"># Speedup: ~400× at 50k keys. Latency restored to 8ms.</span></pre>
+
+  <h2 class="sec">The LRU Cache — Doubly-Linked List + HashMap</h2>
+
+  <div class="scenario"><div class="h">🛒 ShopFlow Product Page Caching</div>
+  <p>ShopFlow caches rendered product HTML. Viewing a product moves it to MRU. When the cache fills (1,000 entries), the least-recently-used product is evicted first. This requires O(1) get AND O(1) eviction — impossible with a plain dict or list. The combined structure (DLL + hashmap) achieves both. This is exactly what <code class="inl">functools.lru_cache</code> uses internally.</p></div>
+
+<pre><span class="c"># Why doubly-linked list, not singly-linked?</span>
+<span class="c"># To REMOVE a node: you need prev AND next pointers → O(1) unlink</span>
+<span class="c"># With singly-linked: must scan to find predecessor → O(n)</span>
+
+<span class="c"># Operation breakdown:</span>
+<span class="c"># get(key): hash map → node in O(1), unlink + push to front in O(1)</span>
+<span class="c"># put(key): hash map insert O(1), push to front O(1), evict tail O(1)</span>
+<span class="c"># → ALL operations O(1)</span></pre>
+
+  <div class="where"><div class="h">🌍 Where LRU cache appears in the wild</div>
+  <ul class="plain">
+    <li><strong>Python <code class="inl">functools.lru_cache</code>:</strong> uses doubly-linked list + dict internally — the canonical Python implementation</li>
+    <li><strong>Redis:</strong> <code class="inl">maxmemory-policy=allkeys-lru</code> — LRU eviction of the least-recently-accessed key</li>
+    <li><strong>CPU L1/L2 cache:</strong> hardware LRU eviction of memory lines</li>
+    <li><strong>Django cache framework:</strong> <code class="inl">LocMemCache</code> uses <code class="inl">OrderedDict</code> for LRU semantics</li>
+    <li><strong>Browser:</strong> page cache is LRU by tab/domain</li>
+  </ul></div>
+
+  <h2 class="sec">Graph Algorithms — BuildFast CI/CD Dependency Ordering</h2>
+
+  <div class="scenario"><div class="h">🏭 BuildFast — Pipeline Job Ordering</div>
+  <p>BuildFast pipelines have jobs with dependencies: "test" before "build" before "deploy". Determining execution order = topological sort. Detecting circular deps (A depends on B depends on A) = directed cycle detection. Kahn's BFS detects cycles naturally — if the sorted result is shorter than the total node count, a cycle exists.</p></div>
+
+<pre><span class="c"># Topological sort — Kahn's BFS algorithm: O(V+E)</span>
+<span class="c"># If result length < total nodes → cycle detected!</span>
+pipeline_deps = {
+    <span class="s">"checkout"</span>: [],
+    <span class="s">"install-deps"</span>: [<span class="s">"checkout"</span>],
+    <span class="s">"lint"</span>: [<span class="s">"install-deps"</span>],
+    <span class="s">"unit-tests"</span>: [<span class="s">"install-deps"</span>],
+    <span class="s">"build"</span>: [<span class="s">"lint"</span>, <span class="s">"unit-tests"</span>],
+    <span class="s">"deploy"</span>: [<span class="s">"build"</span>],
+}
+<span class="c"># topo_sort(pipeline_deps) → ["checkout","install-deps","lint","unit-tests","build","deploy"]</span>
+<span class="c"># WHERE in real systems:</span>
+<span class="c"># pip install → dependency resolution = topological sort + conflict detection</span>
+<span class="c"># Bazel/Make → build order = topological sort of the build graph</span>
+<span class="c"># Kubernetes → pod scheduling respects readiness dependency graph</span></pre>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">The senior framing: Big-O as a production budget</div>
+  <p>Big-O tells you how the system behaves when users × data × load increase by 10×. An O(n²) auth check at 100 keys is invisible; at 50,000 keys it's an outage. The senior question is never "what is the Big-O?" in isolation — it's always <strong>"what is n at scale, and what bounds it?"</strong> If n is provably capped at 50 (a config list), O(n²) is fine and a cleverer structure adds cost with no benefit. If n is user-supplied and unbounded, O(n²) is a latent outage waiting for growth to trigger it.</p></div>
+
 </section>
 
 </body>

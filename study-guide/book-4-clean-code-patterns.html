@@ -2,467 +2,513 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Clean Code, SOLID &amp; Design Patterns — The Architect's Path, Book IV</title>
+<title>Design Patterns — The Architect's Path, Book IV (Real-World Edition)</title>
 <link rel="stylesheet" href="architects-path.css">
+<style>
+  .scenario{border-left:5px solid var(--amber);background:#fffaf1;border-radius:0 12px 12px 0;padding:12px 15px;margin:12px 0;break-inside:avoid;}
+  .scenario .h{font-family:"Segoe UI",sans-serif;font-weight:800;color:#b45309;font-size:9.5pt;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+  .without{border-left:5px solid var(--red);background:#fdecec;border-radius:0 12px 12px 0;padding:11px 14px;margin:10px 0;break-inside:avoid;}
+  .without .h{font-family:"Segoe UI",sans-serif;font-weight:800;color:var(--red);font-size:9pt;text-transform:uppercase;}
+  .withpat{border-left:5px solid var(--green);background:#f0fdf4;border-radius:0 12px 12px 0;padding:11px 14px;margin:10px 0;break-inside:avoid;}
+  .withpat .h{font-family:"Segoe UI",sans-serif;font-weight:800;color:var(--green);font-size:9pt;text-transform:uppercase;}
+  .where{border-left:5px solid var(--teal);background:#f0fbfa;border-radius:0 12px 12px 0;padding:11px 14px;margin:10px 0;break-inside:avoid;}
+  .where .h{font-family:"Segoe UI",sans-serif;font-weight:800;color:var(--teal-d);font-size:9pt;text-transform:uppercase;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0;}
+  .pcard{border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:#fff;break-inside:avoid;}
+  .pcard .pt{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:10pt;color:var(--navy);margin-bottom:4px;}
+  .pcard .ps{font-size:8.5pt;color:var(--muted);}
+  .iqa{border-left:4px solid var(--violet);background:#f9f7ff;border-radius:0 10px 10px 0;padding:10px 14px;margin:10px 0;break-inside:avoid;}
+  .iqa .q{font-family:"Segoe UI",sans-serif;font-weight:800;color:var(--violet);font-size:9.5pt;}
+  .level{display:inline-block;font-family:"Segoe UI",sans-serif;font-size:7pt;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:5px;}
+  .level.j{background:#fde2e2;color:#991b1b;} .level.s{background:#dcfce7;color:#166534;} .level.a{background:#ede9fe;color:#5b21b6;}
+  .big-table{width:100%;border-collapse:collapse;font-size:8.5pt;margin:10px 0;}
+  .big-table th{background:var(--navy);color:#fff;padding:7px 10px;text-align:left;}
+  .big-table td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;}
+  .big-table tr:nth-child(even) td{background:#f7fafd;}
+</style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden">
+  <defs>
+    <marker id="ga" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#64748b"/></marker>
+    <marker id="gb" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#0284c7"/></marker>
+    <marker id="gg" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#16a34a"/></marker>
+    <marker id="gr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#dc2626"/></marker>
+    <marker id="gn" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#0f2743"/></marker>
+  </defs>
+</svg>
 
-<!-- ============================ COVER ============================ -->
+<!-- ======================== COVER ======================== -->
 <section class="cover">
   <div>
-    <div class="kicker">The Architect's Path · Book IV · Edition 2026</div>
-    <h1>Clean Code,<br>SOLID &amp; Patterns</h1>
-    <div class="sub">The craft of code that <strong style="color:#8ff4ee">survives change</strong>. Clean-code habits, the five SOLID levers, and all <strong style="color:#8ff4ee">23 Gang-of-Four patterns</strong> — each with the <strong style="color:#8ff4ee">What</strong>, <strong style="color:#8ff4ee">Why</strong>, <strong style="color:#8ff4ee">How</strong>, and <strong style="color:#8ff4ee">When</strong>, and a runnable example.</div>
-    <div class="stackrow">🧼 Clean code · 🧱 SOLID · 🏭 Creational · 🧩 Structural · 🔁 Behavioral</div>
+    <div class="kicker">The Architect's Path · Book IV · Real-World Edition 2026</div>
+    <h1>SOLID &amp;<br>Design Patterns</h1>
+    <div class="sub">Every principle and pattern shown through a <strong style="color:#8ff4ee">real production incident</strong> — the code BEFORE that broke, the code AFTER that fixed it, and <strong style="color:#8ff4ee">where you'll see this pattern today</strong> in FastAPI, Django, SQLAlchemy, and distributed systems.</div>
+    <div class="stackrow">🧱 SOLID · 🏭 Creational · 🧩 Structural · 🔁 Behavioral · ⚡ Production</div>
     <div class="badges">
-      <span class="badge">🧼 Naming &amp; small functions</span>
-      <span class="badge">🧱 SRP · OCP · LSP · ISP · DIP</span>
-      <span class="badge">🏭 5 creational</span>
-      <span class="badge">🧩 7 structural</span>
-      <span class="badge">🔁 11 behavioral</span>
-      <span class="badge">🚫 Anti-patterns</span>
+      <span class="badge">ShopFlow e-commerce scenarios</span>
+      <span class="badge">Before / After code</span>
+      <span class="badge">Real framework examples</span>
+      <span class="badge">23 GoF + Circuit Breaker + Retry</span>
+      <span class="badge">Anti-patterns named</span>
+      <span class="badge">30+ interview Q&amp;A</span>
     </div>
   </div>
   <div class="foot">
-    <div><strong style="color:#eaf2fb">Every pattern is a script you can run.</strong><br>Companion code in <code style="color:#cfe0d6">02-solid/</code> and <code style="color:#cfe0d6">03-design-patterns/</code>.</div>
-    <div style="text-align:right">What → Why → How → When<br>Diagrams · Gotchas · Interview Q&amp;A</div>
+    <div><strong style="color:#eaf2fb">One coherent system throughout: ShopFlow (500k-user e-commerce).</strong><br>Runnable notebooks: <code style="color:#cfe0d6">03-design-patterns/examples/creational_patterns.ipynb</code> · <code style="color:#cfe0d6">structural_patterns.ipynb</code> · <code style="color:#cfe0d6">behavioral_patterns.ipynb</code> · <code style="color:#cfe0d6">resilience_patterns.ipynb</code></div>
+    <div style="text-align:right">Mental Model → Real Scenario → Before (broken) → After (fixed) → Where in Frameworks<br>Production incidents · Gotchas · Architect Q&amp;A</div>
   </div>
 </section>
 
-<!-- ============================ TOC ============================ -->
+<!-- ======================== TOC ======================== -->
 <section class="toc">
   <h2>Table of Contents</h2>
   <div class="rule"></div>
-  <p class="small">Book IV of the series — built on the OOP of <strong>Book I</strong>. Part&nbsp;A is the principles (clean code + the five SOLID levers); Part&nbsp;B is the pattern catalog, all 23 GoF patterns grouped by family. Every section is <strong>What → Why → How → When</strong>, then code, gotchas, and interview questions.</p>
+  <p class="small">Every pattern is anchored to a <strong>real production problem at ShopFlow</strong> — a 500k-user e-commerce platform. Each section shows: the incident → the code before → the code after → where this pattern appears in real frameworks today.</p>
   <ol>
-    <li><span class="n">1</span><div><div class="tt"><a href="#s1">Clean Code Foundations</a></div><div class="dd">Naming · small functions · DRY/KISS/YAGNI · comments · code smells</div></div><span class="ic">🧼</span></li>
-    <li><span class="n">2</span><div><div class="tt"><a href="#s2">S · Single Responsibility</a></div><div class="dd">One reason to change · cohesion · splitting axes</div></div><span class="ic">1️⃣</span></li>
-    <li><span class="n">3</span><div><div class="tt"><a href="#s3">O · Open/Closed</a></div><div class="dd">Extend without editing · polymorphism over if-ladders</div></div><span class="ic">2️⃣</span></li>
-    <li><span class="n">4</span><div><div class="tt"><a href="#s4">L · Liskov Substitution</a></div><div class="dd">Subtypes honor the base contract · the Square/Rectangle trap</div></div><span class="ic">3️⃣</span></li>
-    <li><span class="n">5</span><div><div class="tt"><a href="#s5">I · Interface Segregation</a></div><div class="dd">Many small roles beat one fat interface</div></div><span class="ic">4️⃣</span></li>
-    <li><span class="n">6</span><div><div class="tt"><a href="#s6">D · Dependency Inversion</a></div><div class="dd">Depend on abstractions · inject concretions · testability</div></div><span class="ic">5️⃣</span></li>
-    <li><span class="n">7</span><div><div class="tt"><a href="#s7">What Design Patterns Are</a></div><div class="dd">Shared vocabulary · the three families · pattern vs anti-pattern</div></div><span class="ic">🗺️</span></li>
-    <li><span class="n">8</span><div><div class="tt"><a href="#s8">Creational Patterns</a></div><div class="dd">Factory Method · Abstract Factory · Builder · Prototype · Singleton</div></div><span class="ic">🏭</span></li>
-    <li><span class="n">9</span><div><div class="tt"><a href="#s9">Structural Patterns</a></div><div class="dd">Adapter · Bridge · Composite · Decorator · Facade · Flyweight · Proxy</div></div><span class="ic">🧩</span></li>
-    <li><span class="n">10</span><div><div class="tt"><a href="#s10">Behavioral Patterns</a></div><div class="dd">Strategy · Observer · Command · State · Template · CoR · Iterator · Mediator · Memento · Visitor · Interpreter</div></div><span class="ic">🔁</span></li>
-    <li><span class="n">11</span><div><div class="tt"><a href="#s11">Choosing Wisely &amp; Anti-Patterns</a></div><div class="dd">Over-patterning · God object · when NOT to reach for a pattern</div></div><span class="ic">🚫</span></li>
+    <li><span class="n">0</span><div><div class="tt"><a href="#intro">The Pattern Mindset</a></div><div class="dd">What patterns are · when NOT to use them · the over-engineering trap</div></div><span class="ic">🧠</span></li>
+    <li><span class="n">S</span><div><div class="tt"><a href="#solid">SOLID — Five Levers for Change-Resilient Code</a></div><div class="dd">SRP · OCP · LSP · ISP · DIP — each with a production gotcha</div></div><span class="ic">🧱</span></li>
+    <li><span class="n">C1</span><div><div class="tt"><a href="#strategy">Strategy — Pricing Engine</a></div><div class="dd">ShopFlow: Black Friday / VIP / B2B pricing changed every sprint</div></div><span class="ic">♟️</span></li>
+    <li><span class="n">C2</span><div><div class="tt"><a href="#factory">Factory — Multi-Cloud Storage</a></div><div class="dd">ShopFlow: AWS S3 → GCP → Local in CI without touching 47 call sites</div></div><span class="ic">🏭</span></li>
+    <li><span class="n">C3</span><div><div class="tt"><a href="#observer">Observer — Order Lifecycle Events</a></div><div class="dd">ShopFlow: 7 post-order reactions, analytics outage killing checkout</div></div><span class="ic">📡</span></li>
+    <li><span class="n">C4</span><div><div class="tt"><a href="#adapter">Adapter — SDK Migration</a></div><div class="dd">ShopFlow: Braintree → Stripe without touching 47 call sites</div></div><span class="ic">🔌</span></li>
+    <li><span class="n">C5</span><div><div class="tt"><a href="#decorator">Decorator — HTTP Middleware</a></div><div class="dd">ShopFlow: auth + rate-limit + logging duplicated in 50 endpoints</div></div><span class="ic">🎀</span></li>
+    <li><span class="n">C6</span><div><div class="tt"><a href="#facade">Facade — Order Placement</a></div><div class="dd">ShopFlow: one method hides auth + inventory + payment + email</div></div><span class="ic">🏠</span></li>
+    <li><span class="n">C7</span><div><div class="tt"><a href="#proxy">Proxy — Query Cache</a></div><div class="dd">ShopFlow: transparent product-page caching with TTL</div></div><span class="ic">🔍</span></li>
+    <li><span class="n">C8</span><div><div class="tt"><a href="#command">Command — Cart with Undo</a></div><div class="dd">ShopFlow: add/remove items + undo + legal audit log</div></div><span class="ic">⌨️</span></li>
+    <li><span class="n">C9</span><div><div class="tt"><a href="#state">State — Order Lifecycle Machine</a></div><div class="dd">ShopFlow: invalid transitions blocked at class boundary</div></div><span class="ic">🔄</span></li>
+    <li><span class="n">P1</span><div><div class="tt"><a href="#cb">Circuit Breaker — Stripe Outage</a></div><div class="dd">3-minute payment outage → total site outage without this pattern</div></div><span class="ic">⚡</span></li>
+    <li><span class="n">P2</span><div><div class="tt"><a href="#retry">Retry + Backoff + Jitter</a></div><div class="dd">Transient failures without the thundering-herd re-outage</div></div><span class="ic">🔁</span></li>
+    <li><span class="n">★</span><div><div class="tt"><a href="#all23">All 23 GoF — Quick Reference</a></div><div class="dd">Problem shape · ShopFlow use · real framework · what breaks without it</div></div><span class="ic">📚</span></li>
+    <li><span class="n">★</span><div><div class="tt"><a href="#anti">Anti-patterns</a></div><div class="dd">God Object · Singleton abuse · Anemic Domain · FactoryFactory</div></div><span class="ic">🚫</span></li>
+    <li><span class="n">NB</span><div><div class="tt"><a href="#notebooks">Companion Notebooks — Ultra-Elaborate Edition</a></div><div class="dd">4 runnable notebooks · mental models (why/what/how/when) · before/after code · framework examples</div></div><span class="ic">📓</span></li>
+    <li><span class="n">★</span><div><div class="tt"><a href="#interview">Architect Interview Bank</a></div><div class="dd">30 Q&amp;A — junior → senior → staff level</div></div><span class="ic">🏆</span></li>
   </ol>
-  <div class="subitems">Runnable code: <code>solid_principles.py</code> · <code>02-solid/production_code.py</code> · <code>creational.py</code> · <code>structural.py</code> · <code>behavioral.py</code> · <code>03-design-patterns/production_code.py</code></div>
 </section>
 
-<!-- ============================ CHAPTER SHELL ============================ -->
-<section class="chapter" id="s0">
-  <div class="ch-head">
-    <div class="num">🎨</div>
-    <div><div class="t">Clean Code, SOLID &amp; Design Patterns</div>
-    <div class="s">The craft of writing code that other people — and future you — can change</div></div>
-    <div class="ico">🎨</div>
+<!-- ======================== PATTERN MINDSET ======================== -->
+<section class="chapter" id="intro">
+  <div class="ch-head"><div class="num">🧠</div><div><div class="t">The Pattern Mindset</div><div class="s">A pattern earns its place when the flexibility it provides exceeds the indirection it adds</div></div><div class="ico">🧠</div></div>
+
+  <p class="lead">A design pattern is a <strong>named solution to a recurring problem shape</strong>. The primary value is communication: "put a circuit breaker on that call" transmits a full design in five words. The secondary value is that the solution has been battle-tested in thousands of systems. Use both wisely.</p>
+
+  <div class="def what"><span class="lab">The system used throughout</span><p><strong>ShopFlow</strong> — a mid-size e-commerce platform: 500k daily users, product catalogue, cart, checkout, payments (Stripe), inventory, analytics, notifications. Every pattern below solves a specific, named problem that emerged as ShopFlow grew from 10k to 500k users.</p></div>
+
+  <div class="two-col">
+    <div class="withpat"><div class="h">✓ USE a pattern when</div><ul class="plain"><li>You have ≥ 2 concrete implementations</li><li>You need a seam for testing / injection</li><li>The same change is needed in N places</li><li>Two teams are editing the same class for different reasons</li><li>You can NAME the specific production problem it solves</li></ul></div>
+    <div class="without"><div class="h">✗ DO NOT use a pattern when</div><ul class="plain"><li>You have exactly one implementation (YAGNI)</li><li>A plain function or if/elif is clearer</li><li>The indirection exceeds the flexibility gained</li><li>You're doing it "for SOLID", not for real pain</li><li>Your team can't read the code without the textbook</li></ul></div>
   </div>
 
-  <p class="lead">Code is read far more often than it's written, and it's <em>changed</em> more often than it's read. This book is about that: the habits (clean code), the principles (SOLID), and the named solutions (design patterns) that keep a codebase soft enough to change without fear. The goal is never "use more patterns" — it's <strong>low coupling and high cohesion</strong>, so that a new requirement touches one place instead of ten. Part&nbsp;A is the principles; Part&nbsp;B is the full Gang-of-Four catalog, each pattern with a runnable example.</p>
-
-  <div class="coderef"><div class="h">📂 Runnable code in the repo</div><p style="margin:0 0 3px">Every principle and all 23 patterns are working, self-testing scripts — run each with <span class="path">python &lt;file&gt;</span>:</p>
-  <ul>
-    <li><span class="path">02-solid/examples/solid_principles.py</span> — the five SOLID principles, one smell→fix each</li>
-    <li><span class="path">02-solid/production_code.py</span> — the "fat endpoint" vs the layered FastAPI refactor</li>
-    <li><span class="path">03-design-patterns/examples/creational.py</span> — Factory Method, Abstract Factory, Builder, Prototype, Singleton</li>
-    <li><span class="path">03-design-patterns/examples/structural.py</span> — Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy</li>
-    <li><span class="path">03-design-patterns/examples/behavioral.py</span> — the 11 behavioral patterns</li>
-    <li><span class="path">03-design-patterns/production_code.py</span> — Strategy, Factory, Observer, Adapter, Circuit Breaker in context</li>
-  </ul></div>
-
-  <div class="box bigidea"><span class="ic">💡</span><div class="h">Part A — Principles · Part B — Patterns</div>
-  <p>Chapters 1–6 are the timeless principles: clean-code habits and the five SOLID levers. Chapters 7–11 are the pattern catalog — but patterns are <em>consequences</em> of the principles, not a substitute for them. A well-applied pattern is just SOLID made concrete for a recurring problem; a badly-applied one is complexity for its own sake.</p></div>
-
-  <!-- ===================== 1 : CLEAN CODE ===================== -->
-  <h2 class="sec" id="s1">1 · Clean Code Foundations</h2>
-
-  <div class="def what"><span class="lab">What</span><p><em class="term">Clean code</em> is code optimized for the reader: intention-revealing <strong>names</strong>, small <strong>functions that do one thing</strong>, minimal surprise, and no duplication. The guiding trio: <em class="term">DRY</em> (don't repeat yourself), <em class="term">KISS</em> (keep it simple), and <em class="term">YAGNI</em> (you aren't gonna need it).</p></div>
-
-  <div class="def why"><span class="lab">Why it matters</span><p>Because the bottleneck in software isn't typing — it's <em>understanding</em>. Clean code is the difference between a bug fix taking ten minutes or a day. It's also the substrate SOLID and patterns build on: you can't meaningfully apply the Open/Closed Principle to a 300-line function nobody can read.</p></div>
-
-  <div class="def how"><span class="lab">How — names &amp; small functions</span></div>
-<pre><span class="c"># ❌ unclear: what is d? what unit? what does this return?</span>
-<span class="k">def</span> <span class="f">calc</span>(d, r): <span class="k">return</span> d * r * <span class="n">0.01</span>
-
-<span class="c"># ✅ intention-revealing names read like a sentence</span>
-<span class="k">def</span> <span class="f">interest_for</span>(principal, annual_rate_pct):
-    <span class="k">return</span> principal * annual_rate_pct * <span class="n">0.01</span>
-
-<span class="c"># ✅ a function does ONE thing at ONE level of abstraction</span>
-<span class="k">def</span> <span class="f">checkout</span>(cart):
-    total = subtotal(cart)          <span class="c"># each step is a named idea,</span>
-    total = apply_discounts(total)  <span class="c"># not a wall of inline logic</span>
-    charge(total)</pre>
-
-  <table>
-    <tr><th>Principle</th><th>Says</th><th>Failure mode it prevents</th></tr>
-    <tr><td>DRY</td><td>Each piece of knowledge lives in exactly one place</td><td>fix-in-five-places bugs</td></tr>
-    <tr><td>KISS</td><td>Prefer the simplest thing that works</td><td>clever code nobody can maintain</td></tr>
-    <tr><td>YAGNI</td><td>Don't build for imagined future needs</td><td>speculative generality / dead abstraction</td></tr>
-  </table>
-
-  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — comments that lie, and premature DRY</div>
-  <p>A comment explaining <em>what</em> code does duplicates the code and rots when the code changes — prefer a better <em>name</em>; reserve comments for <em>why</em>. And DRY can be over-applied: forcing two things that merely <em>look</em> alike into one abstraction couples unrelated code (the "wrong abstraction" is costlier than a little duplication). Rule of three — abstract on the third repetition, not the first.</p></div>
-
-  <div class="box insight"><span class="ic">🔎</span><div class="h">Code smells — the early-warning signs</div>
-  <p>Long functions, long parameter lists, deep nesting, feature envy (a method that uses another object's data more than its own), and shotgun surgery (one change edits many files). Smells aren't bugs — they're signals that a principle is being violated and a refactor (or pattern) is due.</p></div>
-
-  <div class="qa"><div class="q">Q · When should you write a comment?</div>
-  <p>When the code can't express <em>why</em> — a non-obvious trade-off, a workaround for an external bug, a business rule, or a warning. Comments that restate <em>what</em> the code does are noise; improve the name or structure instead. The best comment is often the one you deleted by making the code self-explanatory.</p></div>
-
-  <div class="qa"><div class="q">Q · Isn't DRY always good?</div>
-  <p>No. DRY is about single-sourcing <em>knowledge</em>, not deleting every duplicate line. Two functions that coincidentally share code but change for different reasons should stay separate — merging them creates coupling that hurts when one needs to change and the other doesn't. Duplication is cheaper than the wrong abstraction.</p></div>
-
-  <!-- ===================== 2 : SRP ===================== -->
-  <h2 class="sec" id="s2">2 · S · Single Responsibility Principle</h2>
-
-  <div class="def what"><span class="lab">What</span><p>A class should have <strong>one reason to change</strong> — it should be responsible to one <em>actor</em>. If a class computes a value, formats it for the UI, <em>and</em> saves it to disk, it answers to three different stakeholders and changes for three reasons.</p></div>
-
-  <div class="def why"><span class="lab">Why it matters</span><p>Because responsibilities that change together should live together, and responsibilities that change for different reasons should be separated. Mixing them means a formatting tweak risks breaking persistence, and every class becomes a merge-conflict magnet. SRP is really about <em>cohesion</em>.</p></div>
-
-  <div class="def how"><span class="lab">How — split the axes of change</span></div>
-<pre><span class="c"># ✅ three classes, three reasons to change (see solid_principles.py)</span>
-<span class="k">class</span> <span class="f">SalesReport</span>:          <span class="c"># changes if the CALCULATION changes</span>
-    <span class="k">def</span> <span class="f">total</span>(self): <span class="k">return</span> <span class="f">sum</span>(self.sales)
-
-<span class="k">class</span> <span class="f">HtmlReportFormatter</span>:  <span class="c"># changes if the PRESENTATION changes</span>
-    <span class="k">def</span> <span class="f">render</span>(self, report): <span class="k">return</span> <span class="s">f"&lt;h1&gt;{report.total()}&lt;/h1&gt;"</span>
-
-<span class="k">class</span> <span class="f">ReportRepository</span>:      <span class="c"># changes if STORAGE changes</span>
-    <span class="k">def</span> <span class="f">save</span>(self, name, content): ...</pre>
-
-  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — SRP is not "one method per class"</div>
-  <p>SRP is about <em>reasons to change</em>, not method count. A class with ten methods that all serve one responsibility is fine; a class with two methods serving two different actors violates SRP. Ask "who requests changes to this?" — if the answer names two different roles, split it.</p></div>
-
-  <div class="qa"><div class="q">Q · How do you decide where to draw the SRP line?</div>
-  <p>Identify the actors (users/stakeholders) who would request a change. Group code by the actor it serves so that a single actor's change touches a single class. If the marketing team's formatting change and the DBA's schema change both edit the same class, those responsibilities belong apart.</p></div>
-
-  <!-- ===================== 3 : OCP ===================== -->
-  <h2 class="sec" id="s3">3 · O · Open/Closed Principle</h2>
-
-  <div class="def what"><span class="lab">What</span><p>Software entities should be <strong>open for extension but closed for modification</strong>: you add new behavior by adding new code (a new class), not by editing existing, tested code. Polymorphism replaces the growing <code class="inl">if/elif</code> ladder.</p></div>
-
-  <div class="def why"><span class="lab">Why it matters</span><p>Because editing tested code to add a case risks breaking the cases that already work — and every new requirement re-opens the same file. OCP localizes change: a new payment provider, shape, or export format is a new file the rest of the system never notices.</p></div>
-
-  <div class="def how"><span class="lab">How — a new class, not a new branch</span></div>
-<pre><span class="c"># ❌ every new shape edits (and re-tests) this function</span>
-<span class="k">def</span> <span class="f">area</span>(shape):
-    <span class="k">if</span> shape.kind == <span class="s">"circle"</span>: ...
-    <span class="k">elif</span> shape.kind == <span class="s">"square"</span>: ...   <span class="c"># ← ladder keeps growing</span>
-
-<span class="c"># ✅ closed for modification; open for extension</span>
-<span class="k">class</span> <span class="f">Triangle</span>(Shape):        <span class="c"># added WITHOUT touching total_area()</span>
-    <span class="k">def</span> <span class="f">area</span>(self): <span class="k">return</span> <span class="n">0.5</span> * self.b * self.h
-
-<span class="k">def</span> <span class="f">total_area</span>(shapes): <span class="k">return</span> <span class="f">sum</span>(s.area() <span class="k">for</span> s <span class="k">in</span> shapes)</pre>
-
-  <div class="box insight"><span class="ic">🔎</span><div class="h">OCP is the engine behind most patterns</div>
-  <p>Strategy, Factory, Decorator, State — almost every GoF pattern exists to make some axis of change satisfy OCP. When you feel an <code class="inl">if/elif</code> ladder growing on the same dimension, that's the signal to introduce polymorphism (and often a pattern).</p></div>
-
-  <div class="qa"><div class="q">Q · Doesn't OCP mean I can never edit a class?</div>
-  <p>No — it means the <em>common, anticipated</em> axis of change should be extendable without modification. You still fix bugs and refactor. The art is predicting <em>which</em> axis will change often (payment providers, shapes, formats) and making that one open; over-applying OCP to axes that never change is speculative complexity (YAGNI).</p></div>
-
-  <!-- ===================== 4 : LSP ===================== -->
-  <h2 class="sec" id="s4">4 · L · Liskov Substitution Principle</h2>
-
-  <div class="def what"><span class="lab">What</span><p>Objects of a subtype must be usable <strong>anywhere the base type is expected, without breaking correctness</strong>. A subclass may not strengthen preconditions, weaken postconditions, or violate invariants the base promised. "Is-a" must mean "behaves-as."</p></div>
-
-  <div class="def why"><span class="lab">Why it matters</span><p>Because polymorphism only works if substitutes keep their promises. An LSP violation means a caller written against the base type breaks when handed a subtype — the abstraction leaks, and every caller needs <code class="inl">isinstance</code> checks, defeating the point of inheritance.</p></div>
-
-  <div class="box pitfall"><span class="ic">🚫</span><div class="h">The classic trap — Square extends Rectangle</div>
-  <p>A <code class="inl">Rectangle</code> promises "set width and height independently." A <code class="inl">Square</code> that inherits it must force width == height, so setting the width silently changes the height — breaking any code that assumed independence (e.g., <code class="inl">r.width = 4; r.height = 5; assert area == 20</code>). Inheritance modeled the <em>shape</em> hierarchy but broke the <em>behavioral</em> contract. Fix: make them siblings, not parent/child.</p></div>
-
-  <div class="def how"><span class="lab">How — siblings that both honor the contract</span></div>
-<pre><span class="k">class</span> <span class="f">Rectangle</span>:
-    <span class="k">def</span> <span class="f">area</span>(self): <span class="k">return</span> self._w * self._h
-
-<span class="k">class</span> <span class="f">SquareLSP</span>:              <span class="c"># NOT a subclass of Rectangle</span>
-    <span class="k">def</span> <span class="f">area</span>(self): <span class="k">return</span> self._s * self._s
-
-<span class="k">def</span> <span class="f">area_of</span>(shape): <span class="k">return</span> shape.area()   <span class="c"># both substitute safely</span></pre>
-
-  <div class="qa"><div class="q">Q · How do you detect an LSP violation?</div>
-  <p>Look for subclasses that override a method to do nothing, raise <code class="inl">NotImplementedError</code>, tighten what inputs they accept, or surprise callers (like Square changing height when width is set). If callers need <code class="inl">isinstance</code> checks or comments like "don't pass a Penguin here," the hierarchy violates LSP — prefer composition or a redesigned abstraction.</p></div>
-
-  <!-- ===================== 5 : ISP ===================== -->
-  <h2 class="sec" id="s5">5 · I · Interface Segregation Principle</h2>
-
-  <div class="def what"><span class="lab">What</span><p>No client should be forced to depend on methods it doesn't use. Prefer <strong>many small, role-focused interfaces</strong> over one fat, general-purpose one. In Python, that means small <code class="inl">Protocol</code>s / ABCs.</p></div>
-
-  <div class="def why"><span class="lab">Why it matters</span><p>Because a fat interface couples every implementer to every method. Force a <code class="inl">RobotWorker</code> to implement <code class="inl">eat()</code> from a <code class="inl">Worker</code> interface and you get meaningless stubs, and a change to <code class="inl">eat()</code> needlessly recompiles/retests robots. Small roles keep dependencies honest.</p></div>
-
-  <div class="def how"><span class="lab">How — split the fat interface into roles</span></div>
-<pre><span class="k">class</span> <span class="f">Workable</span>(Protocol):
-    <span class="k">def</span> <span class="f">work</span>(self) -&gt; <span class="k">str</span>: ...
-
-<span class="k">class</span> <span class="f">Eatable</span>(Protocol):
-    <span class="k">def</span> <span class="f">eat</span>(self) -&gt; <span class="k">str</span>: ...
-
-<span class="k">class</span> <span class="f">Robot</span>:                  <span class="c"># implements ONLY Workable — no dead eat()</span>
-    <span class="k">def</span> <span class="f">work</span>(self): <span class="k">return</span> <span class="s">"welding"</span>
-
-<span class="k">def</span> <span class="f">run_shift</span>(workers: <span class="f">list</span>[Workable]): <span class="c"># asks for the narrowest role it needs</span>
-    <span class="k">return</span> [w.work() <span class="k">for</span> w <span class="k">in</span> workers]</pre>
-
-  <div class="qa"><div class="q">Q · How does ISP relate to the other principles?</div>
-  <p>ISP is SRP applied to interfaces: one interface, one role. It also enables DIP — clients depend on the small abstraction they actually need, so they're not dragged along by unrelated methods. Fat interfaces are a form of low cohesion at the contract level.</p></div>
-
-  <!-- ===================== 6 : DIP ===================== -->
-  <h2 class="sec" id="s6">6 · D · Dependency Inversion Principle</h2>
-
-  <div class="def what"><span class="lab">What</span><p>High-level policy should not depend on low-level details — <strong>both should depend on an abstraction</strong>. And the abstraction shouldn't depend on details; details depend on the abstraction. In practice: program to an interface and <em>inject</em> the concrete implementation.</p></div>
-
-  <div class="def why"><span class="lab">Why it matters</span><p>Because it's what makes code testable and swappable. If <code class="inl">OrderService</code> constructs a concrete <code class="inl">MySqlDatabase</code> inside itself, you can't test it without a real database and can't switch stores. Depend on a <code class="inl">Gateway</code> abstraction and inject it, and you can pass a fake in tests and Postgres in production — same service.</p></div>
-
-  <figure class="fig-card">
-    <svg viewBox="0 0 900 200" role="img" aria-label="Dependency inversion flips the arrow">
-      <g font-family="Segoe UI,sans-serif">
-        <text x="220" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#7f1d1d">WITHOUT DIP — policy depends on detail</text>
-        <text x="680" y="20" text-anchor="middle" font-size="12" font-weight="800" fill="#14532d">WITH DIP — both depend on the abstraction</text>
-        <rect x="120" y="45" width="200" height="38" rx="8" fill="#fee2e2" stroke="#dc2626"/><text x="220" y="69" text-anchor="middle" font-size="10" fill="#7f1d1d">OrderService (high-level)</text>
-        <rect x="120" y="140" width="200" height="38" rx="8" fill="#fee2e2" stroke="#dc2626"/><text x="220" y="164" text-anchor="middle" font-size="10" fill="#7f1d1d">MySqlDatabase (low-level)</text>
-        <path d="M220,83 L220,138" stroke="#dc2626" stroke-width="2.5" marker-end="url(#ard)"/>
-        <text x="300" y="115" font-size="9" fill="#7f1d1d">hard-coded</text>
-        <rect x="580" y="45" width="200" height="38" rx="8" fill="#dcfce7" stroke="#16a34a"/><text x="680" y="69" text-anchor="middle" font-size="10" fill="#14532d">OrderService (high-level)</text>
-        <rect x="580" y="92" width="200" height="34" rx="8" fill="#eef6ff" stroke="#0284c7" stroke-dasharray="4"/><text x="680" y="114" text-anchor="middle" font-size="10" fill="#0c4a6e">«Gateway» abstraction</text>
-        <rect x="580" y="150" width="200" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/><text x="680" y="172" text-anchor="middle" font-size="10" fill="#14532d">EmailGateway / SmsGateway</text>
-        <path d="M680,83 L680,90" stroke="#0284c7" stroke-width="2.5" marker-end="url(#ard)"/>
-        <path d="M680,150 L680,128" stroke="#16a34a" stroke-width="2.5" marker-end="url(#ard)"/>
-        <text x="800" y="112" font-size="9" fill="#14532d">both point at ↑</text>
-        <defs><marker id="ard" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker></defs>
-      </g>
-    </svg>
-    <figcaption>Figure 4.1 — Dependency inversion flips the arrow. Instead of high-level policy depending directly on a low-level detail, both depend on an abstraction the detail <em>implements</em>. This is what makes <code>OrderService</code> testable with a fake gateway (see <code>solid_principles.py</code>).</figcaption>
-  </figure>
-
-  <div class="def how"><span class="lab">How — inject the abstraction</span></div>
-<pre><span class="k">class</span> <span class="f">NotificationGateway</span>(Protocol):
-    <span class="k">def</span> <span class="f">send</span>(self, to, msg) -&gt; <span class="k">None</span>: ...
-
-<span class="k">class</span> <span class="f">OrderService</span>:
-    <span class="k">def</span> <span class="f">__init__</span>(self, gateway: NotificationGateway):  <span class="c"># injected, not constructed</span>
-        self._gateway = gateway
-    <span class="k">def</span> <span class="f">place</span>(self, customer):
-        self._gateway.send(customer, <span class="s">"Order confirmed"</span>)  <span class="c"># swap email↔sms freely</span></pre>
-
-  <div class="box insight"><span class="ic">🔎</span><div class="h">DIP vs Dependency Injection</div>
-  <p>DIP is the <em>principle</em> ("depend on abstractions"). Dependency <em>injection</em> is a common <em>technique</em> for achieving it — passing dependencies in (via constructor, setter, or a framework's <code class="inl">Depends</code>) instead of creating them internally. FastAPI's <code class="inl">Depends</code> and Spring's IoC container are DI machinery serving DIP.</p></div>
-
-  <div class="qa"><div class="q">Q · Why does DIP make code more testable?</div>
-  <p>Because the concrete dependency is passed in, a test can inject a fake/stub that records calls or returns canned data — no real database, network, or clock needed. The high-level logic is exercised in isolation, fast and deterministically. Hard-coded <code class="inl">new</code>/constructor calls make that impossible.</p></div>
-
-  <div class="box bigidea"><span class="ic">💡</span><div class="h">End of Part A</div>
-  <p>Clean code makes intent visible; SOLID keeps change cheap. Part&nbsp;B is the pattern catalog — but read every pattern as "which principle is this making concrete for a recurring problem?" A pattern with no principle behind it is just ceremony.</p></div>
-
-  <!-- ===================== 7 : WHAT PATTERNS ARE ===================== -->
-  <h2 class="sec" id="s7">7 · What Design Patterns Are</h2>
-
-  <div class="def what"><span class="lab">What</span><p>A <em class="term">design pattern</em> is a named, reusable solution to a recurring design problem — not code to copy, but a <strong>shared vocabulary</strong> and a proven structure. The 23 classic "Gang of Four" patterns split into three families by <em>what they organize</em>: object <strong>creation</strong>, object <strong>composition</strong>, and object <strong>communication</strong>.</p></div>
-
-  <div class="def why"><span class="lab">Why it matters</span><p>Because "let's use a Strategy here" conveys an entire design in two words to anyone who knows the vocabulary. Patterns capture hard-won solutions so you don't reinvent them, and they're a lingua franca in code review and interviews. But they're a means to SOLID ends — never a goal.</p></div>
-
-  <figure class="fig-card">
-    <svg viewBox="0 0 900 200" role="img" aria-label="The three pattern families">
-      <g font-family="Segoe UI,sans-serif">
-        <rect x="30" y="45" width="270" height="130" rx="10" fill="#eff6ff" stroke="#0284c7"/>
-        <text x="165" y="70" text-anchor="middle" font-size="13" font-weight="800" fill="#0c4a6e">🏭 CREATIONAL (5)</text>
-        <text x="165" y="90" text-anchor="middle" font-size="9.5" fill="#0c4a6e">how objects are made</text>
-        <text x="165" y="112" text-anchor="middle" font-size="9" fill="#334155">Factory Method · Abstract Factory</text>
-        <text x="165" y="130" text-anchor="middle" font-size="9" fill="#334155">Builder · Prototype · Singleton</text>
-        <rect x="315" y="45" width="270" height="130" rx="10" fill="#f5f3ff" stroke="#7c3aed"/>
-        <text x="450" y="70" text-anchor="middle" font-size="13" font-weight="800" fill="#4c1d95">🧩 STRUCTURAL (7)</text>
-        <text x="450" y="90" text-anchor="middle" font-size="9.5" fill="#4c1d95">how objects compose</text>
-        <text x="450" y="112" text-anchor="middle" font-size="9" fill="#334155">Adapter · Bridge · Composite</text>
-        <text x="450" y="130" text-anchor="middle" font-size="9" fill="#334155">Decorator · Facade · Flyweight · Proxy</text>
-        <rect x="600" y="45" width="270" height="130" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
-        <text x="735" y="70" text-anchor="middle" font-size="13" font-weight="800" fill="#14532d">🔁 BEHAVIORAL (11)</text>
-        <text x="735" y="90" text-anchor="middle" font-size="9.5" fill="#14532d">how objects communicate</text>
-        <text x="735" y="110" text-anchor="middle" font-size="8.5" fill="#334155">Strategy · Observer · Command · State</text>
-        <text x="735" y="126" text-anchor="middle" font-size="8.5" fill="#334155">Template · CoR · Iterator · Mediator</text>
-        <text x="735" y="142" text-anchor="middle" font-size="8.5" fill="#334155">Memento · Visitor · Interpreter</text>
-      </g>
-    </svg>
-    <figcaption>Figure 4.2 — The 23 Gang-of-Four patterns in three families. Creational patterns decouple <em>how</em> objects are made; structural patterns assemble objects into larger structures; behavioral patterns manage how objects interact. All 23 are runnable in <code>03-design-patterns/examples/</code>.</figcaption>
-  </figure>
-
-  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — a pattern is a solution, not a requirement</div>
-  <p>The goal is never "how many patterns can I use?" Patterns earn their complexity only when the problem they solve is actually present. Reaching for a Factory when a plain constructor works, or an Abstract Factory with one product family, adds indirection with no benefit — a smell called "pattern-happy" code.</p></div>
-
-  <div class="qa"><div class="q">Q · What problem do design patterns actually solve?</div>
-  <p>They give proven, named solutions to recurring design problems and a common vocabulary to discuss them. They don't add features — they organize code so it's easier to change and communicate. Their value is decoupling and shared understanding, not the patterns themselves.</p></div>
-
-  <!-- ===================== 8 : CREATIONAL ===================== -->
-  <h2 class="sec" id="s8">8 · Creational Patterns</h2>
-
-  <div class="def what"><span class="lab">What</span><p>Creational patterns control <strong>how objects are created</strong>, decoupling client code from concrete classes. The five: <em class="term">Factory Method</em>, <em class="term">Abstract Factory</em>, <em class="term">Builder</em>, <em class="term">Prototype</em>, and <em class="term">Singleton</em>.</p></div>
-
-  <table>
-    <tr><th>Pattern</th><th>Intent</th><th>Reach for it when…</th></tr>
-    <tr><td>Factory Method</td><td>Defer which class to instantiate to a subclass/function</td><td>the concrete type depends on input/config</td></tr>
-    <tr><td>Abstract Factory</td><td>Create whole <em>families</em> of related objects</td><td>you swap an entire stack (AWS↔GCP) at once</td></tr>
-    <tr><td>Builder</td><td>Construct a complex object step-by-step</td><td>many optional params / order-sensitive assembly</td></tr>
-    <tr><td>Prototype</td><td>Create by cloning an existing instance</td><td>construction is expensive; copy is cheaper</td></tr>
-    <tr><td>Singleton</td><td>Guarantee exactly one instance</td><td>shared config/registry (prefer DI instead)</td></tr>
-  </table>
-
-  <div class="def how"><span class="lab">How — Factory Method &amp; Abstract Factory</span></div>
-<pre><span class="c"># Factory Method — pick the concrete type behind one call</span>
-<span class="k">def</span> <span class="f">make_repo</span>(kind):
-    <span class="k">return</span> {<span class="s">"json"</span>: JsonRepo, <span class="s">"sql"</span>: SqlRepo}[kind]()   <span class="c"># client stays decoupled</span>
-
-<span class="c"># Abstract Factory — swap a whole family at once (see creational.py)</span>
-<span class="k">def</span> <span class="f">provision</span>(factory):        <span class="c"># factory = AwsFactory() or GcpFactory()</span>
-    store = factory.make_storage()      <span class="c"># S3 or GCS</span>
-    queue = factory.make_queue()        <span class="c"># SQS or PubSub — always MATCHED</span>
-    <span class="k">return</span> store, queue</pre>
-
-  <div class="box pitfall"><span class="ic">🚫</span><div class="h">Singleton — the pattern to distrust</div>
-  <p>A Singleton is a global in disguise: it hides dependencies, couples everything to it, and makes tests order-dependent (shared mutable state leaks between tests). Ninety percent of the time, <em>dependency injection</em> of a single shared instance gives you "one instance" without the global. Reach for a true Singleton rarely and deliberately.</p></div>
-
-  <div class="qa"><div class="q">Q · Factory Method vs Abstract Factory?</div>
-  <p>Factory Method creates <em>one</em> product and defers the concrete choice (one method, often subclass-overridden). Abstract Factory creates <em>families</em> of related products through multiple methods, guaranteeing the pieces match (all-AWS or all-GCP, never mixed). Use Factory Method for a single varying type; Abstract Factory when a whole set must vary together.</p></div>
-
-  <div class="qa"><div class="q">Q · Builder vs a constructor with many arguments?</div>
-  <p>Builder shines when an object has many optional parameters or requires ordered, validated assembly — it avoids telescoping constructors and unreadable positional-arg soup, and can enforce invariants before producing the final immutable object. For a few simple params, a constructor (or dataclass) is clearer; don't add a Builder prematurely.</p></div>
-
-  <!-- ===================== 9 : STRUCTURAL ===================== -->
-  <h2 class="sec" id="s9">9 · Structural Patterns</h2>
-
-  <div class="def what"><span class="lab">What</span><p>Structural patterns compose objects into larger structures while keeping them flexible. The seven: <em class="term">Adapter</em>, <em class="term">Bridge</em>, <em class="term">Composite</em>, <em class="term">Decorator</em>, <em class="term">Facade</em>, <em class="term">Flyweight</em>, <em class="term">Proxy</em>.</p></div>
-
-  <table>
-    <tr><th>Pattern</th><th>Intent</th><th>Reach for it when…</th></tr>
-    <tr><td>Adapter</td><td>Make an incompatible interface fit yours</td><td>wrapping a third-party SDK with the "wrong" shape</td></tr>
-    <tr><td>Bridge</td><td>Split an abstraction from its implementation</td><td>two dimensions vary independently (shape × renderer)</td></tr>
-    <tr><td>Composite</td><td>Treat individual objects &amp; groups uniformly</td><td>tree structures (files/folders, UI, org charts)</td></tr>
-    <tr><td>Decorator</td><td>Add behavior by wrapping, same interface</td><td>layering logging/caching/auth without subclass explosion</td></tr>
-    <tr><td>Facade</td><td>One simple entry point over a complex subsystem</td><td>hiding a messy multi-step API behind one call</td></tr>
-    <tr><td>Flyweight</td><td>Share immutable intrinsic state across many objects</td><td>millions of near-identical objects (glyphs, tiles)</td></tr>
-    <tr><td>Proxy</td><td>Stand in to control access</td><td>lazy loading, caching, access control, remoting</td></tr>
-  </table>
-
-  <figure class="fig-card">
-    <svg viewBox="0 0 900 165" role="img" aria-label="Decorator wrapping layers">
-      <g font-family="Segoe UI,sans-serif">
-        <text x="450" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#4c1d95">DECORATOR — each layer wraps the same interface and adds one behavior</text>
-        <rect x="60" y="55" width="150" height="60" rx="10" fill="#ede9fe" stroke="#7c3aed"/><text x="135" y="80" text-anchor="middle" font-size="10" fill="#4c1d95">Auth</text><text x="135" y="98" text-anchor="middle" font-size="8" fill="#4c1d95">wrap →</text>
-        <rect x="95" y="70" width="150" height="60" rx="10" fill="#e0e7ff" stroke="#4f46e5"/>
-        <rect x="290" y="60" width="150" height="55" rx="10" fill="#e0f2fe" stroke="#0284c7"/><text x="365" y="84" text-anchor="middle" font-size="10" fill="#0c4a6e">Logging</text><text x="365" y="100" text-anchor="middle" font-size="8" fill="#0c4a6e">wrap →</text>
-        <rect x="520" y="60" width="150" height="55" rx="10" fill="#dcfce7" stroke="#16a34a"/><text x="595" y="84" text-anchor="middle" font-size="10" fill="#14532d">Cache</text><text x="595" y="100" text-anchor="middle" font-size="8" fill="#14532d">wrap →</text>
-        <rect x="720" y="60" width="150" height="55" rx="10" fill="#f8fafc" stroke="#475569"/><text x="795" y="84" text-anchor="middle" font-size="10" fill="#0f2743">CoreService</text><text x="795" y="100" text-anchor="middle" font-size="8" fill="#475569">the real work</text>
-        <path d="M245,92 L288,90" stroke="#64748b" stroke-width="2" marker-end="url(#ade)"/>
-        <path d="M440,88 L518,88" stroke="#64748b" stroke-width="2" marker-end="url(#ade)"/>
-        <path d="M670,88 L718,88" stroke="#64748b" stroke-width="2" marker-end="url(#ade)"/>
-        <text x="450" y="150" text-anchor="middle" font-size="9" fill="#5b6b7b">Every layer implements Service, so callers can't tell — stack behaviors in any order without subclassing</text>
-        <defs><marker id="ade" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
-      </g>
-    </svg>
-    <figcaption>Figure 4.3 — The Decorator pattern wraps an object in another that shares its interface, adding one responsibility per layer (auth, logging, caching). Compose behaviors freely without a combinatorial explosion of subclasses. Runnable in <code>structural.py</code>.</figcaption>
-  </figure>
-
-  <div class="def how"><span class="lab">How — Adapter &amp; Decorator</span></div>
-<pre><span class="c"># Adapter — the SDK's method is sendText(); our code expects send()</span>
-<span class="k">class</span> <span class="f">SmsAdapter</span>:            <span class="c"># implements OUR Notifier interface</span>
-    <span class="k">def</span> <span class="f">__init__</span>(self, sdk): self._sdk = sdk
-    <span class="k">def</span> <span class="f">send</span>(self, msg): self._sdk.sendText(msg)   <span class="c"># translate the call</span>
-
-<span class="c"># Decorator — same interface, added behavior (see structural.py)</span>
-<span class="k">class</span> <span class="f">LoggingDecorator</span>:
-    <span class="k">def</span> <span class="f">__init__</span>(self, wrapped): self._wrapped = wrapped
-    <span class="k">def</span> <span class="f">handle</span>(self, req):
-        log(req); <span class="k">return</span> self._wrapped.handle(req)   <span class="c"># delegate + augment</span></pre>
-
-  <div class="box insight"><span class="ic">🔎</span><div class="h">Adapter vs Facade vs Proxy — they all "wrap"</div>
-  <p>All three put an object in front of another, but the <em>intent</em> differs: <strong>Adapter</strong> changes an interface to match what you need; <strong>Facade</strong> simplifies a complex subsystem behind one friendly call; <strong>Proxy</strong> keeps the <em>same</em> interface but controls access (lazy load, cache, permissions). Same shape, three different reasons.</p></div>
-
-  <div class="qa"><div class="q">Q · Decorator vs inheritance for adding behavior?</div>
-  <p>Inheritance fixes behavior at compile time and explodes combinatorially (LoggedCachedAuthService…). Decorator composes behavior at runtime by wrapping — you stack auth + logging + cache in any order, add or remove layers dynamically, and keep each concern in its own small class. It's OCP via composition.</p></div>
-
-  <div class="qa"><div class="q">Q · When is a Proxy the right call?</div>
-  <p>When you need to control access to an object without changing its interface: lazy-loading an expensive resource until first use, caching results, enforcing permissions, or standing in for a remote object. The client uses it exactly like the real thing; the proxy adds the guard transparently.</p></div>
-
-  <!-- ===================== 10 : BEHAVIORAL ===================== -->
-  <h2 class="sec" id="s10">10 · Behavioral Patterns</h2>
-
-  <div class="def what"><span class="lab">What</span><p>Behavioral patterns manage <strong>how objects communicate and share responsibility</strong>. The eleven: <em class="term">Strategy</em>, <em class="term">Observer</em>, <em class="term">Command</em>, <em class="term">State</em>, <em class="term">Template Method</em>, <em class="term">Chain of Responsibility</em>, <em class="term">Iterator</em>, <em class="term">Mediator</em>, <em class="term">Memento</em>, <em class="term">Visitor</em>, and <em class="term">Interpreter</em>.</p></div>
-
-  <table>
-    <tr><th>Pattern</th><th>Intent</th><th>Reach for it when…</th></tr>
-    <tr><td>Strategy</td><td>Swap an algorithm at runtime</td><td>multiple interchangeable ways to do one thing</td></tr>
-    <tr><td>Observer</td><td>Notify many dependents on state change</td><td>event/pub-sub, UI binding, reactive updates</td></tr>
-    <tr><td>Command</td><td>Package a request as an object</td><td>undo/redo, queuing, logging operations</td></tr>
-    <tr><td>State</td><td>Change behavior when internal state changes</td><td>replacing an <code class="inl">if state ==</code> lifecycle ladder</td></tr>
-    <tr><td>Template Method</td><td>Fix the skeleton, vary the steps</td><td>a fixed algorithm with pluggable stages</td></tr>
-    <tr><td>Chain of Responsibility</td><td>Pass a request along handlers</td><td>middleware, escalation, validation pipelines</td></tr>
-    <tr><td>Iterator</td><td>Traverse without exposing internals</td><td>custom collections (Python: <code class="inl">__iter__</code>)</td></tr>
-    <tr><td>Mediator</td><td>Centralize many-to-many communication</td><td>components that would otherwise all reference each other</td></tr>
-    <tr><td>Memento</td><td>Capture/restore state without breaking encapsulation</td><td>snapshots, undo checkpoints</td></tr>
-    <tr><td>Visitor</td><td>Add operations over a fixed object structure</td><td>new operations on a stable type hierarchy (ASTs)</td></tr>
-    <tr><td>Interpreter</td><td>Evaluate sentences in a small language</td><td>simple DSLs, expression evaluation</td></tr>
-  </table>
-
-  <div class="def how"><span class="lab">How — Strategy &amp; Observer (the two you'll use most)</span></div>
-<pre><span class="c"># Strategy — inject the algorithm; no if/elif on "kind" (see behavioral.py)</span>
-<span class="k">def</span> <span class="f">checkout</span>(amount, discount_strategy):
-    <span class="k">return</span> amount - discount_strategy(amount)   <span class="c"># swap % off / flat / none freely</span>
-
-<span class="c"># Observer — subject notifies subscribers on change (pub/sub)</span>
-<span class="k">class</span> <span class="f">Subject</span>:
-    <span class="k">def</span> <span class="f">__init__</span>(self): self._subs = []
-    <span class="k">def</span> <span class="f">subscribe</span>(self, fn): self._subs.append(fn)
-    <span class="k">def</span> <span class="f">notify</span>(self, event):
-        <span class="k">for</span> fn <span class="k">in</span> self._subs: fn(event)   <span class="c"># each observer reacts independently</span></pre>
-
-  <div class="box insight"><span class="ic">🔎</span><div class="h">State &amp; Strategy are structural twins</div>
-  <p>Both delegate to a swappable object, but the <em>intent</em> differs. <strong>Strategy</strong> lets the <em>client</em> choose an algorithm; the strategies don't know about each other. <strong>State</strong> lets the <em>object</em> change its own behavior as it transitions (Pending → Paid → Shipped), and states often decide the next state. Same mechanics, different driver of the change.</p></div>
-
-  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Gotcha — Observer &amp; memory leaks / ordering</div>
-  <p>Observers that never unsubscribe keep the subject holding references — a classic memory leak (use weak references for long-lived subjects). And don't rely on notification <em>order</em> or mutate the subscriber list <em>during</em> notification; iterate a copy. Pub/sub decoupling is powerful but hides the call graph, so failures are harder to trace.</p></div>
-
-  <div class="qa"><div class="q">Q · Strategy vs State — how do you tell them apart?</div>
-  <p>Structurally identical (delegate to a pluggable object), they differ in intent. Strategy encapsulates interchangeable <em>algorithms</em> chosen by the client; the object's identity doesn't change. State encapsulates <em>lifecycle</em> behavior that the object switches between itself as conditions change, with states often triggering transitions. "Which discount formula?" is Strategy; "what can an order do now?" is State.</p></div>
-
-  <div class="qa"><div class="q">Q · Which behavioral pattern replaces a big <code class="inl">if/elif</code> on a status field?</div>
-  <p>State — model each status as a class implementing the same interface, and let the object hold a reference to its current state that handles requests and returns the next state. It removes the ladder, localizes each status's rules, and satisfies OCP (a new status is a new class).</p></div>
-
-  <!-- ===================== 11 : ANTI-PATTERNS ===================== -->
-  <h2 class="sec" id="s11">11 · Choosing Wisely &amp; Anti-Patterns</h2>
-
-  <div class="def what"><span class="lab">What</span><p>An <em class="term">anti-pattern</em> is a common "solution" that looks helpful but creates more problems than it solves. The meta-skill of this book is knowing when <em>not</em> to reach for a principle or pattern — because misapplied structure is as costly as no structure.</p></div>
-
-  <div class="def why"><span class="lab">Why it matters</span><p>Because over-engineering is the most common failure mode of engineers who just learned patterns. Ten layers of abstraction for a two-line problem is worse than the two lines. Judgment — matching the solution's weight to the problem's real complexity — is what separates senior from mid-level.</p></div>
-
-  <table>
-    <tr><th>Anti-pattern</th><th>What it looks like</th><th>The fix</th></tr>
-    <tr><td>God object</td><td>one class/module that does everything</td><td>SRP — split by responsibility</td></tr>
-    <tr><td>Pattern-happy</td><td>a Factory/Strategy for a one-line need</td><td>YAGNI — use the plain solution</td></tr>
-    <tr><td>Spaghetti</td><td>tangled control flow, no boundaries</td><td>clean boundaries, small functions</td></tr>
-    <tr><td>Golden hammer</td><td>one favorite tool for every problem</td><td>match the tool to the problem</td></tr>
-    <tr><td>Premature abstraction</td><td>generalizing before the 2nd/3rd case exists</td><td>rule of three; refactor when it recurs</td></tr>
-  </table>
-
-  <div class="box analogy"><span class="ic">🧠</span><div class="h">Patterns are power tools</div>
-  <p>A nail gun is faster than a hammer — for a roof. For hanging one picture, it's absurd and dangerous. Design patterns are the same: enormous leverage on the recurring, genuinely complex problem they target; pure overhead on the simple one. Learn them so you <em>recognize</em> the problem, not so you apply them everywhere.</p></div>
-
-  <div class="qa"><div class="q">Q · How do you avoid over-engineering with patterns?</div>
-  <p>Start with the simplest thing that works and let real, repeated pain pull you toward a pattern (rule of three). Ask "what change is this protecting against, and is that change actually likely?" If you can't name the concrete future change, you're speculating — apply YAGNI and keep it simple. Refactoring toward a pattern later is cheap when the code is clean.</p></div>
-
-  <div class="qa"><div class="q">Q · A pattern and a principle conflict — which wins?</div>
-  <p>The principle. Patterns exist to serve SOLID and clean-code goals (decoupling, cohesion, cheap change). If a pattern makes the code harder to change or understand in your context, you've applied it wrongly — drop it. Principles are the "why"; patterns are one "how" among several.</p></div>
-
-  <div class="takeaway"><span class="h">🎯 Key takeaways</span>
-  <ul class="tick" style="margin-top:6px">
-    <li><strong>Clean code optimizes for the reader</strong> — names, small functions, DRY/KISS/YAGNI; comment the <em>why</em>, not the <em>what</em>.</li>
-    <li><strong>SOLID keeps change cheap:</strong> SRP (one reason to change), OCP (extend don't edit), LSP (subtypes honor contracts), ISP (small roles), DIP (depend on abstractions, inject concretions).</li>
-    <li><strong>Patterns are shared vocabulary</strong> in three families — creational (make), structural (compose), behavioral (communicate).</li>
-    <li><strong>Creational:</strong> Factory Method, Abstract Factory, Builder, Prototype, Singleton (distrust the last).</li>
-    <li><strong>Structural:</strong> Adapter/Facade/Proxy all wrap with different intent; Decorator composes behavior without subclass explosion.</li>
-    <li><strong>Behavioral:</strong> Strategy (client picks algorithm) vs State (object changes its own behavior); Observer for pub/sub; State kills the status if-ladder.</li>
-    <li><strong>Judgment beats knowledge</strong> — match the solution's weight to the problem; over-engineering is the classic post-patterns trap.</li>
-    <li>Every principle and all 23 patterns are runnable in <code class="inl">02-solid/</code> and <code class="inl">03-design-patterns/</code> — run them, break them, apply them.</li>
-  </ul></div>
 </section>
 
+<!-- ======================== SOLID ======================== -->
+<section class="chapter" id="solid">
+  <div class="ch-head"><div class="num">🧱</div><div><div class="t">SOLID — Five Levers for Change-Resilient Code</div><div class="s">Each principle answers: when this requirement changes, how much code must change with it?</div></div><div class="ico">🧱</div></div>
+
+  <table class="big-table">
+    <tr><th>Principle</th><th>The coupling it attacks</th><th>ShopFlow incident / fix</th><th>The gotcha</th></tr>
+    <tr><td><strong>S · SRP</strong><br>Single Responsibility</td><td>A class serving multiple actors — multiple reasons to change</td><td>GodReport class changed for finance, design, and ops simultaneously → merge conflicts every sprint. Fix: split into SalesReport + HtmlFormatter + FileRepository</td><td>SRP is about ACTORS (who orders the change), not method count. A 20-method class serving one actor does NOT violate SRP.</td></tr>
+    <tr><td><strong>O · OCP</strong><br>Open / Closed</td><td>Adding a feature requires editing tested code</td><td>checkout() function had 150-line if/elif for pricing rules. Adding Black Friday pricing = editing the most critical function. Fix: Strategy pattern — new rule = new class, zero edits to checkout()</td><td>OCP doesn't mean "never touch old code." Fixing a bug is fine. OCP is about EXTENSION — new behaviour via new code, not editing existing.</td></tr>
+    <tr><td><strong>L · LSP</strong><br>Liskov Substitution</td><td>Subtypes that surprise callers — the classic Square(Rectangle) violation</td><td>BadSquare overrides Rectangle's independent width/height setters. Code that resizes a rectangle gets wrong area from BadSquare. Fix: Square and Rectangle as siblings under Shape, not a hierarchy</td><td>isinstance() checks in business logic = LSP violation smell. If callers need to know the subtype, the contract is broken.</td></tr>
+    <tr><td><strong>I · ISP</strong><br>Interface Segregation</td><td>Fat interfaces force implementers to stub unused methods</td><td>FatWorker ABC forced RobotWorker to implement eat() → NotImplementedError at runtime. Fix: Protocol Workable + Protocol Eatable — Robot implements only what it does</td><td>ISP violation → forced stubs → those stubs are LSP violations. The chain: fat interface ⇒ NotImplementedError stubs ⇒ caller crashes at runtime.</td></tr>
+    <tr><td><strong>D · DIP</strong><br>Dependency Inversion</td><td>Policy (business logic) coupled to detail (DB, HTTP, payment API)</td><td>OrderService constructed MySqlDatabase inside itself — impossible to test without a real DB. Fix: inject a StoragePort abstraction; tests inject FakeStorage</td><td>"new is glue." If a class constructs its own collaborators it's glued forever. DI = mechanism; DIP = the principle that the abstraction is injected, not a concrete class.</td></tr>
+  </table>
+
+  <div class="box bigidea"><span class="ic">💡</span><div class="h">DIP is the load-bearing principle</div>
+  <p>The others guide how to structure code; DIP determines testability and swappability. Once <code class="inl">OrderService</code> depends on <code class="inl">StoragePort</code> (not <code class="inl">MySqlDatabase</code>), you can: (1) inject a <code class="inl">FakeStorage</code> in tests with zero network/DB, (2) swap Postgres for Redis by changing ONE line at the composition root, (3) run tests in parallel without shared DB state. This is why FastAPI's <code class="inl">Depends()</code> exists — DIP as a framework feature.</p></div>
+
+</section>
+
+<!-- ======================== STRATEGY ======================== -->
+<section class="chapter" id="strategy">
+  <div class="ch-head"><div class="num">♟️</div><div><div class="t">Strategy — Pricing Engine</div><div class="s">OCP + DIP crystallised into a named pattern — the most useful pattern in backend Python</div></div><div class="ico">♟️</div></div>
+
+  <div class="scenario"><div class="h">🏪 ShopFlow Production Problem</div>
+  <p>Q3 planning: Marketing wants Black Friday (30% off), VIP subscribers (20% off + free shipping), B2B bulk tiers (5%/10%/15% by quantity), and flash sales (50% for 2 hours) — all live simultaneously on different user segments. These rules change every sprint. Marketing and Finance both touch the checkout function in the same sprint.</p></div>
+
+  <div class="without"><div class="h">✗ Without Strategy — what broke</div>
+  <p>The checkout function grows to a 200-line if/elif. Every new pricing rule requires editing the most critical, most-tested code path in the entire system. <strong>Merge conflicts happen every sprint between the Finance team and Marketing team in the same function.</strong> Unit-testing Black Friday pricing requires setting up the entire checkout state (is_flash=False, user_type=...). A/B testing two pricing models simultaneously is architecturally impossible.</p></div>
+<pre><span class="c"># ✗ ANTI-PATTERN — grows forever, breaks constantly</span>
+<span class="k">def</span> <span class="f">checkout</span>(cart_total, user_type, quantity, is_flash, is_black_friday, is_ultra_vip):
+    <span class="k">if</span> is_flash:             <span class="k">return</span> cart_total * <span class="n">0.50</span>
+    <span class="k">elif</span> is_black_friday:    <span class="k">return</span> cart_total * <span class="n">0.70</span>
+    <span class="k">elif</span> user_type == <span class="s">"vip"</span>: <span class="k">return</span> cart_total * <span class="n">0.80</span>
+    <span class="k">elif</span> user_type == <span class="s">"b2b"</span> <span class="k">and</span> quantity > <span class="n">100</span>: <span class="k">return</span> cart_total * <span class="n">0.85</span>
+    <span class="c"># Adding ultra_vip: edit here. A/B test: add a flag. Audit: edit here again.</span>
+    <span class="k">else</span>: <span class="k">return</span> cart_total</pre>
+
+  <div class="withpat"><div class="h">✓ With Strategy — what it buys</div>
+  <p>Each rule is a class. Checkout receives the rule at call time and knows nothing about which one it is. Adding Ultra-VIP = one new class, zero edits to checkout(). A/B testing = inject different strategies per user segment. Unit-testing Black Friday = instantiate BlackFridayPricing alone, call apply().</p></div>
+<pre><span class="k">class</span> <span class="f">PricingStrategy</span>(Protocol):
+    <span class="k">def</span> <span class="f">apply</span>(self, ctx: CartContext) -> float: ...
+
+<span class="k">class</span> <span class="f">BlackFridayPricing</span>:
+    <span class="k">def</span> <span class="f">apply</span>(self, ctx): <span class="k">return</span> ctx.total * <span class="n">0.70</span>
+
+<span class="k">class</span> <span class="f">TieredB2BPricing</span>:
+    <span class="k">def</span> <span class="f">apply</span>(self, ctx):
+        <span class="k">if</span> ctx.quantity < <span class="n">50</span>:  <span class="k">return</span> ctx.total * <span class="n">0.95</span>
+        <span class="k">if</span> ctx.quantity < <span class="n">100</span>: <span class="k">return</span> ctx.total * <span class="n">0.90</span>
+        <span class="k">return</span> ctx.total * <span class="n">0.85</span>
+
+<span class="k">def</span> <span class="f">checkout</span>(cart: CartContext, strategy: PricingStrategy) -> float:
+    <span class="k">return</span> strategy.apply(cart)   <span class="c"># zero knowledge of which rule</span>
+
+<span class="c"># A/B testing: assign strategy from experiment config</span>
+strategy = experiment.assign(user_id) <span class="k">or</span> StandardPricing()
+checkout(cart, strategy)</pre>
+
+  <div class="where"><div class="h">🌍 Where Strategy is used in real frameworks</div>
+  <ul class="plain">
+    <li><strong>Django REST Framework:</strong> authentication backends (<code class="inl">BasicAuthentication</code>, <code class="inl">TokenAuthentication</code>, <code class="inl">JWTAuthentication</code>) — selected via <code class="inl">DEFAULT_AUTHENTICATION_CLASSES</code></li>
+    <li><strong>SQLAlchemy:</strong> connection pool strategies (<code class="inl">NullPool</code>, <code class="inl">QueuePool</code>, <code class="inl">StaticPool</code>) — injected into <code class="inl">create_engine()</code></li>
+    <li><strong>FastAPI:</strong> security schemes (<code class="inl">OAuth2PasswordBearer</code>, <code class="inl">APIKeyHeader</code>) as interchangeable strategies</li>
+    <li><strong>Celery:</strong> task routing strategies (round-robin, priority, consistent hashing)</li>
+  </ul></div>
+
+</section>
+
+<!-- ======================== FACTORY ======================== -->
+<section class="chapter" id="factory">
+  <div class="ch-head"><div class="num">🏭</div><div><div class="t">Factory Method</div><div class="s">Decouple object creation from use — the key to swappable infrastructure</div></div><div class="ico">🏭</div></div>
+
+  <div class="scenario"><div class="h">🏪 ShopFlow Production Problem</div>
+  <p>Product images: AWS S3 today, EU data-residency law forces GCP for European users, CI/CD runs against local filesystem (no cloud credentials in GitHub Actions), enterprise customers get Azure Blob. ShopFlow has <code class="inl">ProductImageService</code> — it must work in all four environments without conditional imports or if/elif chains.</p></div>
+
+  <div class="without"><div class="h">✗ Without Factory</div>
+  <p><code class="inl">ProductImageService</code> imports <code class="inl">boto3</code>, <code class="inl">google-cloud-storage</code>, AND <code class="inl">azure-storage-blob</code>. It crashes on import if any SDK isn't installed. Testing requires mock AWS credentials. Adding Azure = editing the core service. The imports alone couple the service to all three cloud vendors.</p></div>
+
+  <div class="withpat"><div class="h">✓ With Factory</div>
+  <p><code class="inl">ProductImageService</code> depends only on a <code class="inl">StorageBackend</code> Protocol. A factory function reads config once at startup and returns the right backend. Tests inject <code class="inl">FakeBackend</code> — no cloud credentials needed. Adding Azure = one new class + one dict entry.</p></div>
+<pre><span class="k">class</span> <span class="f">StorageBackend</span>(Protocol):
+    <span class="k">def</span> <span class="f">upload</span>(self, data: bytes, key: str) -> str: ...
+
+<span class="k">def</span> <span class="f">make_storage</span>(config: dict) -> StorageBackend:
+    <span class="k">return</span> {<span class="s">"s3"</span>: S3Backend, <span class="s">"gcs"</span>: GCSBackend, <span class="s">"local"</span>: LocalBackend}[
+        config[<span class="s">"STORAGE_BACKEND"</span>]]()   <span class="c"># created once at startup</span>
+
+<span class="k">class</span> <span class="f">ProductImageService</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, storage: StorageBackend): self._s = storage  <span class="c"># injected</span>
+    <span class="k">def</span> <span class="f">upload</span>(self, pid, data): <span class="k">return</span> self._s.upload(data, <span class="s">f"products/{pid}.jpg"</span>)
+
+<span class="c"># Test: no cloud credentials needed</span>
+svc = ProductImageService(FakeBackend())
+url = svc.upload(<span class="s">"prod_001"</span>, <span class="s">b"image data"</span>)   <span class="c"># fully testable</span></pre>
+
+  <div class="where"><div class="h">🌍 Where Factory is used in real frameworks</div>
+  <ul class="plain">
+    <li><strong>SQLAlchemy:</strong> <code class="inl">create_engine("postgresql://...")</code> — factory picks <code class="inl">psycopg2</code> or <code class="inl">asyncpg</code> dialect from the connection URL</li>
+    <li><strong>Django:</strong> <code class="inl">DATABASES</code> setting drives a connection factory — swap PostgreSQL for SQLite in tests with one line</li>
+    <li><strong>FastAPI:</strong> <code class="inl">Depends(get_db)</code> is a factory that creates/reuses a DB session per request</li>
+    <li><strong>boto3:</strong> <code class="inl">boto3.client("s3")</code>, <code class="inl">boto3.client("sqs")</code> — service factories with a uniform interface</li>
+  </ul></div>
+
+</section>
+
+<!-- ======================== OBSERVER ======================== -->
+<section class="chapter" id="observer">
+  <div class="ch-head"><div class="num">📡</div><div><div class="t">Observer / Event Bus</div><div class="s">Decouple "it happened" from "who reacts" — the foundation of event-driven architecture</div></div><div class="ico">📡</div></div>
+
+  <div class="scenario"><div class="h">🏪 ShopFlow Production Problem</div>
+  <p>When an order is placed: send email, deduct inventory, log analytics, notify warehouse, run fraud check, award loyalty points, update dashboard. This list grows by 1–2 items every quarter. The fraud check is slow. <strong>Analytics going down means customers can't place orders</strong> — a direct call failure in a non-critical service kills the critical path.</p></div>
+
+  <div class="without"><div class="h">✗ Without Observer — OrderService with 7 tight couplings</div>
+  <p><code class="inl">OrderService.place_order()</code> directly calls all 7 systems synchronously. If analytics is down, checkout fails. If fraud check is slow, checkout is slow. Adding Slack notification = editing <code class="inl">OrderService</code>. The service changes for 7 different, unrelated reasons.</p></div>
+
+  <div class="withpat"><div class="h">✓ With Observer — emit one event, handlers are independent</div>
+  <p><code class="inl">OrderService</code> emits <code class="inl">"order.placed"</code> and stops. Each handler subscribes independently. One bad handler is caught and logged; others still run. Adding Slack = one new function + one <code class="inl">subscribe()</code> call. Zero edits to <code class="inl">OrderService</code>. Slow handlers can be promoted to Celery tasks independently.</p></div>
+<pre><span class="k">class</span> <span class="f">OrderService</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, db, bus: EventBus): self._db, self._bus = db, bus
+    <span class="k">def</span> <span class="f">place_order</span>(self, order):
+        self._db.save(order)             <span class="c"># critical path</span>
+        self._bus.publish(<span class="s">"order.placed"</span>, order.to_dict())  <span class="c"># ONE emission</span>
+
+<span class="c"># Independent handlers — one failing does NOT block others</span>
+bus.subscribe(<span class="s">"order.placed"</span>, send_confirmation_email)
+bus.subscribe(<span class="s">"order.placed"</span>, deduct_inventory)
+bus.subscribe(<span class="s">"order.placed"</span>, track_analytics)   <span class="c"># if down: logged, not fatal</span>
+bus.subscribe(<span class="s">"order.placed"</span>, notify_slack)       <span class="c"># added with ONE line, zero edits</span></pre>
+
+  <figure class="fig-card">
+  <svg viewBox="0 0 780 130" role="img">
+    <g font-family="Segoe UI,sans-serif">
+      <text x="390" y="14" text-anchor="middle" font-size="10" font-weight="800" fill="#0f2743">Observer: OrderService → ONE event → N independent handlers</text>
+      <rect x="10" y="24" width="130" height="50" rx="8" fill="#0f2743"/>
+      <text x="75" y="46" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">OrderService</text>
+      <text x="75" y="61" text-anchor="middle" font-size="8" fill="#7fe3e2">place_order()</text>
+      <rect x="180" y="30" width="100" height="38" rx="8" fill="#dbeafe" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="230" y="50" text-anchor="middle" font-size="9" fill="#1e40af" font-weight="700">EventBus</text>
+      <text x="230" y="63" text-anchor="middle" font-size="8" fill="#1e40af">order.placed</text>
+      <path d="M140,49 L178,49" stroke="#0284c7" stroke-width="2" marker-end="url(#gb)"/>
+      <rect x="320" y="20" width="100" height="22" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="370" y="35" text-anchor="middle" font-size="8.5" fill="#166534">Email handler</text>
+      <rect x="320" y="48" width="100" height="22" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="370" y="63" text-anchor="middle" font-size="8.5" fill="#166534">Inventory handler</text>
+      <rect x="320" y="76" width="100" height="22" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="370" y="91" text-anchor="middle" font-size="8.5" fill="#166534">Analytics handler</text>
+      <rect x="460" y="48" width="130" height="22" rx="5" fill="#fffaf1" stroke="#f59e0b" stroke-dasharray="5,3"/>
+      <text x="525" y="63" text-anchor="middle" font-size="8.5" fill="#92400e">+ Slack (0 changes)</text>
+      <path d="M280,40 L318,29" stroke="#16a34a" stroke-width="1.5" marker-end="url(#gg)"/>
+      <path d="M280,50 L318,57" stroke="#16a34a" stroke-width="1.5" marker-end="url(#gg)"/>
+      <path d="M280,58 L318,85" stroke="#16a34a" stroke-width="1.5" marker-end="url(#gg)"/>
+      <path d="M420,59 L458,59" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ga)"/>
+      <text x="390" y="118" text-anchor="middle" font-size="8.5" fill="#5b6b7b">Analytics failing does NOT affect Email — they're completely independent</text>
+    </g>
+  </svg>
+  </figure>
+
+  <div class="where"><div class="h">🌍 Where Observer is used in production</div>
+  <ul class="plain">
+    <li><strong>Django Signals:</strong> <code class="inl">post_save</code>, <code class="inl">pre_delete</code> — model-level domain events for audit logging, cache invalidation</li>
+    <li><strong>SQLAlchemy Events:</strong> <code class="inl">after_insert</code>, <code class="inl">before_commit</code> — ORM lifecycle hooks</li>
+    <li><strong>Stripe Webhooks:</strong> Stripe publishes events; your endpoint subscribes — distributed Observer over HTTP</li>
+    <li><strong>Kafka / RabbitMQ:</strong> same pattern at service-to-service scale — the message broker replaces the in-process EventBus</li>
+  </ul></div>
+
+  <div class="box gotcha"><span class="ic">⚠️</span><div class="h">Critical gotcha — memory leaks and re-entrant updates</div>
+  <p>Strong references from the event bus to handlers keep them alive forever — use <code class="inl">weakref.ref(handler)</code>. Re-entrant update: an observer that modifies the subject during notification triggers recursive notifications. Guard with an "is_publishing" flag or use deferred delivery via a queue.</p></div>
+
+</section>
+
+<!-- ======================== ADAPTER ======================== -->
+<section class="chapter" id="adapter">
+  <div class="ch-head"><div class="num">🔌</div><div><div class="t">Adapter — SDK Migration</div><div class="s">Wrap incompatible third-party interfaces — migrate without touching 47 call sites</div></div><div class="ico">🔌</div></div>
+
+  <div class="scenario"><div class="h">🏪 ShopFlow Production Problem</div>
+  <p>ShopFlow migrates from Braintree to Stripe (better rates). 47 files call <code class="inl">braintree.Transaction.sale()</code>. Stripe has a completely different API signature. Requirements: (a) no breakage during migration, (b) A/B test 5% Stripe vs 95% Braintree, (c) rollback in under 5 minutes if Stripe is buggy.</p></div>
+
+  <div class="withpat"><div class="h">✓ With Adapter</div>
+  <p>Define a <code class="inl">PaymentGateway</code> Protocol. Wrap Braintree and Stripe behind it. Migration = swap one line at the composition root. A/B routing via a <code class="inl">SplitGateway</code>. All 47 call sites are completely untouched.</p></div>
+<pre><span class="k">class</span> <span class="f">PaymentGateway</span>(Protocol):
+    <span class="k">def</span> <span class="f">charge</span>(self, amount_cents: int, token: str, user_id: str) -> str: ...
+
+<span class="k">class</span> <span class="f">BraintreeAdapter</span>:
+    <span class="k">def</span> <span class="f">charge</span>(self, amount_cents, token, user_id) -> str:
+        result = self._sdk.sale(amount_cents, token, user_id)   <span class="c"># Braintree API</span>
+        <span class="k">if not</span> result[<span class="s">"success"</span>]: <span class="k">raise</span> RuntimeError(<span class="s">"payment failed"</span>)
+        <span class="k">return</span> result[<span class="s">"transaction_id"</span>]
+
+<span class="k">class</span> <span class="f">StripeAdapter</span>:
+    <span class="k">def</span> <span class="f">charge</span>(self, amount_cents, token, user_id) -> str:
+        result = self._sdk.create_payment_intent(            <span class="c"># different API</span>
+            amount=amount_cents, currency=<span class="s">"usd"</span>, customer=user_id, payment_method=token)
+        <span class="k">return</span> result[<span class="s">"id"</span>]
+
+<span class="c"># Gradual rollout: 5% Stripe, 95% Braintree</span>
+<span class="k">class</span> <span class="f">SplitGateway</span>:
+    <span class="k">def</span> <span class="f">charge</span>(self, amount_cents, token, user_id) -> str:
+        gw = self.stripe <span class="k">if</span> random.random() < self.stripe_pct <span class="k">else</span> self.braintree
+        <span class="k">return</span> gw.charge(amount_cents, token, user_id)
+
+<span class="c"># Composition root — ONE line to migrate:</span>
+gateway = StripeAdapter(StripeSDK())   <span class="c"># all 47 sites unchanged ✓</span></pre>
+
+</section>
+
+<!-- ======================== CIRCUIT BREAKER ======================== -->
+<section class="chapter" id="cb">
+  <div class="ch-head"><div class="num">⚡</div><div><div class="t">Circuit Breaker</div><div class="s">The pattern GoF forgot — the most critical pattern in distributed systems</div></div><div class="ico">⚡</div></div>
+
+  <div class="scenario"><div class="h">🏪 ShopFlow Production Incident — Stripe Outage</div>
+  <p><strong>11:47 AM:</strong> Stripe outage. Every checkout call times out after 30 seconds. ShopFlow processes 200 checkouts/minute. <strong>11:50 AM:</strong> Thread pool (50 threads) is full of checkout requests each waiting 30s. Product catalogue requests (zero Stripe calls) can't get a thread either. <strong>Total site outage in 3 minutes from a payment service failure.</strong></p></div>
+
+  <div class="without"><div class="h">✗ Without Circuit Breaker — cascade failure</div>
+  <ul class="plain"><li>200 req/min × 30s timeout = 100 threads occupied simultaneously</li><li>New requests (catalogue, search) queue behind the blocked threads</li><li>Users see "site down" from a payment service outage unrelated to the page they're on</li><li>When Stripe recovers, all backed-up retries hit it simultaneously (thundering herd)</li></ul></div>
+
+  <div class="withpat"><div class="h">✓ With Circuit Breaker — fail fast, protect the pool</div>
+  <p>After 3 failures, the breaker opens. Checkout requests fail in &lt;1ms with "payment temporarily unavailable." Threads stay free. Catalogue/search work normally throughout the outage. After 5s, one probe is sent. On success, normal traffic resumes automatically.</p></div>
+
+  <figure class="fig-card">
+  <svg viewBox="0 0 780 140" role="img">
+    <g font-family="Segoe UI,sans-serif">
+      <text x="390" y="14" text-anchor="middle" font-size="10" font-weight="800" fill="#0f2743">Circuit Breaker — Three-State Machine</text>
+      <rect x="30" y="26" width="150" height="58" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+      <text x="105" y="50" text-anchor="middle" font-size="11" font-weight="800" fill="#166534">CLOSED</text>
+      <text x="105" y="66" text-anchor="middle" font-size="8.5" fill="#166534">Normal — count failures</text>
+      <rect x="320" y="26" width="150" height="58" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+      <text x="395" y="50" text-anchor="middle" font-size="11" font-weight="800" fill="#7f1d1d">OPEN</text>
+      <text x="395" y="66" text-anchor="middle" font-size="8.5" fill="#7f1d1d">Reject &lt;1ms · wait timeout</text>
+      <rect x="610" y="26" width="160" height="58" rx="10" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+      <text x="690" y="50" text-anchor="middle" font-size="11" font-weight="800" fill="#92400e">HALF-OPEN</text>
+      <text x="690" y="66" text-anchor="middle" font-size="8.5" fill="#92400e">Let ONE probe through</text>
+      <path d="M180,48 L318,48" stroke="#dc2626" stroke-width="2" marker-end="url(#gr)"/>
+      <text x="249" y="42" text-anchor="middle" font-size="8" fill="#dc2626">≥ threshold failures</text>
+      <path d="M470,48 L608,48" stroke="#f59e0b" stroke-width="2" marker-end="url(#ga)"/>
+      <text x="539" y="42" text-anchor="middle" font-size="8" fill="#92400e">timeout elapsed</text>
+      <path d="M690,84 Q690,120 105,84" stroke="#16a34a" stroke-width="1.5" fill="none" marker-end="url(#gg)"/>
+      <text x="390" y="126" text-anchor="middle" font-size="8.5" fill="#166534">probe succeeds → CLOSED (full traffic resumes)</text>
+    </g>
+  </svg>
+  </figure>
+
+  <div class="box pitfall"><span class="ic">🚨</span><div class="h">Circuit Breaker ≠ Retry — use BOTH together</div>
+  <p>Retry handles <em>transient</em> failures (network blip, gone in &lt;1s). Circuit Breaker handles <em>sustained</em> outages. Without Retry: a single bad request fails permanently. Without Circuit Breaker: retries during an outage exhaust threads and amplify load on the recovering service. The production pattern: Retry for individual calls, Circuit Breaker to stop retrying when the service is clearly broken.</p></div>
+
+</section>
+
+<!-- ======================== ALL 23 GOF ======================== -->
+<section class="chapter" id="all23">
+  <div class="ch-head"><div class="num">📚</div><div><div class="t">All 23 GoF Patterns — Production Reference</div><div class="s">Problem shape · real use at ShopFlow · where you'll find it in frameworks today</div></div><div class="ico">📚</div></div>
+
+  <h2 class="sec">Creational (5)</h2>
+  <table class="big-table">
+    <tr><th>Pattern</th><th>Problem shape</th><th>ShopFlow use</th><th>Real framework</th><th>What breaks without it</th></tr>
+    <tr><td><strong>Factory Method</strong></td><td>Caller needs object; shouldn't know the concrete type</td><td>Multi-cloud storage: S3/GCS/Azure/Local</td><td>SQLAlchemy <code class="inl">create_engine()</code>, Django DATABASES</td><td>Service imports all 3 cloud SDKs; crashes on import if one isn't installed</td></tr>
+    <tr><td><strong>Abstract Factory</strong></td><td>Create a FAMILY of related objects together</td><td>AWS (S3+SQS) vs GCP (GCS+PubSub) — never mix</td><td>Terraform providers, AWS CDK Constructs</td><td>S3 paired with PubSub — inconsistent cloud stack</td></tr>
+    <tr><td><strong>Builder</strong></td><td>Complex object with many optional parts</td><td>HTTP request config: timeout+retries+headers+auth</td><td>SQLAlchemy Query API, requests.Session</td><td>15-parameter constructor; easy to omit required fields silently</td></tr>
+    <tr><td><strong>Prototype</strong></td><td>Clone a configured object cheaply</td><td>Email template cloning per send</td><td><code class="inl">copy.deepcopy()</code>, dataclass <code class="inl">replace()</code></td><td>Shallow copy: mutating one clone corrupts the source template</td></tr>
+    <tr><td><strong>Singleton</strong></td><td>Exactly ONE instance; global access</td><td>DB connection pool (prefer DI instead)</td><td>Django settings, Flask app object, module-level objects</td><td>Tests share state; order-dependent failures; can't inject a test double</td></tr>
+  </table>
+
+  <h2 class="sec">Structural (7)</h2>
+  <table class="big-table">
+    <tr><th>Pattern</th><th>Problem shape</th><th>ShopFlow use</th><th>Real framework</th><th>What breaks without it</th></tr>
+    <tr><td><strong>Adapter</strong></td><td>3rd-party interface doesn't match yours</td><td>Braintree→Stripe migration; 47 call sites untouched</td><td>Django ORM backends, requests HTTPAdapter</td><td>47 files must all change simultaneously; migration takes 2 sprints</td></tr>
+    <tr><td><strong>Bridge</strong></td><td>M notification types × N channels = M+N (not M×N) classes</td><td>Alert/Info × Email/Slack/SMS</td><td>Python logging (Logger × Handler)</td><td>Every Alert-Email, Alert-Slack, Info-Email combination = separate class</td></tr>
+    <tr><td><strong>Composite</strong></td><td>Treat individuals and groups uniformly (tree)</td><td>Category hierarchy (leaf product + folder both have total())</td><td>OS filesystem, HTML DOM, React component tree</td><td>Different code paths for leaf vs container — constant isinstance() checks</td></tr>
+    <tr><td><strong>Decorator (pattern)</strong></td><td>Add behaviour to an object, same interface</td><td>HTTP middleware: auth → rate-limit → logging on every endpoint</td><td>FastAPI Middleware, Django Middleware classes</td><td>Auth/rate-limit logic copy-pasted into 50 endpoint functions</td></tr>
+    <tr><td><strong>Facade</strong></td><td>Simple interface over a complex subsystem</td><td><code class="inl">place_order()</code> hides auth + stock + payment + email</td><td>Django ORM (hides SQL), boto3 high-level S3 client</td><td>Callers must orchestrate 4 services directly; coordination logic scattered</td></tr>
+    <tr><td><strong>Flyweight</strong></td><td>Share intrinsic state across millions of instances</td><td>Product icon glyphs shared across 10M catalogue items</td><td>Python string interning, Java Integer cache</td><td>10M separate instances each holding the same font/size — OOM</td></tr>
+    <tr><td><strong>Proxy</strong></td><td>Control access: lazy, cached, protected, logged</td><td>Product catalogue cached with TTL; read-only proxy for reporting DB</td><td>SQLAlchemy lazy loading, Django queryset caching</td><td>Repeated expensive DB queries on every catalogue page load</td></tr>
+  </table>
+
+  <h2 class="sec">Behavioral (11)</h2>
+  <table class="big-table">
+    <tr><th>Pattern</th><th>Problem shape</th><th>ShopFlow use</th><th>Real framework</th></tr>
+    <tr><td><strong>Strategy</strong></td><td>Interchangeable algorithms at runtime</td><td>Pricing engine: Black Friday / VIP / B2B</td><td>DRF auth backends, SQLAlchemy pool strategies</td></tr>
+    <tr><td><strong>Observer</strong></td><td>Notify N dependents on state change</td><td>order.placed → email+inventory+analytics+fraud+loyalty</td><td>Django signals, SQLAlchemy events, Kafka</td></tr>
+    <tr><td><strong>Command</strong></td><td>Encapsulate request as object (undo/queue/audit)</td><td>Cart: add/remove items with undo + legal audit log</td><td>SQLAlchemy unit-of-work, git commits</td></tr>
+    <tr><td><strong>Chain of Resp.</strong></td><td>Pass request through handlers until one handles it</td><td>API pipeline: rate-limit → auth → validate → route</td><td>FastAPI middleware, Django request pipeline</td></tr>
+    <tr><td><strong>State</strong></td><td>Behaviour varies with internal state</td><td>Order: pending→confirmed→shipped→delivered; invalid transitions blocked</td><td>Django workflow libraries, Celery task states</td></tr>
+    <tr><td><strong>Template Method</strong></td><td>Fixed skeleton, overridable steps</td><td>Report export: validate→transform→format (CSV/JSON/PDF)</td><td>Django class-based views, Python unittest</td></tr>
+    <tr><td><strong>Visitor</strong></td><td>Add operations without changing element classes</td><td>Cart discount calculation without modifying CartItem</td><td>AST visitors (ast.NodeVisitor), linters</td></tr>
+    <tr><td><strong>Iterator</strong></td><td>Traverse without exposing internals</td><td>Paginated order history — lazy one-page-at-a-time</td><td>Python iteration protocol, SQLAlchemy Query</td></tr>
+    <tr><td><strong>Mediator</strong></td><td>Centralise N×N communication to N×1</td><td>Cart ↔ inventory ↔ discount engine via CartMediator</td><td>Django signals (EventBus IS a Mediator)</td></tr>
+    <tr><td><strong>Memento</strong></td><td>Snapshot + restore state</td><td>Cart "save for later" / undo last action</td><td>git stash, DB savepoints, editor undo stacks</td></tr>
+    <tr><td><strong>Interpreter</strong></td><td>Evaluate a grammar</td><td>ShopFlow discount DSL: "10% off orders over $100"</td><td>SQLAlchemy expression language, regex engine</td></tr>
+  </table>
+
+</section>
+
+<!-- ======================== ANTI-PATTERNS ======================== -->
+<section class="chapter" id="anti">
+  <div class="ch-head"><div class="num">🚫</div><div><div class="t">Anti-patterns</div><div class="s">Recognising bad patterns is a senior skill — the mid-level failure mode is pattern euphoria</div></div><div class="ico">🚫</div></div>
+
+  <div class="box pitfall"><span class="ic">🚨</span><div class="h">The mid-level failure mode — pattern euphoria</div>
+  <p>After learning patterns, engineers reach for <code class="inl">FactoryFactory</code> and five interfaces to create one object. Symptom: six files to trace one function call. Every abstraction has a real cost — indirection, extra files, cognitive load. <strong>A pattern earns its place when the flexibility it provides exceeds the indirection it adds.</strong> If you can't name a concrete, existing need, don't create the abstraction.</p></div>
+
+  <table class="big-table">
+    <tr><th>Anti-pattern</th><th>What it looks like</th><th>What breaks</th><th>Fix</th></tr>
+    <tr><td><strong>God Object</strong></td><td><code class="inl">OrderManager</code> handles cart + payment + inventory + shipping + reporting</td><td>Every sprint touches this class; can't test parts in isolation; any change risks everything</td><td>Split by SRP: one service per concern</td></tr>
+    <tr><td><strong>Singleton Abuse</strong></td><td>Every shared resource implemented as a Singleton class</td><td>Tests share state (order-dependent failures); can't inject test doubles; circular import risk</td><td>Create ONE instance at startup; inject via constructor or <code class="inl">Depends()</code></td></tr>
+    <tr><td><strong>Anemic Domain Model</strong></td><td><code class="inl">Order</code> is a dumb data bag; all logic in <code class="inl">OrderService</code></td><td>Business rules scattered across service layer; entities have no behaviour</td><td>Move behaviour into the entity — Rich Domain Model</td></tr>
+    <tr><td><strong>FactoryFactory</strong></td><td><code class="inl">AbstractFooFactory</code> creates <code class="inl">ConcreteFooFactory</code> creates <code class="inl">Foo</code></td><td>3 layers of indirection for one object; no one can read the code</td><td>A dict or function returning an object suffices 99% of the time</td></tr>
+    <tr><td><strong>One-impl Interface</strong></td><td><code class="inl">class UserRepository(ABC)</code> with exactly one subclass, forever</td><td>Indirection with no benefit; another file to maintain</td><td>Refactor to Protocol when the SECOND implementation arrives (YAGNI)</td></tr>
+  </table>
+
+</section>
+
+<!-- ======================== COMPANION NOTEBOOKS ======================== -->
+<section class="chapter" id="notebooks">
+  <div class="ch-head"><div class="num">📓</div><div><div class="t">Companion Notebooks — Ultra-Elaborate Edition</div><div class="s">4 runnable Jupyter notebooks with mental models, real ShopFlow scenarios, before/after code, and framework references</div></div><div class="ico">📓</div></div>
+
+  <p class="lead">Every pattern in this book has a <strong>runnable companion notebook</strong> in <code class="inl">03-design-patterns/examples/</code>. Each notebook follows a consistent 5-part structure per pattern.</p>
+
+  <div class="box bigidea"><span class="ic">🧠</span><div class="h">5-Part Pattern Structure (per pattern in every notebook)</div>
+  <ol style="font-size:9pt;margin:0;padding-left:18px;">
+    <li><strong>Mental Model</strong> — WHAT / WHY / HOW / WHEN in a scannable box with an ASCII diagram. Answers "Why should I care?" in 10 seconds.</li>
+    <li><strong>Real ShopFlow Scenario</strong> — The specific production incident that forced this pattern. Names the business impact.</li>
+    <li><strong>BEFORE (broken code)</strong> — The code that caused the incident. Executable. Shows exactly what fails and why.</li>
+    <li><strong>AFTER (pattern applied)</strong> — The fix with the pattern. Executable. Verifiable output confirms correctness.</li>
+    <li><strong>Where This Is Seen in Real Frameworks</strong> — A table mapping the pattern to Django, FastAPI, SQLAlchemy, Celery, etc. with exact class/method names.</li>
+  </ol></div>
+
+  <div class="two-col">
+    <div class="pcard"><div class="pt">🏭 creational_patterns.ipynb</div><div class="ps">33 cells · 5 patterns</div>
+      <ul class="plain" style="font-size:8.5pt;margin-top:6px;">
+        <li><strong>Singleton</strong> — thread-safe config manager; Django settings / SQLAlchemy engine</li>
+        <li><strong>Factory Method</strong> — report generator (PDF/CSV/JSON); Django model manager / FastAPI Depends</li>
+        <li><strong>Abstract Factory</strong> — multi-cloud failover (AWS ↔ GCP); SQLAlchemy dialects / Moto</li>
+        <li><strong>Builder</strong> — email builder (80k BCC incident); SQLAlchemy Query / Django ORM chain</li>
+        <li><strong>Prototype</strong> — notification template cloning; Pydantic model_copy / Django .pk=None</li>
+      </ul>
+    </div>
+    <div class="pcard"><div class="pt">🧩 structural_patterns.ipynb</div><div class="ps">28 cells · 5 patterns</div>
+      <ul class="plain" style="font-size:8.5pt;margin-top:6px;">
+        <li><strong>Adapter</strong> — Braintree→Stripe migration (47 call sites); SQLAlchemy DBAPI / httpx MockTransport</li>
+        <li><strong>Decorator</strong> — auth+rate-limit+log chain; FastAPI @app.get / Django @login_required</li>
+        <li><strong>Facade</strong> — order placement (analytics-before-payment bug); SQLAlchemy Session / boto3 client</li>
+        <li><strong>Proxy</strong> — product page cache-proxy; SQLAlchemy lazy load / Django SimpleLazyObject</li>
+        <li><strong>Composite</strong> — discount rule tree (leaf + group uniform interface); asyncio.gather / DOM</li>
+      </ul>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="pcard"><div class="pt">🔁 behavioral_patterns.ipynb</div><div class="ps">28 cells · 6 patterns</div>
+      <ul class="plain" style="font-size:8.5pt;margin-top:6px;">
+        <li><strong>Strategy</strong> — Black Friday pricing engine; Django REST auth / scikit-learn Pipeline</li>
+        <li><strong>Observer</strong> — order event bus (analytics outage isolation); Django signals / Kafka</li>
+        <li><strong>Command</strong> — shopping cart with undo; Celery tasks / Django migrations / Redis MULTI</li>
+        <li><strong>State</strong> — order lifecycle FSM (invalid transitions impossible); Celery states / django-fsm</li>
+        <li><strong>Template Method</strong> — CSV/JSON import pipeline; Django CBVs / Airflow BaseOperator</li>
+        <li><strong>Chain of Responsibility</strong> — API middleware (auth→rate-limit→validate); Django middleware / WSGI</li>
+      </ul>
+    </div>
+    <div class="pcard"><div class="pt">⚡ resilience_patterns.ipynb</div><div class="ps">26 cells · 5 patterns</div>
+      <ul class="plain" style="font-size:8.5pt;margin-top:6px;">
+        <li><strong>Circuit Breaker</strong> — Stripe 3-min outage → site down; aiobreaker / Envoy / resilience4j</li>
+        <li><strong>Retry + Backoff + Jitter</strong> — thundering herd problem; tenacity / boto3 / Celery autoretry</li>
+        <li><strong>Bulkhead</strong> — /reports holding /checkout threads; asyncio.Semaphore / Gunicorn workers</li>
+        <li><strong>Cache-Aside</strong> — product page cache (2000 req/s → DB at 12% CPU); Redis-py / Django cache</li>
+        <li><strong>Idempotency Key</strong> — double-charge prevention; Stripe API / SQS dedup / Kafka idempotent producer</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="where"><div class="h">How to use the notebooks</div>
+  <ol style="font-size:9pt;">
+    <li>Open any notebook in Jupyter or VS Code. Run <code class="inl">Shift+Enter</code> cell by cell.</li>
+    <li>Each <em>BEFORE</em> cell shows exactly what breaks and why — run it and observe the failure.</li>
+    <li>Each <em>AFTER</em> cell shows the fix — run it and verify the output confirms correctness.</li>
+    <li>Refer to the <em>Mental Model</em> cell when reviewing a pattern in code review or interviews.</li>
+    <li>The <em>Frameworks</em> table tells you where you've already been using each pattern without knowing its name.</li>
+  </ol></div>
+
+</section>
+
+<!-- ======================== INTERVIEW BANK ======================== -->
+<section class="chapter" id="interview">
+  <div class="ch-head"><div class="num">🏆</div><div><div class="t">Architect Interview Bank</div><div class="s">30 questions — junior → senior → staff level</div></div><div class="ico">🏆</div></div>
+
+  <div class="iqa"><div class="q">Q1 · What is the GoF Decorator pattern and how does it differ from Python's <code class="inl">@decorator</code> syntax? <span class="level j">Junior</span></div>
+  <p>The <strong>GoF Decorator pattern</strong> wraps an <em>object</em> implementing the same interface, adding behaviour at the object level (e.g., <code class="inl">LoggingMiddleware(AuthMiddleware(handler))</code>). Python's <strong>@decorator syntax</strong> wraps a <em>function</em>. Both "add behaviour by wrapping" but target different things — one wraps objects, one wraps functions. FastAPI's <code class="inl">@app.get()</code> is a function decorator; <code class="inl">Depends()</code> uses the Factory pattern. They coexist in the same framework.</p></div>
+
+  <div class="iqa"><div class="q">Q2 · When would you choose Strategy over a simple if/elif? <span class="level j">Junior</span></div>
+  <p>When you have ≥ 2 algorithms that change independently of callers, need to be unit-tested in isolation, or configured at runtime (A/B testing, feature flags). A two-branch <code class="inl">if</code> that hasn't grown in 6 months doesn't need Strategy — the if-chain is clearer and has no indirection cost. The signal to refactor: two teams editing the same if-chain for different reasons in the same sprint.</p></div>
+
+  <div class="iqa"><div class="q">Q3 · ShopFlow processes checkouts calling Stripe. Stripe has a 5-minute outage. Walk through what happens and what you'd build. <span class="level s">Senior</span></div>
+  <p>Without protection: every checkout waits 30s for Stripe timeout → thread pool exhausted → ALL endpoints down (cascade failure). Fix: <strong>Circuit Breaker</strong> — after 3 failures, reject checkout in &lt;1ms ("payment temporarily unavailable"). Threads stay free; catalogue/search remain up. After <code class="inl">reset_timeout</code>, one probe. On success, close. Additionally: expose HTTP 503 on checkout (not 500) so load balancer can route, and publish "checkout unavailable" event for on-call. Pair with <strong>Retry + jitter</strong> for transient blips.</p></div>
+
+  <div class="iqa"><div class="q">Q4 · What is the difference between DI (Dependency Injection) and DIP (Dependency Inversion Principle)? <span class="level s">Senior</span></div>
+  <p><strong>DI</strong> = the mechanism: passing collaborators from outside rather than constructing them internally. You can inject a <em>concrete class</em> — that's DI but NOT DIP. <strong>DIP</strong> = the principle: the dependency points at an <em>abstraction</em> (Protocol/ABC), not a concretion. DIP flips the arrow: the detail (<code class="inl">MySqlDatabase</code>) implements the port that the high-level policy (<code class="inl">OrderService</code>) owns. FastAPI's <code class="inl">Depends()</code> does both: injects collaborators AND uses abstractions (Protocols) for the type hints.</p></div>
+
+  <div class="iqa"><div class="q">Q5 · How do Strategy, Factory, and Observer compose together in a checkout service? <span class="level a">Staff</span></div>
+  <p><strong>Factory</strong> creates the <strong>Strategy</strong>: a <code class="inl">PricingStrategyFactory</code> reads the user's segment and returns the right <code class="inl">PricingStrategy</code>. Strategy is passed to checkout, which calls <code class="inl">strategy.apply(cart)</code>. Once checkout succeeds, the service emits <code class="inl">"order.placed"</code> via <strong>Observer</strong>, triggering email/inventory/analytics independently. Factory = creation, Strategy = algorithm selection, Observer = post-action fan-out. This is the complete checkout architecture for a senior engineer at ShopFlow.</p></div>
+
+  <div class="iqa"><div class="q">Q6 · When would you NOT apply SOLID? <span class="level a">Staff</span></div>
+  <p>When there's one implementation and no test seam needed (YAGNI — adding the abstraction is speculative generality). When the indirection exceeds the flexibility: a <code class="inl">UserRepository(ABC)</code> with one subclass forever adds complexity with no benefit. When the team is small and the code is a script, not a long-lived system. The senior signal: "I'd introduce this abstraction when the <em>second</em> implementation arrives, or when I need a seam for testing — not before." Patterns and principles have a cost; only pay it when you can name the payoff.</p></div>
+
+  <div class="takeaway"><div class="h">⚡ Before applying any pattern — answer these</div>
+  <ul class="tick">
+    <li>Can I name the SECOND implementation this abstraction will have? No → YAGNI</li>
+    <li>Is the if/elif growing by one case per sprint? → Strategy</li>
+    <li>Does adding a new reaction require editing a core class? → Observer</li>
+    <li>Does the unit test need real cloud credentials? → Factory + DI</li>
+    <li>Does one downstream service going down cascade to the whole system? → Circuit Breaker</li>
+    <li>Are two teams editing the same class simultaneously for different reasons? → SRP split first</li>
+    <li>Can I name the production failure this pattern prevents? → Ship it. Can't → don't.</li>
+  </ul></div>
+
+</section>
 </body>
 </html>

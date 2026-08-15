@@ -229,9 +229,304 @@ def main() -> None:
     print("All graph demos passed ✔")
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# ═══  EXHAUSTIVE NOTEBOOK — graph algorithm gotchas  ═══════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
+
+import sys
+from collections import deque
+
+def sep(t): print(f"\n{'═'*64}\n  {t}\n{'═'*64}")
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# NOTEBOOK §G1 — BFS vs DFS GOTCHAS
+#
+# Mental model
+# ────────────
+# BFS  = explore LEVEL BY LEVEL using a QUEUE.
+#   → Guarantees SHORTEST PATH (fewest edges) in unweighted graphs.
+#   → Memory: O(V) frontier can hold many nodes at wide levels.
+# DFS  = explore DEPTH FIRST using a STACK (or recursion).
+#   → Does NOT guarantee shortest path.
+#   → Memory: O(depth) for iterative; O(depth) call stack for recursive.
+#   → Risk: RecursionError for deep/adversarial graphs.
+#
+# GOTCHA 1: BFS needs a `visited` set BEFORE enqueuing, not after dequeuing.
+#   Without it, the same node gets added to the queue multiple times → O(V²).
+# GOTCHA 2: DFS via recursion will crash on large/deep graphs (RecursionError).
+#   Use iterative DFS with an explicit stack for production code.
+# GOTCHA 3: BFS/DFS on an undirected graph: mark edges bidirectional.
+#   On directed: mark each direction separately.
+# GOTCHA 4: For shortest path WITH WEIGHTS, BFS gives wrong answer. Use Dijkstra.
+# ──────────────────────────────────────────────────────────────────────────
+
+def notebook_bfs_dfs_gotchas() -> None:
+    sep("§G1 · BFS / DFS Gotchas")
+
+    # ── §G1.1  GOTCHA: visited BEFORE enqueue ─────────────────────────────
+    def bfs_wrong(graph, start):
+        """Marks visited AFTER dequeue — allows duplicates in queue."""
+        visited, order, queue = set(), [], deque([start])
+        while queue:
+            node = queue.popleft()
+            if node in visited: continue       # late check: many duplicates already queued
+            visited.add(node)
+            order.append(node)
+            for neighbor in graph.get(node, []):
+                queue.append(neighbor)         # adds duplicates!
+        return order
+
+    def bfs_correct(graph, start):
+        """Marks visited BEFORE enqueue — no duplicates in queue."""
+        visited = {start}
+        order, queue = [], deque([start])
+        while queue:
+            node = queue.popleft()
+            order.append(node)
+            for neighbor in graph.get(node, []):
+                if neighbor not in visited:
+                    visited.add(neighbor)      # mark before enqueue ← key!
+                    queue.append(neighbor)
+        return order
+
+    g = {"A":["B","C"], "B":["D","E"], "C":["F"], "D":[], "E":[], "F":[]}
+    order_w = bfs_wrong(g, "A")
+    order_c = bfs_correct(g, "A")
+    print(f"BFS wrong (late mark): {order_w}  ← same result here but duplicates queued")
+    print(f"BFS correct (early mark): {order_c}")
+    assert set(order_w) == set(order_c)   # same nodes visited, but wrong is less efficient
+
+    # ── §G1.2  BFS for shortest path ──────────────────────────────────────
+    def shortest_path(graph, src, dst):
+        if src == dst: return [src]
+        parent = {src: None}
+        queue = deque([src])
+        while queue:
+            node = queue.popleft()
+            for nb in graph.get(node, []):
+                if nb not in parent:
+                    parent[nb] = node
+                    if nb == dst:
+                        path = []
+                        while nb is not None:
+                            path.append(nb); nb = parent[nb]
+                        return path[::-1]
+                    queue.append(nb)
+        return []   # no path
+
+    path = shortest_path(g, "A", "E")
+    print(f"\nShortest path A→E: {path} (length {len(path)-1} edges)")
+
+    # ── §G1.3  GOTCHA: DFS recursion depth limit ───────────────────────────
+    # Build a long chain: 0→1→2→...→999
+    deep_graph = {i: [i+1] for i in range(999)}
+    deep_graph[999] = []
+
+    # Iterative DFS is safe for any depth
+    def dfs_iterative(graph, start):
+        visited, order, stack = set(), [], [start]
+        while stack:
+            node = stack.pop()
+            if node in visited: continue
+            visited.add(node); order.append(node)
+            for nb in reversed(graph.get(node, [])):
+                if nb not in visited: stack.append(nb)
+        return order
+
+    traversal = dfs_iterative(deep_graph, 0)
+    print(f"\nIterative DFS on chain of 1000: visited {len(traversal)} nodes (no RecursionError)")
+
+    # ── §G1.4  BFS for level-order / multi-source ────────────────────────
+    def multi_source_bfs(graph, sources):
+        """Start BFS from MULTIPLE sources simultaneously."""
+        dist = {s: 0 for s in sources}
+        queue = deque(sources)
+        while queue:
+            node = queue.popleft()
+            for nb in graph.get(node, []):
+                if nb not in dist:
+                    dist[nb] = dist[node] + 1
+                    queue.append(nb)
+        return dist
+
+    # Example: distance from EITHER A or F
+    dists = multi_source_bfs(g, ["A", "F"])
+    print(f"\nMulti-source BFS from A,F: {dists}")
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# NOTEBOOK §G2 — DIJKSTRA GOTCHAS
+#
+# Mental model
+# ────────────
+# Dijkstra = BFS with a PRIORITY QUEUE instead of a regular queue.
+# Each pop gives the CLOSEST unprocessed node.
+# Greedy: once a node is popped (settled), its shortest distance is final.
+#
+# GOTCHA 1: NEGATIVE EDGE WEIGHTS break Dijkstra.
+#   Dijkstra's greedy assumption fails: a settled node might later get a
+#   shorter path through a negative edge. Use Bellman-Ford instead.
+# GOTCHA 2: Stale entries in the heap (lazy deletion pattern).
+#   When a node's distance is relaxed, the OLD entry in the heap is not removed.
+#   Check: if popped distance > current known distance, skip it.
+# GOTCHA 3: O((V + E) log V) time — the log V comes from the heap operations.
+# GOTCHA 4: For DENSE graphs (E ≈ V²), an adjacency matrix with a linear scan
+#   (Prim's algorithm style) can be faster in practice.
+# ──────────────────────────────────────────────────────────────────────────
+
+def notebook_dijkstra_gotchas() -> None:
+    sep("§G2 · Dijkstra Gotchas")
+
+    # ── §G2.1  Correct Dijkstra (handles stale heap entries) ──────────────
+    import heapq
+
+    def dijkstra_correct(graph, src):
+        dist = {node: float('inf') for node in graph}
+        dist[src] = 0
+        heap = [(0, src)]
+        while heap:
+            d, u = heapq.heappop(heap)
+            if d > dist[u]: continue   # STALE entry — skip!
+            for v, w in graph.get(u, []):
+                if dist[u] + w < dist[v]:
+                    dist[v] = dist[u] + w
+                    heapq.heappush(heap, (dist[v], v))
+        return dist
+
+    wg = {"A":[("B",1),("C",4)], "B":[("C",2),("D",5)],
+          "C":[("D",1)], "D":[]}
+    print("Dijkstra:", dijkstra_correct(wg, "A"))
+
+    # ── §G2.2  GOTCHA: negative weights break Dijkstra ────────────────────
+    neg_graph = {"A":[("B",3),("C",2)], "B":[("C",-4)], "C":[("D",1)], "D":[]}
+    # Shortest A→C: A→B→C = 3+(-4) = -1 (NOT 2 via direct A→C edge!)
+    # Dijkstra would settle C with dist=2 and never update it via B:
+
+    wrong = dijkstra_correct(neg_graph, "A")
+    print(f"\nNegative weight A→C: Dijkstra gives {wrong['C']} (WRONG, should be -1)")
+    print("Use Bellman-Ford for graphs with negative edges")
+
+    # ── §G2.3  Bellman-Ford handles negative edges ────────────────────────
+    def bellman_ford(graph, src):
+        """O(V*E) — correct for negative edges, detects negative cycles."""
+        dist = {n: float('inf') for n in graph}
+        dist[src] = 0
+        nodes = list(graph.keys())
+        for _ in range(len(nodes) - 1):   # relax V-1 times
+            for u in graph:
+                for v, w in graph[u]:
+                    if dist[u] + w < dist[v]:
+                        dist[v] = dist[u] + w
+        # Check for negative cycle: if any edge still relaxes, cycle exists
+        for u in graph:
+            for v, w in graph[u]:
+                if dist[u] + w < dist[v]:
+                    return None   # negative cycle detected!
+        return dist
+
+    bf_dist = bellman_ford(neg_graph, "A")
+    print(f"Bellman-Ford A→C: {bf_dist['C']}  ← correct!")  # -1
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# NOTEBOOK §G3 — CYCLE DETECTION & TOPOLOGICAL SORT GOTCHAS
+#
+# Mental model
+# ────────────
+# Directed cycle detection: DFS with THREE colours.
+#   WHITE (unvisited) → GREY (in current path) → BLACK (done)
+#   If DFS encounters a GREY node → back edge → cycle!
+#
+# Undirected cycle detection: DFS + track parent.
+#   If DFS encounters a visited node that is NOT the parent → cycle!
+#
+# Topological sort: only valid for DAGs (Directed Acyclic Graphs).
+# GOTCHA 1: topo sort on a cyclic graph → incomplete ordering (Kahn) or
+#           infinite loop (naive DFS). Always check for cycles first.
+# GOTCHA 2: Multiple valid topological orderings can exist.
+# GOTCHA 3: Kahn's algorithm (BFS-based) detects cycles naturally:
+#   if the result has fewer nodes than the graph, a cycle exists.
+# ──────────────────────────────────────────────────────────────────────────
+
+def notebook_cycle_topo_gotchas() -> None:
+    sep("§G3 · Cycle Detection & Topological Sort Gotchas")
+
+    # ── §G3.1  Directed cycle detection ───────────────────────────────────
+    dag   = {"A":["B","C"], "B":["D"], "C":["D"], "D":[]}
+    cycle = {"A":["B"], "B":["C"], "C":["A"]}  # A→B→C→A
+
+    assert not has_cycle_directed(dag)
+    assert has_cycle_directed(cycle)
+    print("Directed cycle detection: DAG=no-cycle, cyclic=cycle ✓")
+
+    # ── §G3.2  Kahn's topological sort detects cycles ────────────────────
+    def kahn_topo(graph):
+        from collections import defaultdict, deque
+        in_degree = defaultdict(int)
+        for u in graph:
+            for v in graph[u]:
+                in_degree[v] += 1
+        queue = deque(u for u in graph if in_degree[u] == 0)
+        order = []
+        while queue:
+            u = queue.popleft(); order.append(u)
+            for v in graph[u]:
+                in_degree[v] -= 1
+                if in_degree[v] == 0: queue.append(v)
+        # If order is shorter than graph, a cycle exists
+        return order if len(order) == len(graph) else None
+
+    topo = kahn_topo(dag)
+    print(f"\nTopological sort of DAG: {topo}")
+
+    topo_cyclic = kahn_topo(cycle)
+    print(f"Topo sort of cyclic graph: {topo_cyclic}  ← None = cycle detected!")
+
+    # ── §G3.3  Undirected cycle detection (union-find) ────────────────────
+    def has_cycle_undirected(nodes, edges):
+        """Union-Find (disjoint sets) for undirected cycle detection."""
+        parent = {n: n for n in nodes}
+        rank   = {n: 0 for n in nodes}
+
+        def find(x):
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]  # path compression
+                x = parent[x]
+            return x
+
+        def union(x, y):
+            rx, ry = find(x), find(y)
+            if rx == ry: return False   # same component → cycle!
+            if rank[rx] < rank[ry]: rx, ry = ry, rx
+            parent[ry] = rx
+            if rank[rx] == rank[ry]: rank[rx] += 1
+            return True
+
+        for u, v in edges:
+            if not union(u, v): return True
+        return False
+
+    nodes_uc  = ["A","B","C","D"]
+    edges_no  = [("A","B"),("B","C"),("C","D")]
+    edges_yes = [("A","B"),("B","C"),("C","A")]
+
+    print(f"\nUndirected cycle: linear chain = {has_cycle_undirected(nodes_uc, edges_no)}")   # False
+    print(f"Undirected cycle: triangle     = {has_cycle_undirected(['A','B','C'], edges_yes)}")  # True
+
+
+def run_graph_notebook() -> None:
+    notebook_bfs_dfs_gotchas()
+    notebook_dijkstra_gotchas()
+    notebook_cycle_topo_gotchas()
+    print("\n" + "═"*64)
+    print("  GRAPH NOTEBOOK COMPLETE")
+    print("═"*64)
+
+
 if __name__ == "__main__":
-    # Keep Unicode output safe even when stdout is redirected/piped (Windows cp1252 fallback).
-    import sys
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     main()
+    run_graph_notebook()
+
