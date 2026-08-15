@@ -1,0 +1,28 @@
+[project]
+name = "system-design-back-end"
+version = "0.1.0"
+description = "System design and backend engineering curriculum"
+requires-python = ">=3.12"
+
+# ---------------------------------------------------------------------------
+# Dev toolchain — install with: uv sync --dev
+# Pin to the same versions used in CI so local == CI.
+# ---------------------------------------------------------------------------
+[dependency-groups]
+dev = [
+    "ruff==0.16.2",
+    "isort==8.0.1",
+    "blacken-docs==1.20.0",
+    "pre-commit>=4.0.0",
+    "html5lib>=1.1",       # HTML parse check in check_html.py
+    "cssutils>=2.11.1",    # CSS parse check in check_html.py
+    "lxml>=5.3.0",         # fast HTML tree builder for link checking
+]
+
+[tool.ruff]
+extend = "ruff.toml"   # re-use existing ruff.toml config
+
+[tool.isort]
+# Keep in sync with whatever .isort.cfg says (if it exists)
+profile = "black"
+line_length = 120

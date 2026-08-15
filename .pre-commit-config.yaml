@@ -1,0 +1,64 @@
+# Install: uv sync --dev && uv run pre-commit install
+# Run manually: uv run pre-commit run --all-files
+# CI equivalent: see .github/workflows/ci.yml  lint job
+
+default_language_version:
+  python: python3   # use whatever Python 3.x is on PATH; CI pins to 3.12
+
+repos:
+  # ---------------------------------------------------------------------------
+  # Standard file hygiene
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.ipynb$|\.md$'
+      - id: end-of-file-fixer
+        exclude: '\.ipynb$'
+      - id: check-yaml
+      - id: check-json
+        exclude: '\.ipynb$'   # notebooks have non-standard trailing commas
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=2048]
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        exclude: '\.ipynb$'
+
+  # ---------------------------------------------------------------------------
+  # Python linting — same versions as CI
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.2
+    hooks:
+      - id: ruff
+        args: [--fix]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 8.0.1
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/asottile/blacken-docs
+    rev: 1.20.0
+    hooks:
+      - id: blacken-docs
+        additional_dependencies: [black]
+
+  # ---------------------------------------------------------------------------
+  # HTML + CSS validation (study-guide books)
+  # ---------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: study-guide-html-css
+        name: Validate study-guide HTML & CSS
+        language: python
+        entry: python study-guide/check_html.py
+        # Run once for the whole study-guide, not per-file
+        pass_filenames: false
+        additional_dependencies:
+          - html5lib>=1.1
+          - cssutils>=2.11.1
+          - lxml>=5.3.0
+        files: 'study-guide/.*\.(html|css)$'
