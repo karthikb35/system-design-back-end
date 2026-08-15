@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Architect's Path — Study Guide</title>
+<link rel="stylesheet" href="architects-path.css">
+<style>
+  .index-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;padding:32px 0;}
+  .book-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 24px;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column;gap:8px;}
+  .book-card:hover{box-shadow:0 6px 24px #0002;transform:translateY(-2px);}
+  .book-card .num{font-size:9pt;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;}
+  .book-card .title{font-size:12.5pt;font-weight:800;color:var(--navy);line-height:1.25;}
+  .book-card .desc{font-size:9pt;color:#64748b;line-height:1.5;}
+  .hero{text-align:center;padding:48px 24px 12px;}
+  .hero h1{font-size:2rem;font-weight:900;color:var(--navy);}
+  .hero p{color:#475569;max-width:560px;margin:8px auto 0;}
+</style>
+</head>
+<body>
+<div class="hero">
+  <h1>The Architect's Path</h1>
+  <p>A complete self-study curriculum — Python foundations to production-grade distributed systems. Pick a book to start.</p>
+</div>
+<section style="max-width:1100px;margin:0 auto;padding:0 24px 48px">
+  <div class="index-grid">
+
+    <a href="book-00-python-foundations.html" class="book-card">
+      <div class="num">Book 00</div>
+      <div class="title">Python Foundations</div>
+      <div class="desc">Types · OOP · iterators · closures · decorators · memory model</div>
+    </a>
+
+    <a href="book-00-python-complete.html" class="book-card">
+      <div class="num">Book 00 · Exhaustive</div>
+      <div class="title">Python Complete</div>
+      <div class="desc">Comprehensive Python reference with production incident walkthroughs</div>
+    </a>
+
+    <a href="book-1-python-mastery.html" class="book-card">
+      <div class="num">Book 1</div>
+      <div class="title">Python Mastery</div>
+      <div class="desc">Dunder methods · descriptors · metaclasses · typing · CPython internals</div>
+    </a>
+
+    <a href="book-2-dsa.html" class="book-card">
+      <div class="num">Book 2</div>
+      <div class="title">Data Structures &amp; Algorithms</div>
+      <div class="desc">Arrays → graphs · sorting · dynamic programming · real-world O(n²) incidents</div>
+    </a>
+
+    <a href="book-3-concurrency.html" class="book-card">
+      <div class="num">Book 3</div>
+      <div class="title">Concurrency &amp; Parallelism</div>
+      <div class="desc">Threads · asyncio · GIL · multiprocessing · race conditions</div>
+    </a>
+
+    <a href="book-4-clean-code-patterns.html" class="book-card">
+      <div class="num">Book 4</div>
+      <div class="title">Clean Code &amp; Design Patterns</div>
+      <div class="desc">SOLID · all 23 GoF patterns · Circuit Breaker · ShopFlow real-world scenarios</div>
+    </a>
+
+    <a href="book-5-system-design.html" class="book-card">
+      <div class="num">Book 5</div>
+      <div class="title">System Design &amp; Architecture</div>
+      <div class="desc">CAP · consistent hashing · HA · quorum · saga · API gateway · leader election</div>
+    </a>
+
+    <a href="book-6-backend-production.html" class="book-card">
+      <div class="num">Book 6</div>
+      <div class="title">Backend in Production</div>
+      <div class="desc">FastAPI · connection pooling · backpressure · idempotency · Kafka · DLQ</div>
+    </a>
+
+    <a href="book-7-networking-security-testing.html" class="book-card">
+      <div class="num">Book 7</div>
+      <div class="title">Networking, Security &amp; Testing</div>
+      <div class="desc">HTTP · TLS · OWASP Top 10 · JWT · test pyramid · CI/CD</div>
+    </a>
+
+    <a href="The-Architects-Path.html" class="book-card" style="border-color:var(--amber);background:#fffaf1;">
+      <div class="num" style="color:#b45309">⭐ Omnibus</div>
+      <div class="title">The Architect's Path</div>
+      <div class="desc">All books in one — the complete reference from Python to distributed systems</div>
+    </a>
+
+  </div>
+</section>
+</body>
+</html>
