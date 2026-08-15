@@ -13,7 +13,10 @@ Run:
     python 03-design-patterns/examples/rebuild_notebooks.py
 """
 from __future__ import annotations
-import json, uuid, textwrap
+
+import json
+import textwrap
+import uuid
 from pathlib import Path
 
 HERE = Path(__file__).parent

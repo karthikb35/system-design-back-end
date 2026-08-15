@@ -15,7 +15,10 @@ Run from project root:
     python rebuild_book6_notebooks.py
 """
 from __future__ import annotations
-import json, uuid, textwrap
+
+import json
+import textwrap
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).parent

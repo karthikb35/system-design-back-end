@@ -141,7 +141,9 @@ def main() -> None:
 # ═══  EXHAUSTIVE NOTEBOOK — sorting & searching gotchas  ═══════════════════
 # ═══════════════════════════════════════════════════════════════════════════
 
-import sys, time
+import sys  # noqa: E402
+import time  # noqa: E402
+
 
 def sep(t): print(f"\n{'═'*64}\n  {t}\n{'═'*64}")
 
@@ -192,7 +194,7 @@ def notebook_sorting_gotchas() -> None:
     # [("high",1), ("high",3), ("low",1), ("med",2)]
 
     # ── §S1.2  GOTCHA: quick sort worst case on sorted input ──────────────
-    import random, time
+    import random
 
     def quick_sort_fixed_pivot(a):
         """DANGEROUS: always picks last element as pivot."""
@@ -229,10 +231,10 @@ def notebook_sorting_gotchas() -> None:
     merge_sort(data)
     t_custom = time.perf_counter() - t0
 
-    print(f"\nSort 10,000 random ints:")
+    print("\nSort 10,000 random ints:")
     print(f"  Python sorted():  {t_builtin*1000:.2f}ms")
     print(f"  Custom merge_sort:{t_custom*1000:.2f}ms")
-    print(f"  Always use Python's built-in — it's Timsort in C")
+    print("  Always use Python's built-in — it's Timsort in C")
 
     # ── §S1.4  Key function vs cmp_to_key ─────────────────────────────────
     from functools import cmp_to_key

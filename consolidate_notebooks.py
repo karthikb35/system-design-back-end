@@ -35,7 +35,9 @@ Run from the project root:
     python consolidate_notebooks.py
 """
 from __future__ import annotations
-import json, uuid
+
+import json
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).parent

@@ -208,8 +208,9 @@ def main() -> None:
 # ═══  EXHAUSTIVE NOTEBOOK — recursion · DP · greedy · backtracking  ════════
 # ═══════════════════════════════════════════════════════════════════════════
 
-import sys
-from functools import cache as _cache
+import sys  # noqa: E402
+from functools import cache as _cache  # noqa: E402
+
 
 def sep(t): print(f"\n{'═'*64}\n  {t}\n{'═'*64}")
 
@@ -321,7 +322,7 @@ def notebook_recursion_gotchas() -> None:
         return result
 
     # First call: fine
-    r1 = bad_permutations([1, 2])
+    _r1 = bad_permutations([1, 2])
     # But path=[] persists between calls — works by accident here because
     # path.pop() always cleans up; but the default IS shared across calls.
     # Safe pattern: use None sentinel

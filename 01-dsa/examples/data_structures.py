@@ -307,8 +307,9 @@ def main() -> None:
 # ═══  EXHAUSTIVE DSA NOTEBOOK — data structures gotchas  ═══════════════════
 # ═══════════════════════════════════════════════════════════════════════════
 
-import sys, time, traceback
-from collections import deque
+import sys  # noqa: E402
+import time  # noqa: E402
+
 
 def sep(t): print(f"\n{'═'*64}\n  {t}\n{'═'*64}")
 
@@ -729,7 +730,7 @@ def notebook_heap_gotchas() -> None:
     print(f"Max-heap via negation: max of {nums} = {max_val}")   # 9
 
     # ── §5.2  GOTCHA: equal priorities need tiebreaker ────────────────────
-    from dataclasses import dataclass, field
+    from dataclasses import dataclass
 
     @dataclass(order=False)
     class Task:
@@ -775,7 +776,7 @@ def notebook_heap_gotchas() -> None:
     t_sort = time.perf_counter() - t0
 
     assert top_k == top_k_sort
-    print(f"\nTop-10 from 1M elements:")
+    print("\nTop-10 from 1M elements:")
     print(f"  heapq.nlargest: {t_heap*1000:.2f}ms  (O(n log k))")
     print(f"  sort+slice:     {t_sort*1000:.2f}ms  (O(n log n))")
     print(f"  nlargest is {t_sort/t_heap:.1f}× faster for small k")

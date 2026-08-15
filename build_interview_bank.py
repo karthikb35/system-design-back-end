@@ -9,7 +9,10 @@ build_interview_bank.py
 Run: python build_interview_bank.py
 """
 from __future__ import annotations
-import json, re, uuid
+
+import json
+import re
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).parent

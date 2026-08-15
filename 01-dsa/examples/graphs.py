@@ -233,8 +233,8 @@ def main() -> None:
 # ═══  EXHAUSTIVE NOTEBOOK — graph algorithm gotchas  ═══════════════════════
 # ═══════════════════════════════════════════════════════════════════════════
 
-import sys
-from collections import deque
+import sys  # noqa: E402
+
 
 def sep(t): print(f"\n{'═'*64}\n  {t}\n{'═'*64}")
 

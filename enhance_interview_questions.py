@@ -6,7 +6,9 @@ interview_questions.ipynb notebook.
 Run: python enhance_interview_questions.py
 """
 from __future__ import annotations
-import json, uuid
+
+import json
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).parent

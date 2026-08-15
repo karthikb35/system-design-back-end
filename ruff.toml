@@ -9,6 +9,10 @@ target-version = "py312"
 extend-exclude = [
     "**/pb",          # generated gRPC protobuf stubs
     "**/migrations",  # Alembic revision scripts
+    # Ruff reads .ipynb files as bytes on Windows, misidentifying UTF-8 Unicode
+    # in f-strings (e.g. → arrows) as invalid syntax. Notebooks are validated
+    # by running them directly; the .py reference implementations are the lint target.
+    "**/*.ipynb",
 ]
 
 [lint]
@@ -19,11 +23,12 @@ select = ["E", "F", "W", "UP"]
 # Line length is enforced softly via the formatter, not as a hard lint error;
 # several didactic files use long, deliberately illustrative lines.
 # The remaining ignores are deliberate teaching/style choices we keep:
+#   E701  compact `if x: raise` / `def f(): return x` one-liners in notebooks
 #   E702  compact `a; b` one-liners used in a few worked examples
 #   E741  a lone `l` used intentionally in a typing demo
 #   UP042 `(str, Enum)` mixin used by the circuit breaker's small state enum
 #   UP046 classic `Generic[T]` subclassing shown on purpose (pre-PEP 695)
-ignore = ["E501", "E702", "E741", "UP042", "UP046"]
+ignore = ["E501", "E701", "E702", "E741", "UP042", "UP046"]
 
 [lint.per-file-ignores]
 # `__init__.py` files may re-export names without using them locally.

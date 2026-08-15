@@ -21,7 +21,10 @@ Run from the project root:
     python 00-python-foundations/make_notebooks.py
 """
 from __future__ import annotations
-import json, re, uuid
+
+import json
+import re
+import uuid
 from pathlib import Path
 
 HERE   = Path(__file__).parent

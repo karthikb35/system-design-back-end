@@ -39,7 +39,9 @@ Output structure
 Run: python reorganize_notebooks.py
 """
 from __future__ import annotations
-import json, uuid
+
+import json
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -199,7 +201,7 @@ def reorganize_python() -> None:
     print("\n──── 00-python-foundations/ ────")
     pf = ROOT / "00-python-foundations"
 
-    concept_map_py = {
+    _concept_map_py = {
         "py_types_collections": (
             "Python Types & Collections",
             "Variables · Mutability · Aliasing · is vs == · list/tuple/set/dict · collections module · Real-World",
@@ -235,7 +237,7 @@ def reorganize_python() -> None:
 
     fn_keywords  = ["Function", "Closure", "Lambda", "Decorator", "Comprehension",
                     "LEGB", "nonlocal", "global", "walrus", "functools"]
-    type_keywords = ["Variable", "Type", "Collection", "Operator", "truthiness",
+    _type_keywords = ["Variable", "Type", "Collection", "Operator", "truthiness",
                      "list", "dict", "set", "tuple", "Built-in", "Loop", "Control",
                      "Exception", "File", "Scenario"]
 
@@ -290,7 +292,7 @@ def reorganize_python() -> None:
     write_nb(cells, pf / "py_advanced.ipynb")
 
     # python_data_structures — stays as is (already well-scoped)
-    print(f"  →  python_data_structures.ipynb  (kept as-is)")
+    print("  →  python_data_structures.ipynb  (kept as-is)")
 
     # Delete the old consolidated notebooks
     for name in ["python_core.ipynb", "python_oop.ipynb",
